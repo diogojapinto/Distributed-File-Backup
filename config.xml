@@ -10,3 +10,9 @@
         /home/knoweat/Pictures/educ_sites.jpeg
     </file>
 </local-files>
+<shared-files>
+    <file replication="3" id="osdhgtokdkdk">
+        <chunk no="0" replication="3" />
+        <chunk no="1" replication="3" />
+    </file>
+</shared-files>
