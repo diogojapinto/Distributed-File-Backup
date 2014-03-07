@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<max-disk-space unit="MB">
+    50
+</max-disk-space>
+<backup-folder>
+    /home/knoweat/friendly_backup
+</backup-folder>
+<local-files>
+    <file replication-degree="3">
+        /home/knoweat/Pictures/educ_sites.jpeg
+    </file>
+</local-files>
