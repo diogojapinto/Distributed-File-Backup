@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- may add here the multicast channels -->
 <max-disk-space unit="MB">
     50
 </max-disk-space>

@@ -2,14 +2,27 @@ package com.sdis.sharedbackup.backend;
 
 import java.util.PriorityQueue;
 
+/*
+ * Create a FileChunk for each chunk for backup
+ * 
+ */
+
 public class SharedFile {
-	private String fileId;
-	private PriorityQueue<FileChunk> chunkList;
-	private int desiredReplicationDegree;
+	private String mFilePath;
+	private String mFileId;
+	private PriorityQueue<FileChunk> mChunkList;
+	private int mDesiredReplicationDegree;
 	
-	public SharedFile(String fileId, int desiredReplicationDegree) {
-		this.fileId = fileId;
-		this.desiredReplicationDegree = desiredReplicationDegree;
+	public SharedFile(String filePath, int desiredReplicationDegree) {
+		this.mFilePath = filePath;
+		this.mDesiredReplicationDegree = desiredReplicationDegree;
 	}
 	
+	private void generateFileId() {
+		// TODO
+	}
+	
+	public String getFileId() {
+		return mFileId;
+	}
 }
