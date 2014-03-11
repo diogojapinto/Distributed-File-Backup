@@ -7,7 +7,7 @@ public class CLIMonitor {
 		parseArgs(args);
 	}
 	
-	private boolean parseArgs(String[] args) {
+	private static boolean parseArgs(String[] args) {
 		// TODO: call config manager functions to set this fields
 		return true;
 	}
