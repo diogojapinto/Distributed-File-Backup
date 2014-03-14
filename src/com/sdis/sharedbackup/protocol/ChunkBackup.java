@@ -9,6 +9,7 @@ import java.net.InetAddress;
 
 import com.sdis.sharedbackup.backend.ConfigManager;
 import com.sdis.sharedbackup.backend.FileChunk;
+import com.sdis.sharedbackup.backend.MulticastComunicator;
 
 public class ChunkBackup {
 	
@@ -26,7 +27,6 @@ public class ChunkBackup {
 	}
 
 	private ChunkBackup() {
-		
 	}
 	
 	public boolean putChunk(FileChunk chunk) {
@@ -52,8 +52,6 @@ public class ChunkBackup {
 		
 		InetAddress multCtrlAddr = ConfigManager.getInstance().getMCAddr();
 		int multCtrlPort = ConfigManager.getInstance().getMCPort();
-		
-		
 		
 		
 		return true;
