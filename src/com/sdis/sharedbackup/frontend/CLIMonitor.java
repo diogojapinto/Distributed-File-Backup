@@ -12,7 +12,6 @@ public class CLIMonitor {
 		} catch (ArgsException e) {
 			e.error();
 		}
-		
 	}
 
 	// initiates the configuration of the Multicast addresses and ports

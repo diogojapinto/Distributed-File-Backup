@@ -44,21 +44,34 @@ public class ChunkBackup {
 		message += " " + new String(CRLF);
 		message += " " + chunk.getData();
 		
-		try {
-			byte[] raw_msg = message.getBytes("US-ASCII");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
+		InetAddress multDBAddr = ConfigManager.getInstance().getMDBAddr();
+		int multDBPort = ConfigManager.getInstance().getMDBPort();
+		
+		MulticastComunicator sender = new MulticastComunicator(multDBAddr, multDBPort);
+		sender.join();
+		
+		return sender.sendMessage(message);
+		
+	}
+	
+	public boolean storeChunks() {
 		
 		InetAddress multCtrlAddr = ConfigManager.getInstance().getMCAddr();
 		int multCtrlPort = ConfigManager.getInstance().getMCPort();
 		
+		MulticastComunicator sender = new MulticastComunicator(multCtrlAddr, multCtrlPort);
+		sender.join();
 		
-		return true;
-	}
-	
-	public boolean storeChunks() {
-		// TODO: this function shall wait for requests, and act accordingly in a separate thread
+		
+		// save the chunk to a file in a separate thread
+		new Thread( new Runnable() {
+			
+			@Override
+			public void run() {
+				
+			}
+		}).start();
+		
 		return true;
 	}
 

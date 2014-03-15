@@ -67,4 +67,21 @@ public class ConfigManager {
 	public int getMCPort() {
 		return mMCport;
 	}
+	
+	public InetAddress getMDBAddr() {
+		return mMDBaddr;
+	}
+	
+	public int getMDBPort() {
+		return mMDBport;
+	}
+	
+	public InetAddress getMDRAddr() {
+		return mMDRaddr;
+	}
+	
+	public int getMDRPort() {
+		return mMDRport;
+	}
+
 }
