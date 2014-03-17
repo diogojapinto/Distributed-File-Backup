@@ -1,10 +1,11 @@
 package com.sdis.sharedbackup.backend;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 
-public class ConfigManager {
+public class ConfigManager implements Serializable {
 
 	// constants
 	private static final String VERSION = "1.0";

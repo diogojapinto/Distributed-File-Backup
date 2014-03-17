@@ -8,6 +8,8 @@ import java.util.PriorityQueue;
  */
 
 public class SharedFile {
+	public static final int CHUNK_SIZE = 64000;
+	
 	private String mFilePath;
 	private String mFileId;
 	private PriorityQueue<FileChunk> mChunkList;
@@ -16,13 +18,26 @@ public class SharedFile {
 	public SharedFile(String filePath, int desiredReplicationDegree) {
 		this.mFilePath = filePath;
 		this.mDesiredReplicationDegree = desiredReplicationDegree;
+		
+		this.mFileId = generateFileId(mFilePath);
 	}
 	
-	private void generateFileId() {
-		// TODO
+	// Getters
+	
+	public String getFilePath() {
+		return mFilePath;
 	}
 	
 	public String getFileId() {
 		return mFileId;
+	}
+	
+	public int getDesiredReplication() {
+		return mDesiredReplicationDegree;
+	}
+	
+	private static String generateFileId(String filePath) {
+		
+		return null;
 	}
 }

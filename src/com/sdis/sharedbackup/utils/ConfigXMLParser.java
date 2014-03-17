@@ -4,13 +4,14 @@ import com.sdis.sharedbackup.backend.ConfigManager;
 
 public class ConfigXMLParser {
 	
-	public static ConfigManager parseConfigFile() {
-		// TODO: parse a file and return a properly instantiated ConfigManager object
-		return null;
+	public static boolean parseConfigFile() {
+		// parse a file and return a properly instantiated ConfigManager object
+		
+		return false;
 	}
 	
 	public static boolean saveConfigFile(ConfigManager configs) {
-		// TODO: save the ConfigManager object to file
+		// save the ConfigManager object to file
 		return false;
 	}
 }

@@ -50,7 +50,9 @@ public class ChunkBackup {
 		MulticastComunicator sender = new MulticastComunicator(multDBAddr, multDBPort);
 		sender.join();
 		
-		return sender.sendMessage(message);
+		sender.sendMessage(message);
+		
+		return true;
 		
 	}
 	
