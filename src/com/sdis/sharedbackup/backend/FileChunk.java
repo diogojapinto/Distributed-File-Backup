@@ -72,6 +72,12 @@ public class FileChunk {
 				e.printStackTrace();
 			}
 			
+			try {
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 			return chunk;
 		} else {
 			return null;

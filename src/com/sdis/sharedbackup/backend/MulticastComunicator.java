@@ -5,9 +5,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.security.MessageDigest;
-
-import javax.xml.ws.handler.MessageContext;
 
 public class MulticastComunicator {
 	private MulticastSocket mMSocket;
