@@ -4,20 +4,24 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import sdis.sharedbackup.backend.ConfigsManager;
+import sdis.sharedbackup.backend.SharedFile;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
+import sdis.sharedbackup.backend.InterfaceSidekick;
+import sdis.sharedbackup.protocols.ChunkBackup;
 
 public class CLIMonitor {
 	private static Scanner sc = null;
 	private static boolean exit;
+
 	public static void main(String[] args) {
 		// TODO: serialize the config manager
-		exit =false;
+		exit = false;
 		System.out.println("Welcome to XXXX");
 		sc = new Scanner(System.in);
 		startSetup();
-		while(exit==false){
-		showMenu();
-		processChoice();
+		while (exit == false) {
+			showMenu();
+			processChoice();
 		}
 		try {
 			parseArgs(args);
@@ -51,7 +55,6 @@ public class CLIMonitor {
 
 	private static void startSetup() {
 
-	
 		while (true) {
 			try {
 				System.out.println("Choose your allocated space (KB):");
@@ -66,8 +69,11 @@ public class CLIMonitor {
 
 		System.out.println("Choose the folder to save the files to:");
 		String saveFolder = sc.nextLine();
-		System.out.println("Setup Successfull!");
-		
+		if (InterfaceSidekick.isValidFile(saveFolder)) {
+			System.out.println("Setup Successfull!");
+		} else{
+			System.out.println("Folder does not exist!!");
+		}
 
 	}
 
@@ -80,19 +86,24 @@ public class CLIMonitor {
 		System.out.println("5-EXIT");
 	}
 
-	private static void processChoice() { 
+	private static void processChoice() {
 		int choice = sc.nextInt();
 		sc.nextLine();
 		switch (choice) {
 		case 1:
 			System.out.println("Enter the path to the file:");
 			String path = sc.nextLine();
-			// TODO: add file																																																	
+			System.out.println("Enter desired Replication degree:");
+			int repdeg =sc.nextInt();
+			sc.nextLine();
+			//ChunkBackup.getInstance().saveFile
+			SharedFile newFile = new SharedFile(path, repdeg);
+			
 			break;
 		case 2:
 			System.out.println("Enter new allocated space:");
 			int space = sc.nextInt();
-			// TODO: set new space
+			// TODO: set new space (maxBackupSize);
 			break;
 		case 3:
 			System.out.println("Choose file to restore:");
@@ -109,7 +120,7 @@ public class CLIMonitor {
 			System.out.println("Program will exit now");
 			break;
 		default:
-			System.out.println("Option does not exist!!!");			
+			System.out.println("Option does not exist!!!");
 			break;
 		}
 	}
@@ -122,25 +133,18 @@ public class CLIMonitor {
 			System.exit(1);
 		}
 	}
-	
-	private static void clearConsole()
-	{
-	    try
-	    {
-	        String os = System.getProperty("os.name");
 
-	        if (os.contains("Windows"))
-	        {
-	            Runtime.getRuntime().exec("cls");
-	        }
-	        else
-	        {
-	            Runtime.getRuntime().exec("clear");
-	        }
-	    }
-	    catch (Exception exception)
-	    {
-	        System.out.println("Could not clear console");
-	    }
+	private static void clearConsole() {
+		try {
+			String os = System.getProperty("os.name");
+
+			if (os.contains("Windows")) {
+				Runtime.getRuntime().exec("cls");
+			} else {
+				Runtime.getRuntime().exec("clear");
+			}
+		} catch (Exception exception) {
+			System.out.println("Could not clear console");
+		}
 	}
 }

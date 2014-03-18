@@ -1,11 +1,11 @@
 package sdis.sharedbackup.backend;
 
+import java.io.File;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Map;
-
 
 public class ConfigsManager implements Serializable {
 
@@ -113,8 +113,18 @@ public class ConfigsManager implements Serializable {
 
 	public void setBackupsDestination(String dest)
 			throws InvalidFolderException {
-		// TODO
-		checkInitialization();
+		
+		File destination = new File(dest);
+		
+		if (destination.isDirectory()) {
+			mBackupFolder=destination.getAbsolutePath();
+			mBackupFolder += new String ("\\");
+			checkInitialization();
+		} 
+		else {
+			throw new InvalidFolderException();
+		}
+
 	}
 
 	// Others
@@ -153,7 +163,7 @@ public class ConfigsManager implements Serializable {
 		SharedFile file = mySharedFiles.get(fileId);
 		if (file != null) {
 			file.incChunkReplication(chunkNo);
-		} else { 
+		} else {
 			throw new InvalidChunkException();
 		}
 	}
