@@ -4,12 +4,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.util.Random;
-import java.util.Scanner;
 
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.FileChunk;

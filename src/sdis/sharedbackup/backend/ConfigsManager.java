@@ -6,7 +6,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Map;
 
-import javax.naming.ConfigurationException;
 
 public class ConfigsManager implements Serializable {
 
