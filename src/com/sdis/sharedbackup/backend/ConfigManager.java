@@ -21,7 +21,7 @@ public class ConfigManager implements Serializable {
 	private InetAddress mMCaddr = null, mMDBaddr = null, mMDRaddr = null;
 	private int mMCport = 0, mMDBport = 0, mMDRport = 0;
 	private String mBackupFolder;
-	private int maxBackupSize;
+	private int maxBackupSize;	//stored in KB
 	private Map<String, SharedFile> mySharedFiles;
 	private ArrayList<FileChunk> savedChunks;
 	private boolean mIsInitialized;
@@ -30,6 +30,8 @@ public class ConfigManager implements Serializable {
 	private MulticastDataRestoreListener mMDRListener;
 
 	private ConfigManager() {
+		maxBackupSize = 0;
+		mBackupFolder = "";
 		mIsInitialized = false;
 		mMCListener = null;
 		mMDBListener = null;
@@ -101,6 +103,27 @@ public class ConfigManager implements Serializable {
 		return mBackupFolder;
 	}
 	
+	// Setters
+	
+	public void setAvailSpace(int space) {
+		maxBackupSize = space;
+		
+		checkInitialization();
+	}
+	
+	public void setBackupsDestination(String dest) throws InvalidFolderException {
+		// TODO
+		checkInitialization();
+	}
+	
+	// Others
+	
+	private void checkInitialization() {
+		if (!mBackupFolder.equals("") && maxBackupSize != 0) {
+			mIsInitialized = true;
+		}
+	}
+	
 	public void init() throws ConfigurationsNotInitializedException {
 		if (mIsInitialized) {
 			startupListeners();
@@ -125,5 +148,8 @@ public class ConfigManager implements Serializable {
 	}
 	
 	public class ConfigurationsNotInitializedException extends Exception {
+	}
+	
+	public class InvalidFolderException extends Exception {
 	}
 }

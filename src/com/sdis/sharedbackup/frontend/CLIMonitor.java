@@ -1,22 +1,35 @@
 package com.sdis.sharedbackup.frontend;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import com.sdis.sharedbackup.backend.ConfigManager;
+import com.sdis.sharedbackup.backend.ConfigManager.ConfigurationsNotInitializedException;
 
 public class CLIMonitor {
 
 	public static void main(String[] args) {
-		// TODO: parse xml
+		// TODO: separate in functions (while (something == true) show menu)
+		// TODO: clear console
+		// TODO: serialize the config manager
 		// TODO: present menu
-		 Scanner sc = new Scanner(System.in);
-		 
-		
+		Scanner sc = new Scanner(System.in);
+
 		System.out.println("Welcome to XXXX");
-		System.out.println("Choose your allocated space:");
-		int allocatedSpace = sc.nextInt();
+
+		while (true) {
+			try {
+				System.out.println("Choose your allocated space (KB):");
+				int allocatedSpace = sc.nextInt();
+				break;
+			} catch (InputMismatchException e) {
+				System.out.println("Invalid input");
+				System.out.println("");
+			}
+		}
+
 		System.out.println("Choose the folder to save the files to:");
-		String saveFolder= sc.next();
+		String saveFolder = sc.next();
 		System.out.println("Setup Successfull!");
 		System.out.println("Choose an option:");
 		System.out.println("1-Add a file to the backup");
@@ -24,43 +37,49 @@ public class CLIMonitor {
 		System.out.println("3-Restore file");
 		System.out.println("4-Delete a replicated file");
 		int choice = sc.nextInt();
-		
+
 		switch (choice) {
 		case 1:
 			System.out.println("Enter the path to the file:");
 			String path = sc.next();
-			//TODO: add file
+			// TODO: add file
 			break;
 		case 2:
 			System.out.println("Enter new allocated space:");
 			int space = sc.nextInt();
-			//TODO: set new space
+			// TODO: set new space
 			break;
 		case 3:
 			System.out.println("Choose file to restore:");
-		//	String path = sc.next();
-			//TODO: add file
+			// String path = sc.next();
+			// TODO: add file
 			break;
 		case 4:
 			System.out.println("Choose file to delete:");
-			//String path = sc.next();
-			//TODO: add file
+			// String path = sc.next();
+			// TODO: add file
 			break;
-			
+
 		default:
 			System.out.println("Option does not exist!!!");
 			break;
 		}
-		
-		
+
 		sc.close();
-		
-		
+
 		try {
 			parseArgs(args);
 		} catch (ArgsException e) {
 			e.error();
 		}
+		
+		try {
+			ConfigManager.getInstance().init();
+		} catch (ConfigurationsNotInitializedException e) {
+			System.out.println("Configurations haven't been correctly initialized");
+			e.printStackTrace();
+		}
+		
 	}
 
 	// initiates the configuration of the Multicast addresses and ports
