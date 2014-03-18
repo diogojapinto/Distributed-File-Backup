@@ -1,4 +1,4 @@
-package com.sdis.sharedbackup.backend;
+package sdis.sharedbackup.backend;
 
 /*
  * Class that receives and dispatches messages from the multicast data backup channel

@@ -1,4 +1,4 @@
-package com.sdis.sharedbackup.backend;
+package sdis.sharedbackup.backend;
 
 import java.io.File;
 import java.io.FileInputStream;

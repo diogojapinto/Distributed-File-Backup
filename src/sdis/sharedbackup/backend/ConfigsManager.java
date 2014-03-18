@@ -1,4 +1,4 @@
-package com.sdis.sharedbackup.backend;
+package sdis.sharedbackup.backend;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -8,13 +8,13 @@ import java.util.Map;
 
 import javax.naming.ConfigurationException;
 
-public class ConfigManager implements Serializable {
+public class ConfigsManager implements Serializable {
 
 	// constants
 	private static final String VERSION = "1.0";
 
 	// static members
-	private static ConfigManager sInstance = null;
+	private static ConfigsManager sInstance = null;
 
 	// private members
 	private boolean mCheckState;
@@ -29,7 +29,7 @@ public class ConfigManager implements Serializable {
 	private MulticastDataBackupListener mMDBListener;
 	private MulticastDataRestoreListener mMDRListener;
 
-	private ConfigManager() {
+	private ConfigsManager() {
 		maxBackupSize = 0;
 		mBackupFolder = "";
 		mIsInitialized = false;
@@ -38,9 +38,9 @@ public class ConfigManager implements Serializable {
 		mMDRListener = null;
 	}
 
-	public static ConfigManager getInstance() {
+	public static ConfigsManager getInstance() {
 		if (sInstance == null) {
-			sInstance = new ConfigManager();
+			sInstance = new ConfigsManager();
 		}
 		return sInstance;
 	}

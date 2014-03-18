@@ -1,4 +1,4 @@
-package com.sdis.sharedbackup.protocol;
+package sdis.sharedbackup.protocol;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,9 +10,9 @@ import java.net.InetAddress;
 import java.util.Random;
 import java.util.Scanner;
 
-import com.sdis.sharedbackup.backend.ConfigManager;
-import com.sdis.sharedbackup.backend.FileChunk;
-import com.sdis.sharedbackup.backend.MulticastComunicator;
+import sdis.sharedbackup.backend.ConfigsManager;
+import sdis.sharedbackup.backend.FileChunk;
+import sdis.sharedbackup.backend.MulticastComunicator;
 
 public class ChunkBackup {
 
@@ -37,7 +37,7 @@ public class ChunkBackup {
 	}
 
 	public boolean putChunk(FileChunk chunk) {
-		String version = ConfigManager.getInstance().getVersion();
+		String version = ConfigsManager.getInstance().getVersion();
 
 		String message = "";
 
@@ -46,8 +46,8 @@ public class ChunkBackup {
 				+ " " + new String(CRLF) + " " + new String(CRLF) + " "
 				+ chunk.getData();
 
-		InetAddress multDBAddr = ConfigManager.getInstance().getMDBAddr();
-		int multDBPort = ConfigManager.getInstance().getMDBPort();
+		InetAddress multDBAddr = ConfigsManager.getInstance().getMDBAddr();
+		int multDBPort = ConfigsManager.getInstance().getMDBPort();
 
 		MulticastComunicator sender = new MulticastComunicator(multDBAddr,
 				multDBPort);
@@ -61,14 +61,14 @@ public class ChunkBackup {
 
 	public boolean storeChunks(String fileId, int chunkNo, byte[] data) {
 
-		InetAddress multCtrlAddr = ConfigManager.getInstance().getMCAddr();
-		int multCtrlPort = ConfigManager.getInstance().getMCPort();
+		InetAddress multCtrlAddr = ConfigsManager.getInstance().getMCAddr();
+		int multCtrlPort = ConfigsManager.getInstance().getMCPort();
 
 		MulticastComunicator sender = new MulticastComunicator(multCtrlAddr,
 				multCtrlPort);
 		sender.join();
 
-		File newChunk = new File(ConfigManager.getInstance()
+		File newChunk = new File(ConfigsManager.getInstance()
 				.getChunksDestination()
 				+ "/"
 				+ fileId
@@ -99,7 +99,7 @@ public class ChunkBackup {
 		}
 
 		String message = STORED_COMMAND + " "
-				+ ConfigManager.getInstance().getVersion() + " " + fileId + " "
+				+ ConfigsManager.getInstance().getVersion() + " " + fileId + " "
 				+ String.valueOf(chunkNo) + " " + String.valueOf(CRLF) + " "
 				+ String.valueOf(CRLF);
 

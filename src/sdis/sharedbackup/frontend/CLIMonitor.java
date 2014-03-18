@@ -1,10 +1,10 @@
-package com.sdis.sharedbackup.frontend;
+package sdis.sharedbackup.frontend;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-import com.sdis.sharedbackup.backend.ConfigManager;
-import com.sdis.sharedbackup.backend.ConfigManager.ConfigurationsNotInitializedException;
+import sdis.sharedbackup.backend.ConfigsManager;
+import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
 
 public class CLIMonitor {
 
@@ -74,7 +74,7 @@ public class CLIMonitor {
 		}
 		
 		try {
-			ConfigManager.getInstance().init();
+			ConfigsManager.getInstance().init();
 		} catch (ConfigurationsNotInitializedException e) {
 			System.out.println("Configurations haven't been correctly initialized");
 			e.printStackTrace();
@@ -88,7 +88,7 @@ public class CLIMonitor {
 			throw new ArgsException();
 		}
 
-		if (!ConfigManager.getInstance().setMulticastAddrs(args[0],
+		if (!ConfigsManager.getInstance().setMulticastAddrs(args[0],
 				Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]),
 				args[4], Integer.parseInt(args[5]))) {
 			throw new ArgsException();

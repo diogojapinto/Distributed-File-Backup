@@ -1,4 +1,4 @@
-package com.sdis.sharedbackup.backend;
+package sdis.sharedbackup.backend;
 
 public class ChangesChecker implements Runnable {
 	
@@ -6,7 +6,7 @@ public class ChangesChecker implements Runnable {
 
 	@Override
 	public void run() {
-		while(ConfigManager.getInstance().isToCheckState()) {
+		while(ConfigsManager.getInstance().isToCheckState()) {
 			checkDeletions();
 			checkDiskSpace();
 			

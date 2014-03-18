@@ -1,9 +1,9 @@
-package com.sdis.sharedbackup.backend;
+package sdis.sharedbackup.backend;
 
 import java.io.File;
 import java.util.PriorityQueue;
 
-import com.sdis.sharedbackup.utils.Encoder;
+import sdis.sharedbackup.utils.Encoder;
 
 /*
  * Create a FileChunk for each chunk for backup

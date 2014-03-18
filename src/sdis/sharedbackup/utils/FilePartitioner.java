@@ -1,4 +1,4 @@
-package com.sdis.sharedbackup.utils;
+package sdis.sharedbackup.utils;
 
 public class FilePartitioner {
 	// read file, retrieve one file chunk at a time, at the end return null

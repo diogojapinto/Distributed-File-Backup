@@ -1,4 +1,4 @@
-package com.sdis.sharedbackup.backend;
+package sdis.sharedbackup.backend;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
