@@ -2,6 +2,9 @@ package com.sdis.sharedbackup.backend;
 
 import java.net.InetAddress;
 
+/*
+ * Class that receives and dispatches messages from the multicast control channel
+ */
 public class MulticastControlListener implements Runnable {
 
 	@Override

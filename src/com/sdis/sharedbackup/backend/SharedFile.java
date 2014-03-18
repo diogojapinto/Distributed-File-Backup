@@ -1,6 +1,9 @@
 package com.sdis.sharedbackup.backend;
 
+import java.io.File;
 import java.util.PriorityQueue;
+
+import com.sdis.sharedbackup.utils.Encoder;
 
 /*
  * Create a FileChunk for each chunk for backup
@@ -18,8 +21,7 @@ public class SharedFile {
 	public SharedFile(String filePath, int desiredReplicationDegree) {
 		this.mFilePath = filePath;
 		this.mDesiredReplicationDegree = desiredReplicationDegree;
-		
-		this.mFileId = generateFileId(mFilePath);
+		this.mFileId = Encoder.generateBitString(new File(mFilePath));
 	}
 	
 	// Getters
@@ -34,10 +36,5 @@ public class SharedFile {
 	
 	public int getDesiredReplication() {
 		return mDesiredReplicationDegree;
-	}
-	
-	private static String generateFileId(String filePath) {
-		
-		return null;
 	}
 }

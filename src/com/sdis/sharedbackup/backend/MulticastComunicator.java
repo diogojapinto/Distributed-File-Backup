@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 
 public class MulticastComunicator {
+	private static int TTL = 1;
+	
 	private MulticastSocket mMSocket;
 	private InetAddress mAddr;
 	private int mPort;
@@ -55,7 +57,12 @@ public class MulticastComunicator {
 			return false;
 		}
 
-		DatagramPacket packet = new DatagramPacket(bytesMsg, bytesMsg.length);
+		DatagramPacket packet = new DatagramPacket(bytesMsg, bytesMsg.length);getClass();
+		try {
+			mMSocket.setTimeToLive(TTL);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 
 		try {
 			mMSocket.send(packet);

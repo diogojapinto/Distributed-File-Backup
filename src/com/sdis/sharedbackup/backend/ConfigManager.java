@@ -3,7 +3,10 @@ package com.sdis.sharedbackup.backend;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Map;
+
+import javax.naming.ConfigurationException;
 
 public class ConfigManager implements Serializable {
 
@@ -17,11 +20,20 @@ public class ConfigManager implements Serializable {
 	private boolean mCheckState;
 	private InetAddress mMCaddr = null, mMDBaddr = null, mMDRaddr = null;
 	private int mMCport = 0, mMDBport = 0, mMDRport = 0;
-	// TODO: save files and configuration data in appropriated data structures
 	private String mBackupFolder;
 	private int maxBackupSize;
+	private Map<String, SharedFile> mySharedFiles;
+	private ArrayList<FileChunk> savedChunks;
+	private boolean mIsInitialized;
+	private MulticastControlListener mMCListener;
+	private MulticastDataBackupListener mMDBListener;
+	private MulticastDataRestoreListener mMDRListener;
 
 	private ConfigManager() {
+		mIsInitialized = false;
+		mMCListener = null;
+		mMDBListener = null;
+		mMDRListener = null;
 	}
 
 	public static ConfigManager getInstance() {
@@ -85,4 +97,33 @@ public class ConfigManager implements Serializable {
 		return mMDRport;
 	}
 
+	public String getChunksDestination() {
+		return mBackupFolder;
+	}
+	
+	public void init() throws ConfigurationsNotInitializedException {
+		if (mIsInitialized) {
+			startupListeners();
+		} else {
+			throw new ConfigurationsNotInitializedException();
+		}
+	}
+	
+	private void startupListeners() {
+		if (mMCListener == null) {
+			mMCListener = new MulticastControlListener();
+			new Thread(mMCListener).start();
+		}
+		if (mMDBListener == null) {
+			mMDBListener = new MulticastDataBackupListener();
+			new Thread(mMDBListener).start();
+		}
+		if (mMDRListener == null) {
+			mMDRListener = new MulticastDataRestoreListener();
+			new Thread(mMDRListener).start();
+		}
+	}
+	
+	public class ConfigurationsNotInitializedException extends Exception {
+	}
 }
