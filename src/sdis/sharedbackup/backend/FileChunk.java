@@ -85,4 +85,8 @@ public class FileChunk {
 	}
 
 	// Setters
+	
+	public void incCurrentReplication() {
+		mCurrentReplicationDegree++;
+	}
 }

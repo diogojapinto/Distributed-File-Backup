@@ -21,7 +21,7 @@ public class ConfigsManager implements Serializable {
 	private InetAddress mMCaddr = null, mMDBaddr = null, mMDRaddr = null;
 	private int mMCport = 0, mMDBport = 0, mMDRport = 0;
 	private String mBackupFolder;
-	private int maxBackupSize;	//stored in KB
+	private int maxBackupSize; // stored in KB
 	private Map<String, SharedFile> mySharedFiles;
 	private ArrayList<FileChunk> savedChunks;
 	private boolean mIsInitialized;
@@ -59,12 +59,13 @@ public class ConfigsManager implements Serializable {
 		return mCheckState;
 	}
 
-	public boolean setMulticastAddrs(String mcAddr, int mcPort, String mdbAddr, int mdbPort, String mdrAddr, int mdrPort) {
+	public boolean setMulticastAddrs(String mcAddr, int mcPort, String mdbAddr,
+			int mdbPort, String mdrAddr, int mdrPort) {
 		try {
 			mMCaddr = InetAddress.getByName(mcAddr);
 			mMDBaddr = InetAddress.getByName(mdbAddr);
 			mMDRaddr = InetAddress.getByName(mdrAddr);
-			
+
 			mMCport = mcPort;
 			mMDBport = mdbPort;
 			mMDRport = mdrPort;
@@ -74,27 +75,27 @@ public class ConfigsManager implements Serializable {
 		}
 		return true;
 	}
-	
+
 	public InetAddress getMCAddr() {
 		return mMCaddr;
 	}
-	
+
 	public int getMCPort() {
 		return mMCport;
 	}
-	
+
 	public InetAddress getMDBAddr() {
 		return mMDBaddr;
 	}
-	
+
 	public int getMDBPort() {
 		return mMDBport;
 	}
-	
+
 	public InetAddress getMDRAddr() {
 		return mMDRaddr;
 	}
-	
+
 	public int getMDRPort() {
 		return mMDRport;
 	}
@@ -102,28 +103,29 @@ public class ConfigsManager implements Serializable {
 	public String getChunksDestination() {
 		return mBackupFolder;
 	}
-	
+
 	// Setters
-	
+
 	public void setAvailSpace(int space) {
 		maxBackupSize = space;
-		
+
 		checkInitialization();
 	}
-	
-	public void setBackupsDestination(String dest) throws InvalidFolderException {
+
+	public void setBackupsDestination(String dest)
+			throws InvalidFolderException {
 		// TODO
 		checkInitialization();
 	}
-	
+
 	// Others
-	
+
 	private void checkInitialization() {
 		if (!mBackupFolder.equals("") && maxBackupSize != 0) {
 			mIsInitialized = true;
 		}
 	}
-	
+
 	public void init() throws ConfigurationsNotInitializedException {
 		if (mIsInitialized) {
 			startupListeners();
@@ -131,7 +133,7 @@ public class ConfigsManager implements Serializable {
 			throw new ConfigurationsNotInitializedException();
 		}
 	}
-	
+
 	private void startupListeners() {
 		if (mMCListener == null) {
 			mMCListener = new MulticastControlListener();
@@ -146,10 +148,23 @@ public class ConfigsManager implements Serializable {
 			new Thread(mMDRListener).start();
 		}
 	}
-	
-	public class ConfigurationsNotInitializedException extends Exception {
+
+	public void incChunkReplication(String fileId, int chunkNo)
+			throws InvalidChunkException {
+		SharedFile file = mySharedFiles.get(fileId);
+		if (file != null) {
+			file.incChunkReplication(chunkNo);
+		} else { 
+			throw new InvalidChunkException();
+		}
 	}
-	
-	public class InvalidFolderException extends Exception {
+
+	public static class ConfigurationsNotInitializedException extends Exception {
+	}
+
+	public static class InvalidFolderException extends Exception {
+	}
+
+	public static class InvalidChunkException extends Exception {
 	}
 }
