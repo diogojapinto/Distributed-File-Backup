@@ -37,6 +37,13 @@ public class MulticastDataBackupListener implements Runnable {
 
 			String[] header_components = header.split(" ");
 
+			if (!header_components[1].equals(ConfigsManager.getInstance()
+					.getVersion())) {
+				System.err
+						.println("Received message with protocol with different version");
+				continue;
+			}
+
 			String messageType = header_components[0].trim();
 
 			switch (messageType) {
@@ -44,17 +51,15 @@ public class MulticastDataBackupListener implements Runnable {
 
 				String fileId = header_components[2].trim();
 				int chunkNo = Integer.parseInt(header_components[3].trim());
+				int desiredReplication = Integer.parseInt(header_components[4]
+						.trim());
 
-				try {
-					ConfigsManager.getInstance().incChunkReplication(fileId,
-							chunkNo);
-				} catch (ConfigsManager.InvalidChunkException e) {
-					// not my file
-				}
+				ChunkBackup.getInstance().storeChunks(fileId, chunkNo,
+						desiredReplication, components[1].getBytes());
+
 				break;
 			default:
 			}
 		}
 	}
-
 }

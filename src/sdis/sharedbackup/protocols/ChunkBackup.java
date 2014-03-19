@@ -14,6 +14,7 @@ import java.util.Scanner;
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.FileChunk;
 import sdis.sharedbackup.backend.MulticastComunicator;
+import sdis.sharedbackup.backend.SharedFile;
 
 public class ChunkBackup {
 
@@ -34,6 +35,11 @@ public class ChunkBackup {
 
 	private ChunkBackup() {
 		rand = new Random();
+	}
+	
+	public boolean saveFile(SharedFile file) {
+		// TODO call putChunk for each chunk in SharedFile
+		return true;
 	}
 
 	public boolean putChunk(FileChunk chunk) {
@@ -75,7 +81,7 @@ public class ChunkBackup {
 
 	}
 
-	public boolean storeChunks(String fileId, int chunkNo, byte[] data) {
+	public boolean storeChunks(String fileId, int chunkNo, int desiredReplication, byte[] data) {
 
 		InetAddress multCtrlAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCtrlPort = ConfigsManager.getInstance().getMCPort();
@@ -84,35 +90,8 @@ public class ChunkBackup {
 				multCtrlPort);
 		sender.join();
 
-		File newChunk = new File(ConfigsManager.getInstance()
-				.getChunksDestination()
-				+ "/"
-				+ fileId
-				+ "_"
-				+ String.valueOf(chunkNo));
-
-		FileOutputStream out = null;
-
-		try {
-			out = new FileOutputStream(newChunk);
-		} catch (FileNotFoundException e) {
-			System.err.println("Error outputing to new Chunk");
-			e.printStackTrace();
-			return false;
-		}
-
-		try {
-			out.write(data);
-		} catch (IOException e) {
-			System.err.println("Error outputing to new Chunk");
-			e.printStackTrace();
-			try {
-				out.close();
-			} catch (IOException e1) {
-				e.printStackTrace();
-			}
-			return false;
-		}
+		FileChunk chunk = ConfigsManager.getInstance().getNewChunkForSaving(fileId, chunkNo, desiredReplication);
+		chunk.saveToFile(data);
 
 		String message = null;
 		try {
@@ -137,22 +116,10 @@ public class ChunkBackup {
 			Thread.sleep(rand.nextInt(MAX_WAIT_TIME));
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
-			try {
-				out.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 			return false;
 		}
 
 		sender.sendMessage(message);
-
-		try {
-			out.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
 
 		return true;
 	}

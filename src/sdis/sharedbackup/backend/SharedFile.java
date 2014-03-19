@@ -19,11 +19,15 @@ public class SharedFile {
 	private String mFileId;
 	private ArrayList<FileChunk> mChunkList;
 	private int mDesiredReplicationDegree;
+	private int mChunkCounter;
 
 	public SharedFile(String filePath, int desiredReplicationDegree) {
-		this.mFilePath = filePath;
-		this.mDesiredReplicationDegree = desiredReplicationDegree;
-		this.mFileId = Encoder.generateBitString(new File(mFilePath));
+		mFilePath = filePath;
+		mDesiredReplicationDegree = desiredReplicationDegree;
+		mFileId = Encoder.generateBitString(new File(mFilePath));
+		mChunkCounter = 0;
+		
+		// TODO: generate chunks
 	}
 
 	// Getters
@@ -51,5 +55,10 @@ public class SharedFile {
 		}
 		
 		chunk.incCurrentReplication();
+	}
+	
+	public long getFileSize() {
+		File thisFile = new File(getFilePath());
+		return thisFile.length();
 	}
 }

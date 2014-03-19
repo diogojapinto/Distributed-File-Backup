@@ -38,6 +38,11 @@ public class MulticastControlListener implements Runnable {
 			String header = components[0].trim();
 
 			String[] header_components = header.split(" ");
+			
+			if (!header_components[1].equals(ConfigsManager.getInstance().getVersion())) {
+				System.err.println("Received message with protocol with different version");
+				continue;
+			}
 
 			String messageType = header_components[0].trim();
 

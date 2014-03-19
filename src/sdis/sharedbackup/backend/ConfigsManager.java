@@ -22,8 +22,8 @@ public class ConfigsManager implements Serializable {
 	private int mMCport = 0, mMDBport = 0, mMDRport = 0;
 	private String mBackupFolder;
 	private int maxBackupSize; // stored in KB
-	private Map<String, SharedFile> mySharedFiles;
-	private ArrayList<FileChunk> savedChunks;
+	private Map<String, SharedFile> mSharedFiles;
+	private ArrayList<FileChunk> mSavedChunks;
 	private boolean mIsInitialized;
 	private MulticastControlListener mMCListener;
 	private MulticastDataBackupListener mMDBListener;
@@ -114,7 +114,7 @@ public class ConfigsManager implements Serializable {
 
 	public void setBackupsDestination(String dest)
 			throws InvalidFolderException {
-		// TODO
+		// TODO (dont forget to verify if there is the final slash in string
 		checkInitialization();
 	}
 
@@ -151,12 +151,43 @@ public class ConfigsManager implements Serializable {
 
 	public void incChunkReplication(String fileId, int chunkNo)
 			throws InvalidChunkException {
-		SharedFile file = mySharedFiles.get(fileId);
+		SharedFile file = mSharedFiles.get(fileId);
 		if (file != null) {
 			file.incChunkReplication(chunkNo);
-		} else { 
-			throw new InvalidChunkException();
+		} else {
+			FileChunk chunk = null;
+			int nrSavedChunks = mSavedChunks.size();
+			for (int i = 0; i < nrSavedChunks; i++) {
+				chunk = mSavedChunks.get(i);
+				if (chunk.getFileId().equals(fileId)
+						&& chunk.getChunkNo() == chunkNo) {
+					break;
+				}
+			}
+
+			if (chunk != null) {
+				chunk.incCurrentReplication();
+
+			} else {
+				throw new InvalidChunkException();
+			}
 		}
+	}
+
+	/*
+	 * returns a chunk for saving in this computer
+	 */
+	public FileChunk getNewChunkForSavingInstance(String fileId, int chunkNo,
+			int desiredReplication) {
+		FileChunk chunk = new FileChunk(fileId, chunkNo, desiredReplication);
+		mSavedChunks.add(chunk);
+		return chunk;
+	}
+	
+	public SharedFile getNewSharedFileInstance(String filePath, int replicationDegree) {
+		SharedFile file = new SharedFile(filePath, replicationDegree);
+		mSharedFiles.put(file.getFileId(), file);
+		return file;
 	}
 
 	public static class ConfigurationsNotInitializedException extends Exception {
