@@ -1,12 +1,11 @@
 package sdis.sharedbackup.backend;
 
+import java.io.File;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Map;
-
-import javax.naming.ConfigurationException;
 
 public class ConfigsManager implements Serializable {
 
@@ -114,8 +113,17 @@ public class ConfigsManager implements Serializable {
 
 	public void setBackupsDestination(String dest)
 			throws InvalidFolderException {
-		// TODO (dont forget to verify if there is the final slash in string
-		checkInitialization();
+		
+		File destination = new File(dest);
+		
+		if (destination.isDirectory()) {
+			mBackupFolder=destination.getAbsolutePath();
+			mBackupFolder += new String ("\\");
+			checkInitialization();
+		} 
+		else {
+			throw new InvalidFolderException();
+		}
 	}
 
 	// Others

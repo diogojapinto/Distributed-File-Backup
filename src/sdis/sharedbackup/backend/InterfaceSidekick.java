@@ -1,7 +1,24 @@
 package sdis.sharedbackup.backend;
 
-public class InterfaceSidekick {
+import java.io.File;
 
-	// function to get file, verify size, in for loop create chunk, add it to
+
+
+public class InterfaceSidekick {
+	
+	private InterfaceSidekick () {
+		
+	}
+	// in for loop create chunk, add it to
 	// SharedFile, and call putChunk()
+	
+	public static boolean isValidFile (String filePath){
+		
+		File validFile = new File(filePath);
+		return validFile.exists();
+	}
+	
+	
+	
+
 }

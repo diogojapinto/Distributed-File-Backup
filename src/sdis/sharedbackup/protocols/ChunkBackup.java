@@ -4,12 +4,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.util.Random;
-import java.util.Scanner;
 
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.FileChunk;
@@ -90,7 +87,7 @@ public class ChunkBackup {
 				multCtrlPort);
 		sender.join();
 
-		FileChunk chunk = ConfigsManager.getInstance().getNewChunkForSaving(fileId, chunkNo, desiredReplication);
+		FileChunk chunk = ConfigsManager.getInstance().getNewChunkForSavingInstance(fileId, chunkNo, desiredReplication);
 		chunk.saveToFile(data);
 
 		String message = null;
