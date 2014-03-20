@@ -4,45 +4,53 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import sdis.sharedbackup.backend.ConfigsManager;
-import sdis.sharedbackup.backend.SharedFile;
+import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
+import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
+import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
-import sdis.sharedbackup.protocols.ChunkBackup;
-import sdis.sharedbackup.utils.EnvironmentVerifier;
 
 public class CLIMonitor {
 	private static Scanner sc = new Scanner(System.in);
 	private static boolean exit = false;
 
-	public static void main(String[] args) {
+	public static int main(String[] args) {
 		// TODO: serialize the config manager
 		// TODO: the functionality is all implemented in ApplicationInterface
 		// class, so that the functions may be called from another monitor, like
 		// a gui
-		
-		startSetup();
-		while (exit == false) {
-			showMenu();
-			processChoice();
-		}
+
 		try {
 			parseArgs(args);
 		} catch (ArgsException e) {
 			e.error();
 		}
 
+		// clearConsole();
+		printHead();
+
+		setupService();
+
 		try {
-			ConfigsManager.getInstance().init();
+			ApplicationInterface.getInstance().startupService();
 		} catch (ConfigurationsNotInitializedException e) {
 			System.out
 					.println("Configurations haven't been correctly initialized");
-			e.printStackTrace();
+			System.exit(1);
 		}
+
+		while (!exit) {
+			promptMenuOption();
+		}
+
 		sc.close();
 
+		return 0;
 	}
 
-	// initiates the configuration of the Multicast addresses and ports
+	/*
+	 * initiates the configuration of the Multicast addresses and ports
+	 */
 	private static void parseArgs(String[] args) throws ArgsException {
 		if (args.length != 6) {
 			throw new ArgsException();
@@ -55,80 +63,108 @@ public class CLIMonitor {
 		}
 	}
 
-	private static void startSetup() {
+	private static void setupService() {
 
 		while (true) {
 			try {
-				System.out.println("Choose your allocated space (KB):");
-				int allocatedSpace = sc.nextInt();
-				sc.nextLine();
+				ApplicationInterface.getInstance().setAvailableDiskSpace(
+						promptAvailableSpace());
 				break;
-			} catch (InputMismatchException e) {
-				System.out.println("Invalid input");
-				System.out.println("");
+			} catch (InvalidBackupSizeException e) {
+				System.err.println("Please input a size greater than 0KB");
+			} catch (InputMismatchException e1) {
+				System.err.println("Please input a valid integer value");
 			}
 		}
 
-		System.out.println("Choose the folder to save the files to:");
-		String saveFolder = sc.nextLine();
-		if (EnvironmentVerifier.isValidFile(saveFolder)) {
-			System.out.println("Setup Successfull!");
-		} else {
-			System.out.println("Folder does not exist!!");
+		while (true) {
+			try {
+				ApplicationInterface.getInstance().setDestinationDirectory(
+						promptDestinationDir());
+				break;
+			} catch (InvalidFolderException e) {
+				System.err.println("Folder does not exist!!");
+			}
 		}
 
+		System.out.println("Setup Successfull");
 	}
 
-	private static void showMenu() {
-		System.out.println("Choose an option:");
-		System.out.println("1-Add a file to the backup");
-		System.out.println("2-Change allocated space");
-		System.out.println("3-Restore file");
-		System.out.println("4-Delete a replicated file");
-		System.out.println("5-EXIT");
+	private static int promptAvailableSpace() throws InputMismatchException {
+		// clearConsole();
+		int allocatedSpace = 0;
+		System.out.println("Choose your allocated space (KB):");
+		allocatedSpace = sc.nextInt();
+		sc.nextLine();
+		return allocatedSpace;
 	}
 
-	private static void processChoice() {
+	private static String promptDestinationDir() {
+		// clearConsole();
+		System.out.println("Choose the folder to save the files to:");
+		return sc.nextLine();
+	}
+
+	private static void promptMenuOption() {
+		// clearConsole();
+		do {
+			System.out.println("Choose an option:");
+			System.out.println("1-Backup file");
+			System.out.println("2-Restore file");
+			System.out.println("3-Delete a replicated file");
+			System.out.println("4-Change allocated space");
+			System.out.println("5-EXIT");
+
+		} while (!processChoice());
+	}
+
+	private static boolean processChoice() {
+		// clearConsole();
+		// read choice
 		int choice = sc.nextInt();
 		sc.nextLine();
+
+		// call corresponding interface method
 		switch (choice) {
+		// backup file
 		case 1:
 			System.out.println("Enter the path to the file:");
 			String path = sc.nextLine();
 			System.out.println("Enter desired Replication degree:");
 			int repdeg = sc.nextInt();
 			sc.nextLine();
-			// ChunkBackup.getInstance().saveFile
 			try {
-				SharedFile newFile = new SharedFile(path, repdeg);
+				ApplicationInterface.getInstance().backupFile(path, repdeg);
+				return true;
 			} catch (FileTooLargeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println("The selected file is too large");
+				return false;
+			} catch (FileDoesNotExistsExeption e) {
+				System.out.println("The selected file does not exists");
+				return false;
 			}
-
-			break;
 		case 2:
 			System.out.println("Enter new allocated space:");
 			int space = sc.nextInt();
 			// TODO: set new space (maxBackupSize);
-			break;
+			return false;
 		case 3:
 			System.out.println("Choose file to restore:");
 			// String path = sc.next();
 			// TODO: add file
-			break;
+			return false;
 		case 4:
 			System.out.println("Choose file to delete:");
 			// String path = sc.next();
 			// TODO: add file
-			break;
+			return false;
 		case 5:
 			exit = true;
 			System.out.println("Program will exit now");
-			break;
+			return true;
 		default:
-			System.out.println("Option does not exist!!!");
-			break;
+			System.out.println("Option does not exist");
+			return false;
 		}
 	}
 
@@ -154,7 +190,7 @@ public class CLIMonitor {
 			System.out.println("Could not clear console");
 		}
 	}
-	
+
 	private static void printHead() {
 		System.out
 				.println("Welcome to the Most Awesome Generic File Backup System Ever");

@@ -22,19 +22,17 @@ public class SharedFile {
 	private int mDesiredReplicationDegree;
 	private long mChunkCounter;
 
-	public SharedFile(String filePath, int desiredReplicationDegree) throws FileTooLargeException {
+	public SharedFile(String filePath, int desiredReplicationDegree)
+			throws FileTooLargeException, FileDoesNotExistsExeption {
 		mFilePath = filePath;
-		
-		if (getFileSize() > MAX_FILE_SIZE) {
-			throw new FileTooLargeException();
-		}
-		
+
+		verifyDataIntegrity();
+
 		mDesiredReplicationDegree = desiredReplicationDegree;
 		mFileId = Encoder.generateBitString(new File(mFilePath));
 		mChunkCounter = 0;
-
-		// TODO: generate chunks - verify if chunk number is less than 1 million
-		// (so maximum size is 64GB)
+		
+		generateChunks();
 	}
 
 	// Getters
@@ -64,16 +62,34 @@ public class SharedFile {
 		chunk.incCurrentReplication();
 	}
 
+	private void verifyDataIntegrity() throws FileTooLargeException, FileDoesNotExistsExeption {
+
+		// verify if file exists
+
+		if (!new File(mFilePath).exists()) {
+			throw new FileDoesNotExistsExeption();
+		}
+
+		// verify if file size is valid
+
+		if (getFileSize() > MAX_FILE_SIZE) {
+			throw new FileTooLargeException();
+		}
+	}
+
 	public long getFileSize() {
 		File thisFile = new File(getFilePath());
 		return thisFile.length();
 	}
 
 	private void generateChunks() {
+		
 		long fileSize = getFileSize();
+		
 		for (int i = 0; i < fileSize; i += CHUNK_SIZE) {
 			mChunkList.add(new FileChunk(this, mChunkCounter++));
 		}
+		
 		// verify if there is the need to add the last empty chunk
 		if (fileSize % fileSize == 0) {
 			mChunkList.add(new FileChunk(this, mChunkCounter++));
@@ -81,5 +97,8 @@ public class SharedFile {
 	}
 
 	public class FileTooLargeException extends Exception {
+	}
+
+	public class FileDoesNotExistsExeption extends Exception {
 	}
 }

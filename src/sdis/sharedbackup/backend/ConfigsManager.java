@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 
 public class ConfigsManager implements Serializable {
@@ -18,6 +19,7 @@ public class ConfigsManager implements Serializable {
 	private static ConfigsManager sInstance = null;
 
 	// private members
+
 	private boolean mCheckState;
 	private InetAddress mMCaddr = null, mMDBaddr = null, mMDRaddr = null;
 	private int mMCport = 0, mMDBport = 0, mMDRport = 0;
@@ -107,7 +109,11 @@ public class ConfigsManager implements Serializable {
 
 	// Setters
 
-	public void setAvailSpace(int space) {
+	public void setAvailSpace(int space) throws InvalidBackupSizeException {
+		if (space <= 0) {
+			throw new InvalidBackupSizeException();
+		}
+		
 		maxBackupSize = space;
 
 		checkInitialization();
@@ -115,15 +121,14 @@ public class ConfigsManager implements Serializable {
 
 	public void setBackupsDestination(String dest)
 			throws InvalidFolderException {
-		
+
 		File destination = new File(dest);
-		
+
 		if (destination.isDirectory()) {
-			mBackupFolder=destination.getAbsolutePath();
-			mBackupFolder += new String ("\\");
+			mBackupFolder = destination.getAbsolutePath();
+			mBackupFolder += new String("\\");
 			checkInitialization();
-		} 
-		else {
+		} else {
 			throw new InvalidFolderException();
 		}
 	}
@@ -187,23 +192,32 @@ public class ConfigsManager implements Serializable {
 	/*
 	 * returns a chunk for saving in this computer
 	 */
+
 	public FileChunk getNewChunkForSavingInstance(String fileId, int chunkNo,
 			int desiredReplication) {
 		FileChunk chunk = new FileChunk(fileId, chunkNo, desiredReplication);
 		mSavedChunks.add(chunk);
 		return chunk;
 	}
-	
-	public SharedFile getNewSharedFileInstance(String filePath, int replicationDegree) throws FileTooLargeException {
+
+	public SharedFile getNewSharedFileInstance(String filePath,
+			int replicationDegree) throws FileTooLargeException,
+			FileDoesNotExistsExeption {
 		SharedFile file = new SharedFile(filePath, replicationDegree);
 		mSharedFiles.put(file.getFileId(), file);
 		return file;
 	}
 
+	/*
+	 * Exceptions
+	 */
 	public static class ConfigurationsNotInitializedException extends Exception {
 	}
 
 	public static class InvalidFolderException extends Exception {
+	}
+
+	public static class InvalidBackupSizeException extends Exception {
 	}
 
 	public static class InvalidChunkException extends Exception {

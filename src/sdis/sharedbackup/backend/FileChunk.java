@@ -65,6 +65,13 @@ public class FileChunk {
 				}
 				return false;
 			}
+			
+			try {
+				out.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 			return true;
 		}
 	}
@@ -83,11 +90,13 @@ public class FileChunk {
 	}
 
 	public byte[] getData() {
+		
 		if (isOwnMachineFile) {
+			
 			File file = new File(mParentFile.getFilePath());
 			byte[] chunk = new byte[SharedFile.CHUNK_SIZE];
-
 			FileInputStream in = null;
+			
 			try {
 				in = new FileInputStream(file);
 			} catch (FileNotFoundException e) {
@@ -95,8 +104,10 @@ public class FileChunk {
 			}
 
 			try {
-				in.read(chunk, SharedFile.CHUNK_SIZE * (int) mChunkNo,
-						SharedFile.CHUNK_SIZE);
+				if (in.read(chunk, SharedFile.CHUNK_SIZE * (int) mChunkNo,
+						SharedFile.CHUNK_SIZE) == -1) {
+					return new byte[0];
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
