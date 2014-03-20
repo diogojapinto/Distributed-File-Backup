@@ -11,18 +11,15 @@ import sdis.sharedbackup.protocols.ChunkBackup;
 import sdis.sharedbackup.utils.EnvironmentVerifier;
 
 public class CLIMonitor {
-	private static Scanner sc = null;
-	private static boolean exit;
+	private static Scanner sc = new Scanner(System.in);
+	private static boolean exit = false;
 
 	public static void main(String[] args) {
 		// TODO: serialize the config manager
 		// TODO: the functionality is all implemented in ApplicationInterface
 		// class, so that the functions may be called from another monitor, like
 		// a gui
-		exit = false;
-		System.out
-				.println("Welcome to the Most Awesome Generic File Backup System Ever");
-		sc = new Scanner(System.in);
+		
 		startSetup();
 		while (exit == false) {
 			showMenu();
@@ -156,5 +153,10 @@ public class CLIMonitor {
 		} catch (Exception exception) {
 			System.out.println("Could not clear console");
 		}
+	}
+	
+	private static void printHead() {
+		System.out
+				.println("Welcome to the Most Awesome Generic File Backup System Ever");
 	}
 }
