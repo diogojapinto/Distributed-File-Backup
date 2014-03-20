@@ -14,20 +14,27 @@ import sdis.sharedbackup.utils.Encoder;
 
 public class SharedFile {
 	public static final int CHUNK_SIZE = 64000;
-
+	public static final int MAX_NR_CHUNKS = 1000000;
+	public static final int MAX_FILE_SIZE = CHUNK_SIZE * (MAX_NR_CHUNKS - 1);
 	private String mFilePath;
 	private String mFileId;
 	private ArrayList<FileChunk> mChunkList;
 	private int mDesiredReplicationDegree;
-	private int mChunkCounter;
+	private long mChunkCounter;
 
-	public SharedFile(String filePath, int desiredReplicationDegree) {
+	public SharedFile(String filePath, int desiredReplicationDegree) throws FileTooLargeException {
 		mFilePath = filePath;
+		
+		if (getFileSize() > MAX_FILE_SIZE) {
+			throw new FileTooLargeException();
+		}
+		
 		mDesiredReplicationDegree = desiredReplicationDegree;
 		mFileId = Encoder.generateBitString(new File(mFilePath));
 		mChunkCounter = 0;
-		
-		// TODO: generate chunks
+
+		// TODO: generate chunks - verify if chunk number is less than 1 million
+		// (so maximum size is 64GB)
 	}
 
 	// Getters
@@ -45,20 +52,34 @@ public class SharedFile {
 	}
 
 	public void incChunkReplication(int chunkNo) throws InvalidChunkException {
-		
+
 		FileChunk chunk = null;
-		
+
 		try {
-		chunk = mChunkList.get(chunkNo);
-		} catch(IndexOutOfBoundsException e) {
+			chunk = mChunkList.get(chunkNo);
+		} catch (IndexOutOfBoundsException e) {
 			throw new ConfigsManager.InvalidChunkException();
 		}
-		
+
 		chunk.incCurrentReplication();
 	}
-	
+
 	public long getFileSize() {
 		File thisFile = new File(getFilePath());
 		return thisFile.length();
+	}
+
+	private void generateChunks() {
+		long fileSize = getFileSize();
+		for (int i = 0; i < fileSize; i += CHUNK_SIZE) {
+			mChunkList.add(new FileChunk(this, mChunkCounter++));
+		}
+		// verify if there is the need to add the last empty chunk
+		if (fileSize % fileSize == 0) {
+			mChunkList.add(new FileChunk(this, mChunkCounter++));
+		}
+	}
+
+	public class FileTooLargeException extends Exception {
 	}
 }

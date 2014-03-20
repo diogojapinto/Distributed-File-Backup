@@ -9,6 +9,8 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import sdis.sharedbackup.backend.MulticastComunicator;
+
 public class Encoder {
 
 	private static final int LAST_FILE_BYTES_SIZE = 8;
@@ -57,7 +59,12 @@ public class Encoder {
 			e.printStackTrace();
 		}
 		byte[] digest = md.digest();
-		String key = digest.toString();
+		String key = null;
+		try {
+			key = new String(digest, ASCII_CODE);
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
 
 		try {
 			in.close();

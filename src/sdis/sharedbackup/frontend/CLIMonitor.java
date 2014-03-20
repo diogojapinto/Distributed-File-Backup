@@ -6,8 +6,9 @@ import java.util.Scanner;
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.SharedFile;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
-import sdis.sharedbackup.backend.InterfaceSidekick;
+import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 import sdis.sharedbackup.protocols.ChunkBackup;
+import sdis.sharedbackup.utils.EnvironmentVerifier;
 
 public class CLIMonitor {
 	private static Scanner sc = null;
@@ -15,8 +16,12 @@ public class CLIMonitor {
 
 	public static void main(String[] args) {
 		// TODO: serialize the config manager
+		// TODO: the functionality is all implemented in ApplicationInterface
+		// class, so that the functions may be called from another monitor, like
+		// a gui
 		exit = false;
-		System.out.println("Welcome to XXXX");
+		System.out
+				.println("Welcome to the Most Awesome Generic File Backup System Ever");
 		sc = new Scanner(System.in);
 		startSetup();
 		while (exit == false) {
@@ -69,9 +74,9 @@ public class CLIMonitor {
 
 		System.out.println("Choose the folder to save the files to:");
 		String saveFolder = sc.nextLine();
-		if (InterfaceSidekick.isValidFile(saveFolder)) {
+		if (EnvironmentVerifier.isValidFile(saveFolder)) {
 			System.out.println("Setup Successfull!");
-		} else{
+		} else {
 			System.out.println("Folder does not exist!!");
 		}
 
@@ -94,11 +99,16 @@ public class CLIMonitor {
 			System.out.println("Enter the path to the file:");
 			String path = sc.nextLine();
 			System.out.println("Enter desired Replication degree:");
-			int repdeg =sc.nextInt();
+			int repdeg = sc.nextInt();
 			sc.nextLine();
-			//ChunkBackup.getInstance().saveFile
-			SharedFile newFile = new SharedFile(path, repdeg);
-			
+			// ChunkBackup.getInstance().saveFile
+			try {
+				SharedFile newFile = new SharedFile(path, repdeg);
+			} catch (FileTooLargeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 			break;
 		case 2:
 			System.out.println("Enter new allocated space:");

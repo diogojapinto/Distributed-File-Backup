@@ -7,6 +7,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
+
 public class ConfigsManager implements Serializable {
 
 	// constants
@@ -192,7 +194,7 @@ public class ConfigsManager implements Serializable {
 		return chunk;
 	}
 	
-	public SharedFile getNewSharedFileInstance(String filePath, int replicationDegree) {
+	public SharedFile getNewSharedFileInstance(String filePath, int replicationDegree) throws FileTooLargeException {
 		SharedFile file = new SharedFile(filePath, replicationDegree);
 		mSharedFiles.put(file.getFileId(), file);
 		return file;

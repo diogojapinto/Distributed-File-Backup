@@ -12,15 +12,15 @@ public class FileChunk {
 
 	private SharedFile mParentFile;
 	private String mFileId;
-	private int mChunkNo;
+	private long mChunkNo;
 	private int mCurrentReplicationDegree;
 	private int mDesiredReplicationDegree;
 
 	private boolean isOwnMachineFile;
 
-	public FileChunk(SharedFile parentFile, int chunkNo) {
+	public FileChunk(SharedFile parentFile, long mChunkCounter) {
 		this.mParentFile = parentFile;
-		this.mChunkNo = chunkNo;
+		this.mChunkNo = mChunkCounter;
 		this.mFileId = mParentFile.getFileId();
 		this.mCurrentReplicationDegree = 0;
 		this.mDesiredReplicationDegree = mParentFile.getDesiredReplication();
@@ -28,6 +28,7 @@ public class FileChunk {
 	}
 
 	public FileChunk(String fileId, int chunkNo, int desiredReplication) {
+		
 		this.mParentFile = null;
 		this.mChunkNo = chunkNo;
 		this.mFileId = fileId;
@@ -40,11 +41,7 @@ public class FileChunk {
 		if (isOwnMachineFile) {
 			return false;
 		} else {
-			File newChunk = new File(ConfigsManager.getInstance()
-					.getChunksDestination()
-					+ mFileId
-					+ "_"
-					+ String.valueOf(mChunkNo) + ".cnk");
+			File newChunk = new File(getFilePath());
 
 			FileOutputStream out = null;
 
@@ -77,7 +74,7 @@ public class FileChunk {
 		return mFileId;
 	}
 
-	public int getChunkNo() {
+	public long getChunkNo() {
 		return mChunkNo;
 	}
 
@@ -98,7 +95,7 @@ public class FileChunk {
 			}
 
 			try {
-				in.read(chunk, SharedFile.CHUNK_SIZE * mChunkNo,
+				in.read(chunk, SharedFile.CHUNK_SIZE * (int) mChunkNo,
 						SharedFile.CHUNK_SIZE);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -111,6 +108,18 @@ public class FileChunk {
 			}
 
 			return chunk;
+		} else {
+			return null;
+		}
+	}
+
+	public String getFilePath() {
+		if (!isOwnMachineFile) {
+			return new String(ConfigsManager.getInstance()
+					.getChunksDestination()
+					+ mFileId
+					+ "_"
+					+ String.valueOf(mChunkNo) + ".cnk");
 		} else {
 			return null;
 		}
