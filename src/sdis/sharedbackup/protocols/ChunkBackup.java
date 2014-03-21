@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Random;
 
 import sdis.sharedbackup.backend.ConfigsManager;
@@ -36,6 +37,11 @@ public class ChunkBackup {
 	
 	public boolean saveFile(SharedFile file) {
 		// TODO call putChunk for each chunk in SharedFile
+		ArrayList <FileChunk> list = file.getChunkList();
+		int i;
+		for ( i = 0; i < list.size(); i++){
+			putChunk(list.get(i));
+		}
 		return true;
 	}
 

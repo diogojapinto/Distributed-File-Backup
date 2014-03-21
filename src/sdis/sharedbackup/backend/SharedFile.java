@@ -36,6 +36,10 @@ public class SharedFile {
 	}
 
 	// Getters
+	
+	public ArrayList<FileChunk> getChunkList() {
+		return mChunkList;
+	}
 
 	public String getFilePath() {
 		return mFilePath;
