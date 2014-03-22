@@ -146,6 +146,8 @@ public class CLIMonitor {
 		case 2:
 			System.out.println("Enter new allocated space:");
 			int space = sc.nextInt();
+			sc.nextLine();
+			ApplicationInterface.getInstance().setNewSpace(space);
 			// TODO: set new space (maxBackupSize);
 			return false;
 		case 3:

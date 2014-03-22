@@ -56,6 +56,10 @@ public class ConfigsManager implements Serializable {
 		return mCheckState;
 	}
 	
+	public int getMaxBackupSize (){
+		return maxBackupSize;
+	}
+	
 	public void removeSharedFile (String fileID){
 		mSharedFiles.remove(fileID);
 	}
