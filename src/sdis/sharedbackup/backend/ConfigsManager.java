@@ -56,8 +56,8 @@ public class ConfigsManager implements Serializable {
 		return mCheckState;
 	}
 	
-	public SharedFile getMyFile (String filepath){
-		return mSharedFiles.get(filepath);
+	public void removeSharedFile (String fileID){
+		mSharedFiles.remove(fileID);
 	}
 	
 	public boolean setMulticastAddrs(String mcAddr, int mcPort, String mdbAddr,

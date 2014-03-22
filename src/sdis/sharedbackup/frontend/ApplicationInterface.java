@@ -1,5 +1,10 @@
 package sdis.sharedbackup.frontend;
 
+import java.io.File;
+
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+import com.sun.xml.internal.fastinfoset.Encoder;
+
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
@@ -61,9 +66,10 @@ public class ApplicationInterface {
 	}
 
 	public boolean deleteFile(String filepath) throws FileDoesNotExistsExeption {
-		SharedFile deletedFile = ConfigsManager.getInstance().getMyFile(filepath);
-		String fileID = deletedFile.getFileId();
-		//funcao para mandar a msg de delete com File ID
+		File f = new File(filepath);
+		String deletedFileID = sdis.sharedbackup.utils.Encoder.generateBitString(f);
+		//funcao para mandar a msg de delete com deleted File ID
+		ConfigsManager.getInstance().removeSharedFile(deletedFileID);
 		return false;
 	}
 
