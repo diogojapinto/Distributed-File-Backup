@@ -14,6 +14,7 @@ import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.SharedFile;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
+import sdis.sharedbackup.functionality.FileBackup;
 import sdis.sharedbackup.protocols.ChunkBackup;
 
 public class ApplicationInterface {
@@ -58,7 +59,7 @@ public class ApplicationInterface {
 		SharedFile file = ConfigsManager.getInstance()
 				.getNewSharedFileInstance(filePath, replication);
 
-		ChunkBackup.getInstance().saveFile(file);
+		FileBackup.getInstance().saveFile(file);
 
 		return true;
 	}
