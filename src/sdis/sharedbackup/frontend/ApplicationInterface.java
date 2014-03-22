@@ -1,5 +1,10 @@
 package sdis.sharedbackup.frontend;
 
+import java.io.File;
+
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+import com.sun.xml.internal.fastinfoset.Encoder;
+
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
@@ -60,11 +65,25 @@ public class ApplicationInterface {
 		return false;
 	}
 
-	public boolean deleteFile() {
+	public boolean deleteFile(String filepath) throws FileDoesNotExistsExeption {
+		File f = new File(filepath);
+		String deletedFileID = sdis.sharedbackup.utils.Encoder
+				.generateBitString(f);
+		// funcao para mandar a msg de delete com deleted File ID
+		ConfigsManager.getInstance().removeSharedFile(deletedFileID);
 		return false;
 	}
 
-	public boolean freeSpace() {
+	public boolean setNewSpace(int newSpace) {
+		if (newSpace >= ConfigsManager.getInstance().getMaxBackupSize()) {
+			try {
+				ConfigsManager.getInstance().setAvailSpace(newSpace);
+			} catch (InvalidBackupSizeException e) {
+				System.out.println("The selected size is invalid");
+			}
+		} else {
+			// launch space reclamation
+		}
 		return false;
 	}
 

@@ -147,6 +147,8 @@ public class CLIMonitor {
 		case 2:
 			System.out.println("Enter new allocated space:");
 			int space = sc.nextInt();
+			sc.nextLine();
+			ApplicationInterface.getInstance().setNewSpace(space);
 			// TODO: set new space (maxBackupSize);
 			return false;
 		case 3:
@@ -156,8 +158,13 @@ public class CLIMonitor {
 			return false;
 		case 4:
 			System.out.println("Choose file to delete:");
-			// String path = sc.next();
-			// TODO: add file
+			 String deletepath = sc.next();
+			 try {
+				ApplicationInterface.getInstance().deleteFile(deletepath);
+			} catch (FileDoesNotExistsExeption e) {
+				System.out.println("The selected file does not exists");
+			}
+		
 			return false;
 		case 5:
 			exit = true;

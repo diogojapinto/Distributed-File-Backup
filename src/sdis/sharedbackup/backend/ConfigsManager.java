@@ -59,7 +59,15 @@ public class ConfigsManager {
 	public boolean isToCheckState() {
 		return mCheckState;
 	}
-
+	
+	public int getMaxBackupSize (){
+		return maxBackupSize;
+	}
+	
+	public void removeSharedFile (String fileID){
+		mSharedFiles.remove(fileID);
+	}
+	
 	public boolean setMulticastAddrs(String mcAddr, int mcPort, String mdbAddr,
 			int mdbPort, String mdrAddr, int mdrPort) {
 		try {
