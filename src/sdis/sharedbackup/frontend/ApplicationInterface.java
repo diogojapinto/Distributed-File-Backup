@@ -1,10 +1,6 @@
 package sdis.sharedbackup.frontend;
 
 import java.io.File;
-
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
-import com.sun.xml.internal.fastinfoset.Encoder;
-
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
