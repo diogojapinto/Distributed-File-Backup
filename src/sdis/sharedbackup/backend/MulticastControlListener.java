@@ -8,6 +8,7 @@ import java.util.Random;
 import javax.naming.ConfigurationException;
 
 import sdis.sharedbackup.protocols.ChunkBackup;
+import sdis.sharedbackup.protocols.ChunkRestore;
 
 /*
  * Class that receives and dispatches messages from the multicast control channel
@@ -16,7 +17,10 @@ public class MulticastControlListener implements Runnable {
 
 	private static MulticastControlListener mInstance = null;
 
+	private ArrayList<ChunkRecord> mSubscribedChunks;
+
 	private MulticastControlListener() {
+		mSubscribedChunks = new ArrayList<ChunkRecord>();
 	}
 
 	public static MulticastControlListener getInstance() {
@@ -61,18 +65,22 @@ public class MulticastControlListener implements Runnable {
 			}
 
 			String messageType = header_components[0].trim();
+			String fileId = null;
+			int chunkNo = 0;
 
 			switch (messageType) {
 			case ChunkBackup.STORED_COMMAND:
 
-				String fileId = header_components[2].trim();
-				int chunkNo = Integer.parseInt(header_components[3].trim());
+				fileId = header_components[2].trim();
+				chunkNo = Integer.parseInt(header_components[3].trim());
 
 				try {
 					ConfigsManager.getInstance().incChunkReplication(fileId,
 							chunkNo);
 				} catch (ConfigsManager.InvalidChunkException e) {
+
 					// not my file
+
 					synchronized (MulticastDataBackupListener.getInstance().mPendingChunks) {
 						for (FileChunk chunk : MulticastDataBackupListener
 								.getInstance().mPendingChunks) {
@@ -84,8 +92,49 @@ public class MulticastControlListener implements Runnable {
 					}
 				}
 				break;
+			case ChunkRestore.CHUNK_COMMAND:
+
+				fileId = header_components[2].trim();
+				chunkNo = Integer.parseInt(header_components[3].trim());
+
+				for (ChunkRecord record : mSubscribedChunks) {
+					if (record.fileId.equals(fileId)
+							&& record.chunkNo == chunkNo) {
+						// TODO : ask teacher what is the replication degree (if
+						// any) of the new file
+						byte[] data;
+						try {
+							data = components[1]
+									.getBytes(MulticastComunicator.ASCII_CODE);
+
+							FileChunkWithData requestedChunk = new FileChunkWithData(
+									fileId, chunkNo, data);
+
+							ChunkRestore.getInstance().addRequestedChunk(
+									requestedChunk);
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+
+				break;
 			default:
 			}
+		}
+	}
+
+	public synchronized void subscribeToChunkData(String fileId, int chunkNo) {
+		mSubscribedChunks.add(new ChunkRecord(fileId, chunkNo));
+	}
+
+	private class ChunkRecord {
+		String fileId;
+		int chunkNo;
+
+		public ChunkRecord(String fileId, int chunkNo) {
+			this.fileId = fileId;
+			this.chunkNo = chunkNo;
 		}
 	}
 }
