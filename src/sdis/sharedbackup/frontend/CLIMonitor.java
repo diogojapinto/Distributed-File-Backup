@@ -155,8 +155,13 @@ public class CLIMonitor {
 			return false;
 		case 4:
 			System.out.println("Choose file to delete:");
-			// String path = sc.next();
-			// TODO: add file
+			 String deletepath = sc.next();
+			 try {
+				ApplicationInterface.getInstance().deleteFile(deletepath);
+			} catch (FileDoesNotExistsExeption e) {
+				System.out.println("The selected file does not exists");
+			}
+		
 			return false;
 		case 5:
 			exit = true;

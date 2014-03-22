@@ -48,12 +48,6 @@ public class ConfigsManager implements Serializable {
 		return sInstance;
 	}
 
-	// map saving the filepath on this machine and respective SharedFile object
-	Map<String, SharedFile> myFiles;
-
-	// map saving the fileId of a shared file and respective SharedFile object
-	Map<String, SharedFile> sharedFile;
-
 	public String getVersion() {
 		return VERSION;
 	}
@@ -61,7 +55,11 @@ public class ConfigsManager implements Serializable {
 	public boolean isToCheckState() {
 		return mCheckState;
 	}
-
+	
+	public SharedFile getMyFile (String filepath){
+		return mSharedFiles.get(filepath);
+	}
+	
 	public boolean setMulticastAddrs(String mcAddr, int mcPort, String mdbAddr,
 			int mdbPort, String mdrAddr, int mdrPort) {
 		try {

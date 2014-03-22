@@ -60,7 +60,10 @@ public class ApplicationInterface {
 		return false;
 	}
 
-	public boolean deleteFile() {
+	public boolean deleteFile(String filepath) throws FileDoesNotExistsExeption {
+		SharedFile deletedFile = ConfigsManager.getInstance().getMyFile(filepath);
+		String fileID = deletedFile.getFileId();
+		//funcao para mandar a msg de delete com File ID
 		return false;
 	}
 
