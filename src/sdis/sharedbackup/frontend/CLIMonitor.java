@@ -9,6 +9,7 @@ import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
+import sdis.sharedbackup.functionality.ApplicationInterface;
 
 public class CLIMonitor {
 	private static Scanner sc = new Scanner(System.in);
@@ -17,9 +18,6 @@ public class CLIMonitor {
 	public static int main(String[] args) {
 		// TODO: create a BackupsDatabase
 		// TODO: serialise the BackupsDatabase
-		// TODO: the functionality is all implemented in ApplicationInterface
-		// class, so that the functions may be called from another monitor, like
-		// a gui
 
 		try {
 			parseArgs(args);

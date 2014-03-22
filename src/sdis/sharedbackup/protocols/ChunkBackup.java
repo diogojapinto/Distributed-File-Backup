@@ -33,24 +33,6 @@ public class ChunkBackup {
 	private ChunkBackup() {
 	}
 
-	// call putChunk for each chunk in SharedFile
-	public boolean saveFile(SharedFile file) {
-		ArrayList<FileChunk> list = file.getChunkList();
-		int i;
-		for (i = 0; i < list.size(); i++) {
-			final FileChunk chunk = list.get(i);
-			new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					putChunk(chunk);
-				}
-
-			}).start();
-		}
-		return true;
-	}
-
 	public boolean putChunk(FileChunk chunk) {
 		String version = ConfigsManager.getInstance().getVersion();
 

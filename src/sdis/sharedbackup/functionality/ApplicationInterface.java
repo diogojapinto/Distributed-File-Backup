@@ -1,4 +1,4 @@
-package sdis.sharedbackup.frontend;
+package sdis.sharedbackup.functionality;
 
 import java.io.File;
 import sdis.sharedbackup.backend.ConfigsManager;
@@ -52,7 +52,7 @@ public class ApplicationInterface {
 		SharedFile file = ConfigsManager.getInstance()
 				.getNewSharedFileInstance(filePath, replication);
 
-		ChunkBackup.getInstance().saveFile(file);
+		FileBackup.getInstance().saveFile(file);
 
 		return true;
 	}
