@@ -28,7 +28,7 @@ public class FileChunk {
 	}
 
 	public FileChunk(String fileId, int chunkNo, int desiredReplication) {
-		
+
 		this.mParentFile = null;
 		this.mChunkNo = chunkNo;
 		this.mFileId = fileId;
@@ -65,13 +65,13 @@ public class FileChunk {
 				}
 				return false;
 			}
-			
+
 			try {
 				out.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
+
 			return true;
 		}
 	}
@@ -89,38 +89,57 @@ public class FileChunk {
 		return mCurrentReplicationDegree;
 	}
 
+	public int getCurrentReplicationDeg() {
+		return mCurrentReplicationDegree;
+	}
+
 	public byte[] getData() {
-		
+
 		if (isOwnMachineFile) {
-			
-			File file = new File(mParentFile.getFilePath());
-			byte[] chunk = new byte[SharedFile.CHUNK_SIZE];
-			FileInputStream in = null;
-			
-			try {
-				in = new FileInputStream(file);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
+			if (mParentFile.exists()) {
+				File file = new File(mParentFile.getFilePath());
+				byte[] chunk = new byte[SharedFile.CHUNK_SIZE];
+				FileInputStream in = null;
 
-			try {
-				if (in.read(chunk, SharedFile.CHUNK_SIZE * (int) mChunkNo,
-						SharedFile.CHUNK_SIZE) == -1) {
-					return new byte[0];
+				try {
+					in = new FileInputStream(file);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 
-			try {
-				in.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+				try {
+					if (in.read(chunk, SharedFile.CHUNK_SIZE * (int) mChunkNo,
+							SharedFile.CHUNK_SIZE) == -1) {
+						return new byte[0];
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 
-			return chunk;
+				try {
+					in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				return chunk;
+			} else {
+				return null;
+			}
 		} else {
-			return null;
+			File chunk = new File(getFilePath());
+			FileInputStream in = null;
+			try {
+				in = new FileInputStream(chunk);
+				byte[] buffer = new byte[(int) chunk.length()];
+				in.read(buffer);
+				in.close();
+				return buffer;
+			} catch (FileNotFoundException e) {
+				return null;
+			} catch (IOException e) {
+				return null;
+			}
 		}
 	}
 
@@ -138,7 +157,7 @@ public class FileChunk {
 
 	// Setters
 
-	public void incCurrentReplication() {
+	public synchronized void incCurrentReplication() {
 		mCurrentReplicationDegree++;
 	}
 }

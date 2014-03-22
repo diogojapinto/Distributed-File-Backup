@@ -5,12 +5,13 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 
-public class ConfigsManager implements Serializable {
+public class ConfigsManager {
 
 	// constants
 	private static final String VERSION = "1.0";
@@ -39,6 +40,9 @@ public class ConfigsManager implements Serializable {
 		mMCListener = null;
 		mMDBListener = null;
 		mMDRListener = null;
+
+		mSharedFiles = new HashMap<String, SharedFile>();
+		mSavedChunks = new ArrayList<FileChunk>();
 	}
 
 	public static ConfigsManager getInstance() {
@@ -47,12 +51,6 @@ public class ConfigsManager implements Serializable {
 		}
 		return sInstance;
 	}
-
-	// map saving the filepath on this machine and respective SharedFile object
-	Map<String, SharedFile> myFiles;
-
-	// map saving the fileId of a shared file and respective SharedFile object
-	Map<String, SharedFile> sharedFile;
 
 	public String getVersion() {
 		return VERSION;
@@ -113,7 +111,7 @@ public class ConfigsManager implements Serializable {
 		if (space <= 0) {
 			throw new InvalidBackupSizeException();
 		}
-		
+
 		maxBackupSize = space;
 
 		checkInitialization();
@@ -151,15 +149,15 @@ public class ConfigsManager implements Serializable {
 
 	private void startupListeners() {
 		if (mMCListener == null) {
-			mMCListener = new MulticastControlListener();
+			mMCListener = MulticastControlListener.getInstance();
 			new Thread(mMCListener).start();
 		}
 		if (mMDBListener == null) {
-			mMDBListener = new MulticastDataBackupListener();
+			mMDBListener = MulticastDataBackupListener.getInstance();
 			new Thread(mMDBListener).start();
 		}
 		if (mMDRListener == null) {
-			mMDRListener = new MulticastDataRestoreListener();
+			mMDRListener = MulticastDataRestoreListener.getInstance();
 			new Thread(mMDRListener).start();
 		}
 	}
@@ -168,8 +166,10 @@ public class ConfigsManager implements Serializable {
 			throws InvalidChunkException {
 		SharedFile file = mSharedFiles.get(fileId);
 		if (file != null) {
+			// This is the owner machine of chunk's parent file
 			file.incChunkReplication(chunkNo);
 		} else {
+			// It is a chunk saved in a backup operation
 			FileChunk chunk = null;
 			int nrSavedChunks = mSavedChunks.size();
 			for (int i = 0; i < nrSavedChunks; i++) {

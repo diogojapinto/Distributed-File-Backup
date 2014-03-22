@@ -31,7 +31,9 @@ public class SharedFile {
 		mDesiredReplicationDegree = desiredReplicationDegree;
 		mFileId = Encoder.generateBitString(new File(mFilePath));
 		mChunkCounter = 0;
-		
+		mChunkList = new ArrayList<FileChunk>();
+				
+		// generate the chunks for this file
 		generateChunks();
 	}
 
@@ -79,6 +81,10 @@ public class SharedFile {
 		if (getFileSize() > MAX_FILE_SIZE) {
 			throw new FileTooLargeException();
 		}
+	}
+	
+	public boolean exists() {
+		return new File(mFilePath).exists();
 	}
 
 	public long getFileSize() {

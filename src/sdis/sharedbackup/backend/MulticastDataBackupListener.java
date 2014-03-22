@@ -2,6 +2,8 @@ package sdis.sharedbackup.backend;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Random;
 
 import sdis.sharedbackup.protocols.ChunkBackup;
 
@@ -9,6 +11,26 @@ import sdis.sharedbackup.protocols.ChunkBackup;
  * Class that receives and dispatches messages from the multicast data backup channel
  */
 public class MulticastDataBackupListener implements Runnable {
+
+	private static MulticastDataBackupListener mInstance = null;
+
+	private static final int MAX_WAIT_TIME = 401;
+	private Random mRand;
+
+	// List containing chunks whom we heard about but have not been saved
+	final ArrayList<FileChunk> mPendingChunks;
+
+	private MulticastDataBackupListener() {
+		mRand = new Random();
+		mPendingChunks = new ArrayList<FileChunk>();
+	}
+
+	public static MulticastDataBackupListener getInstance() {
+		if (mInstance == null) {
+			mInstance = new MulticastDataBackupListener();
+		}
+		return mInstance;
+	}
 
 	@Override
 	public void run() {
@@ -19,7 +41,7 @@ public class MulticastDataBackupListener implements Runnable {
 
 		while (true) {
 			String message = receiver.receiveMessage();
-			String[] components;
+			final String[] components;
 			String separator = null;
 			try {
 				separator = new String(MulticastComunicator.CRLF,
@@ -35,7 +57,7 @@ public class MulticastDataBackupListener implements Runnable {
 
 			String header = components[0].trim();
 
-			String[] header_components = header.split(" ");
+			final String[] header_components = header.split(" ");
 
 			if (!header_components[1].equals(ConfigsManager.getInstance()
 					.getVersion())) {
@@ -49,13 +71,46 @@ public class MulticastDataBackupListener implements Runnable {
 			switch (messageType) {
 			case ChunkBackup.PUT_COMMAND:
 
-				String fileId = header_components[2].trim();
-				int chunkNo = Integer.parseInt(header_components[3].trim());
-				int desiredReplication = Integer.parseInt(header_components[4]
+				final String fileId = header_components[2].trim();
+				final int chunkNo = Integer.parseInt(header_components[3]
 						.trim());
+				final int desiredReplication = Integer
+						.parseInt(header_components[4].trim());
 
-				ChunkBackup.getInstance().storeChunks(fileId, chunkNo,
-						desiredReplication, components[1].getBytes());
+				new Thread(new Runnable() {
+
+					@Override
+					public void run() {
+						FileChunk pendingChunk = new FileChunk(fileId, chunkNo,
+								desiredReplication);
+
+						synchronized (mPendingChunks) {
+							mPendingChunks.add(pendingChunk);
+						}
+
+						try {
+							Thread.sleep(mRand.nextInt(MAX_WAIT_TIME));
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+
+						// verify if it is needed to save the chunk
+
+						if (pendingChunk.getCurrentReplicationDeg() < pendingChunk
+								.getDesiredReplicationDeg()) {
+
+							ChunkBackup.getInstance().storeChunks(pendingChunk,
+									components[1].getBytes());
+
+						}
+
+						// remove the temporary chunk from the pending chunks
+						// list
+						synchronized (mPendingChunks) {
+							mPendingChunks.remove(pendingChunk);
+						}
+					}
+				}).start();
 
 				break;
 			default:

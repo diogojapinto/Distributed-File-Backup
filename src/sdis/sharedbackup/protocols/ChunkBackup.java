@@ -18,8 +18,7 @@ public class ChunkBackup {
 
 	public static final String PUT_COMMAND = "PUTCHUNK";
 	public static final String STORED_COMMAND = "STORED";
-	private static final int MAX_WAIT_TIME = 401;
-	private Random rand;
+	private static final int PUT_TIME_INTERVAL = 500;
 
 	private static ChunkBackup sInstance = null;
 
@@ -32,15 +31,22 @@ public class ChunkBackup {
 	}
 
 	private ChunkBackup() {
-		rand = new Random();
 	}
-	
+
+	// call putChunk for each chunk in SharedFile
 	public boolean saveFile(SharedFile file) {
-		// TODO call putChunk for each chunk in SharedFile
-		ArrayList <FileChunk> list = file.getChunkList();
+		ArrayList<FileChunk> list = file.getChunkList();
 		int i;
-		for ( i = 0; i < list.size(); i++){
-			putChunk(list.get(i));
+		for (i = 0; i < list.size(); i++) {
+			final FileChunk chunk = list.get(i);
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					putChunk(chunk);
+				}
+
+			}).start();
 		}
 		return true;
 	}
@@ -78,13 +84,21 @@ public class ChunkBackup {
 				multDBPort);
 		sender.join();
 
-		sender.sendMessage(message);
+		do {
+			sender.sendMessage(message);
+			try {
+				Thread.sleep(PUT_TIME_INTERVAL);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		} while (chunk.getDesiredReplicationDeg() > chunk
+				.getCurrentReplicationDeg());
 
 		return true;
 
 	}
 
-	public boolean storeChunks(String fileId, int chunkNo, int desiredReplication, byte[] data) {
+	public boolean storeChunks(FileChunk chunk, byte[] data) {
 
 		InetAddress multCtrlAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCtrlPort = ConfigsManager.getInstance().getMCPort();
@@ -93,7 +107,6 @@ public class ChunkBackup {
 				multCtrlPort);
 		sender.join();
 
-		FileChunk chunk = ConfigsManager.getInstance().getNewChunkForSavingInstance(fileId, chunkNo, desiredReplication);
 		chunk.saveToFile(data);
 
 		String message = null;
@@ -102,9 +115,9 @@ public class ChunkBackup {
 					+ " "
 					+ ConfigsManager.getInstance().getVersion()
 					+ " "
-					+ fileId
+					+ chunk.getFileId()
 					+ " "
-					+ String.valueOf(chunkNo)
+					+ String.valueOf(chunk.getChunkNo())
 					+ " "
 					+ new String(MulticastComunicator.CRLF,
 							MulticastComunicator.ASCII_CODE)
@@ -113,13 +126,6 @@ public class ChunkBackup {
 							MulticastComunicator.ASCII_CODE);
 		} catch (UnsupportedEncodingException e2) {
 			e2.printStackTrace();
-		}
-
-		try {
-			Thread.sleep(rand.nextInt(MAX_WAIT_TIME));
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-			return false;
 		}
 
 		sender.sendMessage(message);

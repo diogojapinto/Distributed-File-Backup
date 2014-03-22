@@ -2,6 +2,8 @@ package sdis.sharedbackup.backend;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Random;
 
 import javax.naming.ConfigurationException;
 
@@ -11,6 +13,18 @@ import sdis.sharedbackup.protocols.ChunkBackup;
  * Class that receives and dispatches messages from the multicast control channel
  */
 public class MulticastControlListener implements Runnable {
+
+	private static MulticastControlListener mInstance = null;
+
+	private MulticastControlListener() {
+	}
+
+	public static MulticastControlListener getInstance() {
+		if (mInstance == null) {
+			mInstance = new MulticastControlListener();
+		}
+		return mInstance;
+	}
 
 	@Override
 	public void run() {
@@ -38,9 +52,11 @@ public class MulticastControlListener implements Runnable {
 			String header = components[0].trim();
 
 			String[] header_components = header.split(" ");
-			
-			if (!header_components[1].equals(ConfigsManager.getInstance().getVersion())) {
-				System.err.println("Received message with protocol with different version");
+
+			if (!header_components[1].equals(ConfigsManager.getInstance()
+					.getVersion())) {
+				System.err
+						.println("Received message with protocol with different version");
 				continue;
 			}
 
@@ -57,6 +73,15 @@ public class MulticastControlListener implements Runnable {
 							chunkNo);
 				} catch (ConfigsManager.InvalidChunkException e) {
 					// not my file
+					synchronized (MulticastDataBackupListener.getInstance().mPendingChunks) {
+						for (FileChunk chunk : MulticastDataBackupListener
+								.getInstance().mPendingChunks) {
+							if (fileId.equals(chunk.getFileId())
+									&& chunk.getChunkNo() == chunkNo) {
+								chunk.incCurrentReplication();
+							}
+						}
+					}
 				}
 				break;
 			default:

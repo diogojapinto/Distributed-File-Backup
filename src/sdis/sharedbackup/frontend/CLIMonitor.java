@@ -15,7 +15,8 @@ public class CLIMonitor {
 	private static boolean exit = false;
 
 	public static int main(String[] args) {
-		// TODO: serialize the config manager
+		// TODO: create a BackupsDatabase
+		// TODO: serialise the BackupsDatabase
 		// TODO: the functionality is all implemented in ApplicationInterface
 		// class, so that the functions may be called from another monitor, like
 		// a gui
