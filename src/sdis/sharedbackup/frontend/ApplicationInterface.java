@@ -1,12 +1,7 @@
 package sdis.sharedbackup.frontend;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 
-import sdis.sharedbackup.backend.BackupsDatabase;
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
@@ -15,7 +10,6 @@ import sdis.sharedbackup.backend.SharedFile;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 import sdis.sharedbackup.functionality.FileBackup;
-import sdis.sharedbackup.protocols.ChunkBackup;
 
 public class ApplicationInterface {
 
