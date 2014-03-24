@@ -66,9 +66,9 @@ public class ChunkBackup {
 		MulticastComunicator sender = new MulticastComunicator(multDBAddr,
 				multDBPort);
 		sender.join();
-		
+
 		int counter = 0;
-		
+
 		do {
 			sender.sendMessage(message);
 			try {
@@ -80,7 +80,11 @@ public class ChunkBackup {
 		} while (chunk.getDesiredReplicationDeg() > chunk
 				.getCurrentReplicationDeg() || counter < MAX_RETRIES);
 
-		return true;
+		if (counter == MAX_RETRIES) {
+			return false;
+		} else {
+			return true;
+		}
 
 	}
 

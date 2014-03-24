@@ -19,7 +19,10 @@ public class CLIMonitor {
 		// TODO: the functionality is all implemented in ApplicationInterface
 		// class, so that the functions may be called from another monitor, like
 		// a gui
-
+		// TODO: save the database whenever needed
+		// TODO: manage threads through executor in config manager
+		
+		// TODO: extra: log messages
 
 
 		try {
