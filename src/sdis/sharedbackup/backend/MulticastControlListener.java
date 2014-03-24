@@ -7,6 +7,7 @@ import java.util.Random;
 
 import javax.naming.ConfigurationException;
 
+import sdis.sharedbackup.backend.MulticastDataRestoreListener.ChunkRecord;
 import sdis.sharedbackup.protocols.ChunkBackup;
 import sdis.sharedbackup.protocols.ChunkRestore;
 
@@ -15,12 +16,17 @@ import sdis.sharedbackup.protocols.ChunkRestore;
  */
 public class MulticastControlListener implements Runnable {
 
+	private static final int MAX_WAIT_TIME = 400;
+
+	private static ArrayList<ChunkRecord> interestingChunks;
+
 	private static MulticastControlListener mInstance = null;
 
-	private ArrayList<ChunkRecord> mSubscribedChunks;
+	private Random random;
 
 	private MulticastControlListener() {
-		mSubscribedChunks = new ArrayList<ChunkRecord>();
+		random = new Random();
+		interestingChunks = new ArrayList<ChunkRecord>();
 	}
 
 	public static MulticastControlListener getInstance() {
@@ -65,8 +71,8 @@ public class MulticastControlListener implements Runnable {
 			}
 
 			String messageType = header_components[0].trim();
-			String fileId = null;
-			int chunkNo = 0;
+			final String fileId;
+			final int chunkNo;
 
 			switch (messageType) {
 			case ChunkBackup.STORED_COMMAND:
@@ -74,67 +80,76 @@ public class MulticastControlListener implements Runnable {
 				fileId = header_components[2].trim();
 				chunkNo = Integer.parseInt(header_components[3].trim());
 
-				try {
-					ConfigsManager.getInstance().incChunkReplication(fileId,
-							chunkNo);
-				} catch (ConfigsManager.InvalidChunkException e) {
+				new Thread(new Runnable() {
 
-					// not my file
+					@Override
+					public void run() {
+						try {
+							ConfigsManager.getInstance().incChunkReplication(
+									fileId, chunkNo);
+						} catch (ConfigsManager.InvalidChunkException e) {
 
-					synchronized (MulticastDataBackupListener.getInstance().mPendingChunks) {
-						for (FileChunk chunk : MulticastDataBackupListener
-								.getInstance().mPendingChunks) {
-							if (fileId.equals(chunk.getFileId())
-									&& chunk.getChunkNo() == chunkNo) {
-								chunk.incCurrentReplication();
+							// not my file
+
+							synchronized (MulticastDataBackupListener
+									.getInstance().mPendingChunks) {
+								for (FileChunk chunk : MulticastDataBackupListener
+										.getInstance().mPendingChunks) {
+									if (fileId.equals(chunk.getFileId())
+											&& chunk.getChunkNo() == chunkNo) {
+										chunk.incCurrentReplication();
+									}
+								}
 							}
 						}
 					}
-				}
+
+				});
 				break;
-			case ChunkRestore.CHUNK_COMMAND:
+			case ChunkRestore.GET_COMMAND:
 
 				fileId = header_components[2].trim();
 				chunkNo = Integer.parseInt(header_components[3].trim());
 
-				for (ChunkRecord record : mSubscribedChunks) {
-					if (record.fileId.equals(fileId)
-							&& record.chunkNo == chunkNo) {
-						// TODO : ask teacher what is the replication degree (if
-						// any) of the new file
-						byte[] data;
-						try {
-							data = components[1]
-									.getBytes(MulticastComunicator.ASCII_CODE);
+				new Thread(new Runnable() {
 
-							FileChunkWithData requestedChunk = new FileChunkWithData(
-									fileId, chunkNo, data);
-
-							ChunkRestore.getInstance().addRequestedChunk(
-									requestedChunk);
-						} catch (UnsupportedEncodingException e) {
-							e.printStackTrace();
+					@Override
+					public void run() {
+						ChunkRecord record = new ChunkRecord(fileId, chunkNo);
+						synchronized (interestingChunks) {
+							interestingChunks.add(record);
 						}
-					}
-				}
 
-				break;
+						FileChunk chunk = ConfigsManager.getInstance()
+								.getSavedChunk(fileId, chunkNo);
+
+						if (chunk != null) {
+							try {
+								Thread.sleep(random.nextInt(MAX_WAIT_TIME));
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+
+							if (!record.isNotified) {
+								// if no one else sent it:
+								interestingChunks.remove(record);
+								ChunkRestore.getInstance().sendChunk(chunk);
+							}
+						}// else I don't have it
+					}
+				});
+
 			default:
+				System.out.println("Received non recognized command");
 			}
 		}
 	}
 
-	public synchronized void subscribeToChunkData(String fileId, int chunkNo) {
-		mSubscribedChunks.add(new ChunkRecord(fileId, chunkNo));
-	}
-
-	private class ChunkRecord {
-		String fileId;
-		int chunkNo;
-
-		public ChunkRecord(String fileId, int chunkNo) {
-			this.fileId = fileId;
-			this.chunkNo = chunkNo;
+	public synchronized void notifyChunk(String fileId, int chunkNo) {
+		for (ChunkRecord record : interestingChunks) {
+			if (record.fileId.equals(fileId) && record.chunkNo == chunkNo) {
+				record.isNotified = true;
+			}
 		}
 	}
 }

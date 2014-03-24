@@ -121,7 +121,19 @@ public class ConfigsManager {
 		return mMDRport;
 	}
 
+	public String getChunksDestination() {
+		return database.getChunksDestination();
+	}
+	
+	public FileChunk getSavedChunk(String fileId, int chunkNo) {
+		return database.getSavedChunk(fileId, chunkNo);
+	}
+
 	// Setters
+	
+	public void setBackupsDestination(String dirPath) throws InvalidFolderException {
+	database.setBackupsDestination(dirPath);		
+	}
 
 	// Others
 
@@ -148,25 +160,6 @@ public class ConfigsManager {
 		}
 	}
 
-	/*
-	 * Exceptions
-	 */
-	public static class ConfigurationsNotInitializedException extends Exception {
-	}
-
-	public static class InvalidFolderException extends Exception {
-	}
-
-	public static class InvalidBackupSizeException extends Exception {
-	}
-
-	public static class InvalidChunkException extends Exception {
-	}
-
-	public void setBackupsDestination(String dirPath) throws InvalidFolderException {
-	database.setBackupsDestination(dirPath);		
-	}
-
 	public SharedFile getNewSharedFileInstance(String filePath, int replication) throws FileTooLargeException, FileDoesNotExistsExeption {
 		
 		return database.getNewSharedFileInstance(filePath, replication);
@@ -184,11 +177,23 @@ public class ConfigsManager {
 		database.setAvailSpace(newSpace);
 	}
 
-	public String getChunksDestination() {
-		return database.getChunksDestination();
-	}
-
 	public void incChunkReplication(String fileId, int chunkNo) throws InvalidChunkException {
 		database.incChunkReplication(fileId, chunkNo);
 	}
+	
+	/*
+	 * Exceptions
+	 */
+	public static class ConfigurationsNotInitializedException extends Exception {
+	}
+
+	public static class InvalidFolderException extends Exception {
+	}
+
+	public static class InvalidBackupSizeException extends Exception {
+	}
+
+	public static class InvalidChunkException extends Exception {
+	}
+
 }

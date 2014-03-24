@@ -19,6 +19,7 @@ public class ChunkBackup {
 	public static final String PUT_COMMAND = "PUTCHUNK";
 	public static final String STORED_COMMAND = "STORED";
 	private static final int PUT_TIME_INTERVAL = 500;
+	private static final int MAX_RETRIES = 5;
 
 	private static ChunkBackup sInstance = null;
 
@@ -65,7 +66,9 @@ public class ChunkBackup {
 		MulticastComunicator sender = new MulticastComunicator(multDBAddr,
 				multDBPort);
 		sender.join();
-
+		
+		int counter = 0;
+		
 		do {
 			sender.sendMessage(message);
 			try {
@@ -73,14 +76,15 @@ public class ChunkBackup {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			counter++;
 		} while (chunk.getDesiredReplicationDeg() > chunk
-				.getCurrentReplicationDeg());
+				.getCurrentReplicationDeg() || counter < MAX_RETRIES);
 
 		return true;
 
 	}
 
-	public boolean storeChunks(FileChunk chunk, byte[] data) {
+	public boolean storeChunk(FileChunk chunk, byte[] data) {
 
 		InetAddress multCtrlAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCtrlPort = ConfigsManager.getInstance().getMCPort();

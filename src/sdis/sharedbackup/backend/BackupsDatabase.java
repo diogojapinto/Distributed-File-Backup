@@ -20,8 +20,8 @@ public class BackupsDatabase implements Serializable {
 
 	private String mBackupFolder;
 	private int maxBackupSize; // stored in KB
-	private Map<String, SharedFile> mSharedFiles;
-	private ArrayList<FileChunk> mSavedChunks;
+	private Map<String, SharedFile> mSharedFiles;	// my shared files
+	private ArrayList<FileChunk> mSavedChunks;	// chunks from other users
 	private boolean mIsInitialized;
 
 	public BackupsDatabase() {
@@ -40,7 +40,7 @@ public class BackupsDatabase implements Serializable {
 		mSharedFiles.remove(fileID);
 	}
 
-	public void setAvailSpace(int space) throws InvalidBackupSizeException {
+	public synchronized void setAvailSpace(int space) throws InvalidBackupSizeException {
 		if (space <= 0) {
 			throw new InvalidBackupSizeException();
 		}
@@ -54,7 +54,7 @@ public class BackupsDatabase implements Serializable {
 		return mBackupFolder;
 	}
 
-	public void setBackupsDestination(String dest)
+	public synchronized void setBackupsDestination(String dest)
 			throws InvalidFolderException {
 
 		File destination = new File(dest);
@@ -74,7 +74,7 @@ public class BackupsDatabase implements Serializable {
 		}
 	}
 
-	public void incChunkReplication(String fileId, int chunkNo)
+	public synchronized void incChunkReplication(String fileId, int chunkNo)
 			throws InvalidChunkException {
 		SharedFile file = mSharedFiles.get(fileId);
 		if (file != null) {
@@ -131,5 +131,18 @@ public class BackupsDatabase implements Serializable {
 		} catch (IOException i) {
 			System.out.println("Could not save database");
 		}
+	}
+
+	public FileChunk getSavedChunk(String fileId, int chunkNo) {
+		FileChunk retChunk = null;
+		
+		for (FileChunk chunk : mSavedChunks) {
+			if (chunk.getFileId().equals(fileId) && chunk.getChunkNo() == chunkNo) {
+				retChunk = chunk;
+				break;
+			}
+		}
+		
+		return retChunk;
 	}
 }

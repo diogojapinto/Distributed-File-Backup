@@ -81,47 +81,55 @@ public class MulticastDataBackupListener implements Runnable {
 
 					@Override
 					public void run() {
-						FileChunk pendingChunk = new FileChunk(fileId, chunkNo,
-								desiredReplication);
 
-						synchronized (mPendingChunks) {
-							mPendingChunks.add(pendingChunk);
-						}
+						FileChunk savedChunk = ConfigsManager.getInstance()
+								.getSavedChunk(fileId, chunkNo);
 
-						try {
-							Thread.sleep(mRand.nextInt(MAX_WAIT_TIME));
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
+						if (savedChunk != null) {
+							FileChunk pendingChunk = new FileChunk(fileId,
+									chunkNo, desiredReplication);
 
-						// verify if it is needed to save the chunk
-
-						if (pendingChunk.getCurrentReplicationDeg() < pendingChunk
-								.getDesiredReplicationDeg()) {
+							synchronized (mPendingChunks) {
+								mPendingChunks.add(pendingChunk);
+							}
 
 							try {
-								ChunkBackup
-										.getInstance()
-										.storeChunks(
-												pendingChunk,
-												components[1]
-														.getBytes(MulticastComunicator.ASCII_CODE));
-							} catch (UnsupportedEncodingException e) {
+								Thread.sleep(mRand.nextInt(MAX_WAIT_TIME));
+							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
 
-						}
+							// verify if it is needed to save the chunk
 
-						// remove the temporary chunk from the pending chunks
-						// list
-						synchronized (mPendingChunks) {
-							mPendingChunks.remove(pendingChunk);
+							if (pendingChunk.getCurrentReplicationDeg() < pendingChunk
+									.getDesiredReplicationDeg()) {
+
+								try {
+									ChunkBackup
+											.getInstance()
+											.storeChunk(
+													pendingChunk,
+													components[1]
+															.getBytes(MulticastComunicator.ASCII_CODE));
+								} catch (UnsupportedEncodingException e) {
+									e.printStackTrace();
+								}
+
+							}
+
+							// remove the temporary chunk from the pending
+							// chunks
+							// list
+							synchronized (mPendingChunks) {
+								mPendingChunks.remove(pendingChunk);
+							}
 						}
 					}
 				}).start();
 
 				break;
 			default:
+				System.out.println("Received non recognized command");
 			}
 		}
 	}
