@@ -9,15 +9,18 @@ import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
-import sdis.sharedbackup.functionality.ApplicationInterface;
+
 
 public class CLIMonitor {
 	private static Scanner sc = new Scanner(System.in);
 	private static boolean exit = false;
 
 	public static int main(String[] args) {
-		// TODO: create a BackupsDatabase
-		// TODO: serialise the BackupsDatabase
+		// TODO: the functionality is all implemented in ApplicationInterface
+		// class, so that the functions may be called from another monitor, like
+		// a gui
+
+
 
 		try {
 			parseArgs(args);
@@ -63,30 +66,33 @@ public class CLIMonitor {
 	}
 
 	private static void setupService() {
+		ApplicationInterface.getInstance().startConfigsManager();
 
 		while (true) {
-			try {
-				ApplicationInterface.getInstance().setAvailableDiskSpace(
-						promptAvailableSpace());
-				break;
-			} catch (InvalidBackupSizeException e) {
-				System.err.println("Please input a size greater than 0KB");
-			} catch (InputMismatchException e1) {
-				System.err.println("Please input a valid integer value");
+			if (!ApplicationInterface.getInstance().getDatabaseStatus()) {
+				try {
+					ApplicationInterface.getInstance().setAvailableDiskSpace(
+							promptAvailableSpace());
+					break;
+				} catch (InvalidBackupSizeException e) {
+					System.err.println("Please input a size greater than 0KB");
+				} catch (InputMismatchException e1) {
+					System.err.println("Please input a valid integer value");
+				}
+
+				while (true) {
+					try {
+						ApplicationInterface
+								.getInstance()
+								.setDestinationDirectory(promptDestinationDir());
+						break;
+					} catch (InvalidFolderException e) {
+						System.err.println("Folder does not exist!!");
+					}
+				}
+				System.out.println("Setup Successfull");
 			}
 		}
-
-		while (true) {
-			try {
-				ApplicationInterface.getInstance().setDestinationDirectory(
-						promptDestinationDir());
-				break;
-			} catch (InvalidFolderException e) {
-				System.err.println("Folder does not exist!!");
-			}
-		}
-
-		System.out.println("Setup Successfull");
 	}
 
 	private static int promptAvailableSpace() throws InputMismatchException {
@@ -156,13 +162,13 @@ public class CLIMonitor {
 			return false;
 		case 4:
 			System.out.println("Choose file to delete:");
-			 String deletepath = sc.next();
-			 try {
+			String deletepath = sc.next();
+			try {
 				ApplicationInterface.getInstance().deleteFile(deletepath);
 			} catch (FileDoesNotExistsExeption e) {
 				System.out.println("The selected file does not exists");
 			}
-		
+
 			return false;
 		case 5:
 			exit = true;

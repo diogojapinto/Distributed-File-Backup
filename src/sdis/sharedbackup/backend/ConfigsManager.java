@@ -1,12 +1,15 @@
 package sdis.sharedbackup.backend;
 
-import java.io.File;
-import java.io.Serializable;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+
+import javax.imageio.stream.FileImageInputStream;
 
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
@@ -24,34 +27,51 @@ public class ConfigsManager {
 	private boolean mCheckState;
 	private InetAddress mMCaddr = null, mMDBaddr = null, mMDRaddr = null;
 	private int mMCport = 0, mMDBport = 0, mMDRport = 0;
-	private String mBackupFolder;
-	private int maxBackupSize; // stored in KB
-	private Map<String, SharedFile> mSharedFiles;
-	private ArrayList<FileChunk> mSavedChunks;
-	private boolean mIsInitialized;
 	private MulticastControlListener mMCListener;
 	private MulticastDataBackupListener mMDBListener;
 	private MulticastDataRestoreListener mMDRListener;
+	private boolean mDatabaseLoaded = false;
+	private boolean mIsInitialized = false;
+	private BackupsDatabase database = null;
 
 	private ConfigsManager() {
-		maxBackupSize = 0;
-		mBackupFolder = "";
-		mIsInitialized = false;
 		mMCListener = null;
 		mMDBListener = null;
 		mMDRListener = null;
-
-		mSharedFiles = new HashMap<String, SharedFile>();
-		mSavedChunks = new ArrayList<FileChunk>();
 	}
 
 	public static ConfigsManager getInstance() {
 		if (sInstance == null) {
 			sInstance = new ConfigsManager();
+			sInstance.mDatabaseLoaded = sInstance.loadDatabase();
 		}
 		return sInstance;
 	}
-
+	
+	public boolean getDatabaseStatus(){
+		return mDatabaseLoaded;
+	}
+	private boolean loadDatabase() {
+		try {
+			FileInputStream fileIn = new FileInputStream(".database.ser");
+			ObjectInputStream in = new ObjectInputStream(fileIn);
+			database = (BackupsDatabase) in.readObject();
+			in.close();
+			fileIn.close();
+			
+		} catch (FileNotFoundException e) {
+			database = new BackupsDatabase();
+			return false;
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return true;
+	}
+	
 	public String getVersion() {
 		return VERSION;
 	}
@@ -59,15 +79,7 @@ public class ConfigsManager {
 	public boolean isToCheckState() {
 		return mCheckState;
 	}
-	
-	public int getMaxBackupSize (){
-		return maxBackupSize;
-	}
-	
-	public void removeSharedFile (String fileID){
-		mSharedFiles.remove(fileID);
-	}
-	
+
 	public boolean setMulticastAddrs(String mcAddr, int mcPort, String mdbAddr,
 			int mdbPort, String mdrAddr, int mdrPort) {
 		try {
@@ -109,43 +121,9 @@ public class ConfigsManager {
 		return mMDRport;
 	}
 
-	public String getChunksDestination() {
-		return mBackupFolder;
-	}
-
 	// Setters
 
-	public void setAvailSpace(int space) throws InvalidBackupSizeException {
-		if (space <= 0) {
-			throw new InvalidBackupSizeException();
-		}
-
-		maxBackupSize = space;
-
-		checkInitialization();
-	}
-
-	public void setBackupsDestination(String dest)
-			throws InvalidFolderException {
-
-		File destination = new File(dest);
-
-		if (destination.isDirectory()) {
-			mBackupFolder = destination.getAbsolutePath();
-			mBackupFolder += new String("\\");
-			checkInitialization();
-		} else {
-			throw new InvalidFolderException();
-		}
-	}
-
 	// Others
-
-	private void checkInitialization() {
-		if (!mBackupFolder.equals("") && maxBackupSize != 0) {
-			mIsInitialized = true;
-		}
-	}
 
 	public void init() throws ConfigurationsNotInitializedException {
 		if (mIsInitialized) {
@@ -170,52 +148,6 @@ public class ConfigsManager {
 		}
 	}
 
-	public void incChunkReplication(String fileId, int chunkNo)
-			throws InvalidChunkException {
-		SharedFile file = mSharedFiles.get(fileId);
-		if (file != null) {
-			// This is the owner machine of chunk's parent file
-			file.incChunkReplication(chunkNo);
-		} else {
-			// It is a chunk saved in a backup operation
-			FileChunk chunk = null;
-			int nrSavedChunks = mSavedChunks.size();
-			for (int i = 0; i < nrSavedChunks; i++) {
-				chunk = mSavedChunks.get(i);
-				if (chunk.getFileId().equals(fileId)
-						&& chunk.getChunkNo() == chunkNo) {
-					break;
-				}
-			}
-
-			if (chunk != null) {
-				chunk.incCurrentReplication();
-
-			} else {
-				throw new InvalidChunkException();
-			}
-		}
-	}
-
-	/*
-	 * returns a chunk for saving in this computer
-	 */
-
-	public FileChunk getNewChunkForSavingInstance(String fileId, int chunkNo,
-			int desiredReplication) {
-		FileChunk chunk = new FileChunk(fileId, chunkNo, desiredReplication);
-		mSavedChunks.add(chunk);
-		return chunk;
-	}
-
-	public SharedFile getNewSharedFileInstance(String filePath,
-			int replicationDegree) throws FileTooLargeException,
-			FileDoesNotExistsExeption {
-		SharedFile file = new SharedFile(filePath, replicationDegree);
-		mSharedFiles.put(file.getFileId(), file);
-		return file;
-	}
-
 	/*
 	 * Exceptions
 	 */
@@ -229,5 +161,34 @@ public class ConfigsManager {
 	}
 
 	public static class InvalidChunkException extends Exception {
+	}
+
+	public void setBackupsDestination(String dirPath) throws InvalidFolderException {
+	database.setBackupsDestination(dirPath);		
+	}
+
+	public SharedFile getNewSharedFileInstance(String filePath, int replication) throws FileTooLargeException, FileDoesNotExistsExeption {
+		
+		return database.getNewSharedFileInstance(filePath, replication);
+	}
+
+	public void removeSharedFile(String deletedFileID) {
+		database.removeSharedFile(deletedFileID);		
+	}
+
+	public int getMaxBackupSize() {
+		return database.getMaxBackupSize();
+	}
+
+	public void setAvailSpace(int newSpace) throws InvalidBackupSizeException {
+		database.setAvailSpace(newSpace);
+	}
+
+	public String getChunksDestination() {
+		return database.getChunksDestination();
+	}
+
+	public void incChunkReplication(String fileId, int chunkNo) throws InvalidChunkException {
+		database.incChunkReplication(fileId, chunkNo);
 	}
 }
