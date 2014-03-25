@@ -32,7 +32,7 @@ public class ChunkRestore {
 		mRequestedChunks = new ArrayList<FileChunkWithData>();
 	}
 
-	public FileChunkWithData requestChunk(String fileId, int chunkNo) {
+	public FileChunkWithData requestChunk(String fileId, long chunkNo) {
 
 		FileChunkWithData retChunk = null;
 

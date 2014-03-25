@@ -1,5 +1,6 @@
 package sdis.sharedbackup.functionality;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,11 +8,13 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import sdis.sharedbackup.backend.FileChunk;
+import sdis.sharedbackup.backend.FileChunkWithData;
 import sdis.sharedbackup.backend.SharedFile;
+import sdis.sharedbackup.protocols.ChunkRestore;
 
 public class FileRestore {
 	private static FileRestore mInstance = null;
-	
+
 	private Map<String, ArrayList<FileChunk>> receivedChunks;
 
 	private FileRestore() {
@@ -21,39 +24,46 @@ public class FileRestore {
 		return (mInstance == null) ? mInstance = new FileRestore() : mInstance;
 	}
 
-	private boolean receivedAllChunks(SharedFile file) {
-		if (receivedChunks.size() == file.getChunkList().size()) {
-			return true;
-		} else {
-			return false;
+	public boolean restoreFile(SharedFile file) {
+		// TODO: set file's path ???
+		ArrayList<FileChunkWithData> receivedChunks = new ArrayList<FileChunkWithData>();
+
+		for (FileChunk chunk : file.getChunkList()) {
+			receivedChunks.add(ChunkRestore.getInstance().requestChunk(
+					chunk.getFileId(), chunk.getChunkNo()));
 		}
+
+		rebuildFile(file, receivedChunks);
+
+		return true;
 	}
 
-	private boolean rebuildFile(String filePath, ArrayList<FileChunk> chunks,
-			SharedFile shared) {
-		byte[] body = new byte[(int) shared.getFileSize()];
-		int i;
-		for (i = 0; i < chunks.size(); i++) {
-			// add chunkBody to body
+	private boolean rebuildFile(SharedFile file,
+			ArrayList<FileChunkWithData> chunks) {
+
+		for (FileChunkWithData chunk : chunks) {
+			if (!appendToFile(chunk.getData(), file.getFilePath())) {
+				return false;
+			}
 		}
+
+		return true;
+	}
+
+	private boolean appendToFile(byte[] data, String filePath) {
+
+		FileOutputStream os = null;
 		try {
-			writeFile(body, filePath);
+			os = new FileOutputStream(new File(filePath), true);
+
+			os.write(data);
+			os.close();
+			return true;
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return true;
-	}
 
-	private boolean writeFile(byte[] data, String filePath) throws IOException {
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(filePath);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		fos.write(data);
-		fos.close();
-		return true;
+		return false;
 	}
 }

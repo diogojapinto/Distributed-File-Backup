@@ -105,8 +105,8 @@ public class MulticastDataRestoreListener implements Runnable {
 		}
 	}
 
-	public synchronized void subscribeToChunkData(String fileId, int chunkNo) {
-		mSubscribedChunks.add(new ChunkRecord(fileId, chunkNo));
+	public synchronized void subscribeToChunkData(String fileId, long chunkNo) {
+		mSubscribedChunks.add(new ChunkRecord(fileId, (int) chunkNo));
 	}
 
 	static class ChunkRecord {

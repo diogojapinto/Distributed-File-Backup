@@ -70,6 +70,8 @@ public class MulticastDataBackupListener implements Runnable {
 
 			switch (messageType) {
 			case ChunkBackup.PUT_COMMAND:
+				
+				// TODO: check actual size
 
 				final String fileId = header_components[2].trim();
 				final int chunkNo = Integer.parseInt(header_components[3]
