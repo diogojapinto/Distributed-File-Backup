@@ -10,6 +10,7 @@ import javax.naming.ConfigurationException;
 import sdis.sharedbackup.protocols.ChunkBackup;
 import sdis.sharedbackup.protocols.ChunkRestore;
 import sdis.sharedbackup.protocols.FileDeletion;
+import sdis.sharedbackup.protocols.SpaceReclaiming;
 
 /*
  * Class that receives and dispatches messages from the multicast control channel
@@ -140,6 +141,34 @@ public class MulticastControlListener implements Runnable {
 
 					public void run() {
 						ConfigsManager.getInstance().removeByFileId(fileId);
+					}
+				});
+				break;
+			case SpaceReclaiming.REMOVED_COMMAND:
+
+				fileId = header_components[2].trim();
+				chunkNo = Integer.parseInt(header_components[3].trim());
+
+				new Thread(new Runnable() {
+
+					@Override
+					public void run() {
+
+						FileChunk chunk = ConfigsManager.getInstance()
+								.getSavedChunk(fileId, chunkNo);
+
+						if (chunk != null) {
+							if (chunk.decCurrentReplication() < chunk.getDesiredReplicationDeg()) {
+								try {
+									Thread.sleep(random.nextInt(MAX_WAIT_TIME));
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+								
+								ChunkBackup.getInstance().putChunk(chunk);
+							}
+														
+						} // else I don't have it
 					}
 				});
 				break;
