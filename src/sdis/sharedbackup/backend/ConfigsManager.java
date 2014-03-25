@@ -164,7 +164,10 @@ public class ConfigsManager {
 		
 		return database.getNewSharedFileInstance(filePath, replication);
 	}
-
+	
+	public void removeByFileId (String fileId) {
+		database.removeByFileId(fileId);
+	}
 	public void removeSharedFile(String deletedFileID) {
 		database.removeSharedFile(deletedFileID);		
 	}

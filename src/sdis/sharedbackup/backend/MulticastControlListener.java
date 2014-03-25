@@ -10,6 +10,7 @@ import javax.naming.ConfigurationException;
 import sdis.sharedbackup.backend.MulticastDataRestoreListener.ChunkRecord;
 import sdis.sharedbackup.protocols.ChunkBackup;
 import sdis.sharedbackup.protocols.ChunkRestore;
+import sdis.sharedbackup.protocols.FileDeletion;
 
 /*
  * Class that receives and dispatches messages from the multicast control channel
@@ -138,7 +139,19 @@ public class MulticastControlListener implements Runnable {
 						}// else I don't have it
 					}
 				});
+				break;
 
+			case FileDeletion.DELETE_COMMAND:
+
+				fileId = header_components[2].trim();
+
+				new Thread(new Runnable() {
+
+					public void run() {
+						ConfigsManager.getInstance().removeByFileId(fileId);
+					}
+				});
+				break;
 			default:
 				System.out.println("Received non recognized command");
 			}
