@@ -88,11 +88,11 @@ public class ChunkRestore {
 				+ " " + chunk.getChunkNo() + " " + MulticastComunicator.CRLF
 				+ MulticastComunicator.CRLF + chunk.getData();
 
-		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
-		int multCPort = ConfigsManager.getInstance().getMCPort();
+		InetAddress multDBAddr = ConfigsManager.getInstance().getMDBAddr();
+		int multDBPort = ConfigsManager.getInstance().getMDBPort();
 
-		MulticastComunicator sender = new MulticastComunicator(multCAddr,
-				multCPort);
+		MulticastComunicator sender = new MulticastComunicator(multDBAddr,
+				multDBPort);
 
 		sender.join();
 
