@@ -19,7 +19,7 @@ public class SpaceReclaiming {
 	private SpaceReclaiming() {
 	}
 	
-	public boolean reclaimSpace() {
+	public boolean reclaimSpace(FileChunk chunk) {
 		
 	}
 	
