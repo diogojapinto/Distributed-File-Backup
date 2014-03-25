@@ -145,4 +145,12 @@ public class BackupsDatabase implements Serializable {
 		
 		return retChunk;
 	}
+	
+	public void removeByFileId (String fileId) {
+		for(FileChunk chunk : mSavedChunks){
+			if (chunk.getFileId() == fileId){
+				mSavedChunks.remove(chunk);
+			}
+		}
+	}
 }
