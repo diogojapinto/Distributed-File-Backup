@@ -8,7 +8,7 @@ import java.net.MulticastSocket;
 
 public class MulticastComunicator {
 	private static int TTL = 1;
-	
+
 	private MulticastSocket mMSocket;
 	private InetAddress mAddr;
 	private int mPort;
@@ -16,7 +16,7 @@ public class MulticastComunicator {
 
 	private static final int MAX_PACKET_SIZE = 70000;
 	public static final String ASCII_CODE = "US-ASCII";
-	
+
 	public static final String CRLF = new String("\r\n");
 
 	public MulticastComunicator(InetAddress addr, int port) {
@@ -42,7 +42,7 @@ public class MulticastComunicator {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
+
 		mHasJoined = true;
 	}
 
@@ -59,7 +59,8 @@ public class MulticastComunicator {
 			return false;
 		}
 
-		DatagramPacket packet = new DatagramPacket(bytesMsg, bytesMsg.length);getClass();
+		DatagramPacket packet = new DatagramPacket(bytesMsg, bytesMsg.length);
+		getClass();
 		try {
 			mMSocket.setTimeToLive(TTL);
 		} catch (IOException e1) {
@@ -89,7 +90,7 @@ public class MulticastComunicator {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		String returnStr;
 
 		try {
@@ -99,7 +100,41 @@ public class MulticastComunicator {
 			e.printStackTrace();
 			return null;
 		}
-		
+
+		return returnStr;
+	}
+
+	/*
+	 * Receives as argument a SenderRecord to be initialized in this function
+	 */
+	public String receiveMessage(SenderRecord record) {
+		byte[] bytesMsg = new byte[MAX_PACKET_SIZE];
+
+		DatagramPacket packet = new DatagramPacket(bytesMsg, bytesMsg.length);
+
+		try {
+			mMSocket.receive(packet);
+		} catch (IOException e) {
+			System.err.println("Failed to send packet");
+			e.printStackTrace();
+			return null;
+		}
+
+		if (record != null) {
+			record.setAddr(packet.getAddress());
+			record.setPort(packet.getPort());
+		}
+
+		String returnStr;
+
+		try {
+			returnStr = new String(packet.getData(), ASCII_CODE);
+		} catch (UnsupportedEncodingException e) {
+			System.err.println("Could not parse received message");
+			e.printStackTrace();
+			return null;
+		}
+
 		return returnStr;
 	}
 

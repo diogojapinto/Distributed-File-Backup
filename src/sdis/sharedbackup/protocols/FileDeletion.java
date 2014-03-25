@@ -9,6 +9,7 @@ import sdis.sharedbackup.backend.MulticastComunicator;
 public class FileDeletion {
 
 	public static final String DELETE_COMMAND = "DELETE";
+	public static final String RESPONSE_COMMAND = "WASDELETED";
 
 	private static FileDeletion sInstance = null;
 
@@ -37,6 +38,28 @@ public class FileDeletion {
 		MulticastComunicator sender = new MulticastComunicator(multCAddr,
 				multCPort);
 		sender.join();
+
+		sender.sendMessage(message);
+
+		return true;
+	}
+
+	public boolean respond(String fileId) {
+		String version = ConfigsManager.getInstance().getEnhancementsVersion();
+
+		String message = "";
+
+		message += RESPONSE_COMMAND + " " + fileId + " "
+				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
+
+		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
+		int multCPort = ConfigsManager.getInstance().getMCPort();
+
+		MulticastComunicator sender = new MulticastComunicator(multCAddr,
+				multCPort);
+		sender.join();
+
+		sender.sendMessage(message);
 
 		return true;
 	}

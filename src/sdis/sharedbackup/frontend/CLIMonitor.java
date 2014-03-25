@@ -16,17 +16,11 @@ public class CLIMonitor {
 	private static boolean exit = false;
 
 	public static int main(String[] args) {
-		// TODO: the functionality is all implemented in ApplicationInterface
-		// class, so that the functions may be called from another monitor, like
-		// a gui
+
 		// TODO: save the database whenever needed
 		// TODO: manage threads through executor in config manager
+		// TODO: see if some thread.start is missing
 		
-		// TODO: extra: log messages
-		// TODO: separate by just CRLF
-		// TODO: get folder size
-
-
 		try {
 			parseArgs(args);
 		} catch (ArgsException e) {

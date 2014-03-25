@@ -1,8 +1,14 @@
 package sdis.sharedbackup.backend;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import sdis.sharedbackup.protocols.ChunkRestore;
 
@@ -10,6 +16,8 @@ import sdis.sharedbackup.protocols.ChunkRestore;
  * Class that receives and dispatches messages from the multicast data restore channel
  */
 public class MulticastDataRestoreListener implements Runnable {
+
+	private static final int BUFFER_SIZE = 70000;
 
 	private static MulticastDataRestoreListener mInstance = null;
 
@@ -82,13 +90,16 @@ public class MulticastDataRestoreListener implements Runnable {
 
 									ChunkRestore.getInstance()
 											.addRequestedChunk(requestedChunk);
+
+									mSubscribedChunks.remove(record);
+									break;
 								} catch (UnsupportedEncodingException e) {
 									e.printStackTrace();
 								}
 							}
 						}
 					}
-				});
+				}).start();
 
 				break;
 			default:
@@ -99,6 +110,93 @@ public class MulticastDataRestoreListener implements Runnable {
 
 	public synchronized void subscribeToChunkData(String fileId, long chunkNo) {
 		mSubscribedChunks.add(new ChunkRecord(fileId, (int) chunkNo));
+	}
+
+	private class restoreListenerIPListener implements Runnable {
+
+		@Override
+		public void run() {
+			DatagramSocket restoreSocket = null;
+			try {
+				restoreSocket = new DatagramSocket(
+						ChunkRestore.ENHANCEMENT_SEND_PORT);
+			} catch (SocketException e) {
+				System.out
+						.println("Could not open the desired port for restore");
+				e.printStackTrace();
+				System.exit(-1);
+			}
+
+			byte[] buffer = new byte[BUFFER_SIZE];
+			DatagramPacket packet = new DatagramPacket(buffer, BUFFER_SIZE);
+
+			try {
+				restoreSocket.receive(packet);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			final SenderRecord sender = new SenderRecord();
+			sender.setAddr(packet.getAddress());
+			sender.setPort(packet.getPort());
+
+			String message = null;
+
+			try {
+				message = new String(packet.getData(),
+						MulticastComunicator.ASCII_CODE).trim();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+
+			final String[] components = message.trim().split(
+					MulticastComunicator.CRLF + MulticastComunicator.CRLF);
+
+			String[] headerComponents = components[0].trim().split(" ");
+
+			switch (headerComponents[0]) {
+			case ChunkRestore.CHUNK_COMMAND:
+				final String fileId = headerComponents[2];
+				final int chunkNo = Integer.parseInt(headerComponents[3]);
+
+				new Thread(new Runnable() {
+
+					@Override
+					public void run() {
+						for (ChunkRecord record : mSubscribedChunks) {
+							if (record.fileId.equals(fileId)
+									&& record.chunkNo == chunkNo) {
+								byte[] data;
+								try {
+									data = components[1]
+											.getBytes(MulticastComunicator.ASCII_CODE);
+
+									FileChunkWithData requestedChunk = new FileChunkWithData(
+											fileId, chunkNo, data);
+
+									ChunkRestore.getInstance()
+											.addRequestedChunk(requestedChunk);
+
+									ChunkRestore.getInstance()
+											.answerToChunkMessage(
+													sender.getAddr(),
+													sender.getPort());
+
+									mSubscribedChunks.remove(record);
+									break;
+								} catch (UnsupportedEncodingException e) {
+									e.printStackTrace();
+								}
+							}
+						}
+					}
+				}).start();
+
+				break;
+			default:
+				System.out.println("Received non recognized command");
+			}
+		}
 	}
 
 }

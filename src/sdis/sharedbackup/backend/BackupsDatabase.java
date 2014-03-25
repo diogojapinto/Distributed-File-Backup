@@ -23,7 +23,7 @@ public class BackupsDatabase implements Serializable {
 	private Map<String, SharedFile> mSharedFiles; // my shared files
 	private ArrayList<FileChunk> mSavedChunks; // chunks from other users
 	private boolean mIsInitialized;
-	private ArrayList<String> mDeletedFiles;
+	private Map<String, Integer> mDeletedFiles;
 
 	public BackupsDatabase() {
 		mIsInitialized = false;
@@ -31,6 +31,7 @@ public class BackupsDatabase implements Serializable {
 		mBackupFolder = "";
 		mSharedFiles = new HashMap<String, SharedFile>();
 		mSavedChunks = new ArrayList<FileChunk>();
+		mDeletedFiles = new HashMap<String, Integer>();
 	}
 
 	public int getMaxBackupSize() {
@@ -38,8 +39,8 @@ public class BackupsDatabase implements Serializable {
 	}
 
 	public void removeSharedFile(String fileID) {
+		mDeletedFiles.put(fileID, mSharedFiles.get(fileID).getDesiredReplication());
 		mSharedFiles.remove(fileID);
-		mDeletedFiles.add(fileID);
 	}
 
 	public synchronized void setAvailSpace(int space)
@@ -186,4 +187,23 @@ public class BackupsDatabase implements Serializable {
 	public boolean fileIsTracked (String fileId) {
 		return mSharedFiles.containsKey(fileId);
 	}
+	
+	public synchronized ArrayList<String> getDeletedFilesIds() {
+		ArrayList<String> filesIds = new ArrayList<String>();
+		for (String key: mDeletedFiles.keySet()) {
+			filesIds.add(key);
+		}
+		
+		return filesIds;
+	}
+	
+	public synchronized void decDeletedFileCount(String fileId) {
+		int newReplication = mDeletedFiles.get(fileId).intValue() - 1;
+		if (newReplication <= 0) {
+			mDeletedFiles.remove(fileId);
+		} else {
+			mDeletedFiles.put(fileId, newReplication);
+		}
+	}
+	
 }
