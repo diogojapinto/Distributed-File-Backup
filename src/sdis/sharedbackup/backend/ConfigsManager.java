@@ -21,6 +21,7 @@ public class ConfigsManager {
 
 	// constants
 	private static final String VERSION = "1.0";
+	private static final String ENHANCEMENTS_VERSION = "1.24";
 
 	// static members
 	private static ConfigsManager sInstance = null;
@@ -81,6 +82,10 @@ public class ConfigsManager {
 
 	public String getVersion() {
 		return VERSION;
+	}
+	
+	public String getEnhancementsVersion() {
+		return ENHANCEMENTS_VERSION;
 	}
 
 	public boolean isToCheckState() {
@@ -156,9 +161,10 @@ public class ConfigsManager {
 
 		return retChunk;
 	}
-	
+
 	public long getBackupDirActualSize() {
-		return EnvironmentVerifier.getFolderSize(database.getChunksDestination());
+		return EnvironmentVerifier.getFolderSize(database
+				.getChunksDestination());
 	}
 
 	// Setters
@@ -173,6 +179,7 @@ public class ConfigsManager {
 	public void init() throws ConfigurationsNotInitializedException {
 		if (mIsInitialized) {
 			startupListeners();
+			new Thread(new FileDeletionChecker()).start();
 		} else {
 			throw new ConfigurationsNotInitializedException();
 		}
@@ -223,10 +230,19 @@ public class ConfigsManager {
 	public boolean deleteChunk(ChunkRecord record) {
 		return database.removeSingleChunk(record);
 	}
-	
-	public boolean fileIsTracked (String fileId){
+
+	public boolean fileIsTracked(String fileId) {
 		return database.fileIsTracked(fileId);
 	}
+
+	public ArrayList<String> getDeletedFiles() {
+		return database.getDeletedFilesIds();
+	}
+
+	public void decDeletedFileReplication(String fileId) {
+		database.decDeletedFileCount(fileId);
+	}
+
 	/*
 	 * Exceptions
 	 */

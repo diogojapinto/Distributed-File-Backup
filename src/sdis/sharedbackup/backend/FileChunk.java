@@ -168,7 +168,11 @@ public class FileChunk {
 
 	// Setters
 
-	public synchronized void incCurrentReplication() {
-		mCurrentReplicationDegree++;
+	public synchronized int incCurrentReplication() {
+		return ++mCurrentReplicationDegree;
+	}
+
+	public synchronized int decCurrentReplication() {
+		return --mCurrentReplicationDegree;
 	}
 }
