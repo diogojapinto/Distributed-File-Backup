@@ -20,8 +20,8 @@ public class BackupsDatabase implements Serializable {
 
 	private String mBackupFolder;
 	private int maxBackupSize; // stored in KB
-	private Map<String, SharedFile> mSharedFiles;	// my shared files
-	private ArrayList<FileChunk> mSavedChunks;	// chunks from other users
+	private Map<String, SharedFile> mSharedFiles; // my shared files
+	private ArrayList<FileChunk> mSavedChunks; // chunks from other users
 	private boolean mIsInitialized;
 
 	public BackupsDatabase() {
@@ -40,7 +40,8 @@ public class BackupsDatabase implements Serializable {
 		mSharedFiles.remove(fileID);
 	}
 
-	public synchronized void setAvailSpace(int space) throws InvalidBackupSizeException {
+	public synchronized void setAvailSpace(int space)
+			throws InvalidBackupSizeException {
 		if (space <= 0) {
 			throw new InvalidBackupSizeException();
 		}
@@ -119,7 +120,7 @@ public class BackupsDatabase implements Serializable {
 		mSharedFiles.put(file.getFileId(), file);
 		return file;
 	}
-	
+
 	private void saveDatabase() {
 		try {
 			FileOutputStream fileOut = new FileOutputStream(".database.ser");
@@ -135,23 +136,48 @@ public class BackupsDatabase implements Serializable {
 
 	public FileChunk getSavedChunk(String fileId, int chunkNo) {
 		FileChunk retChunk = null;
-		
+
 		for (FileChunk chunk : mSavedChunks) {
-			if (chunk.getFileId().equals(fileId) && chunk.getChunkNo() == chunkNo) {
+			if (chunk.getFileId().equals(fileId)
+					&& chunk.getChunkNo() == chunkNo) {
 				retChunk = chunk;
 				break;
 			}
 		}
-		
+
 		return retChunk;
 	}
-	
-	public void removeByFileId (String fileId) {
-		for(FileChunk chunk : mSavedChunks){
-			if (chunk.getFileId().equals(fileId)){
+
+	public boolean removeByFileId(String fileId) {
+
+		for (FileChunk chunk : mSavedChunks) {
+			if (chunk.getFileId().equals(fileId)) {
 				mSavedChunks.remove(chunk);
-				// TODO CALL removeData
+				if (!chunk.removeData()) {
+					return false;
+				}
 			}
 		}
+
+		return true;
+	}
+
+	public boolean removeSingleChunk(ChunkRecord record) {
+		for (FileChunk chunk : mSavedChunks) {
+			if (chunk.getFileId().equals(record.fileId)
+					&& chunk.getChunkNo() == record.chunkNo) {
+				mSavedChunks.remove(chunk);
+				if (!chunk.removeData()) {
+					return false;
+				} else {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public ArrayList<FileChunk> getSavedChunks() {
+		return mSavedChunks;
 	}
 }

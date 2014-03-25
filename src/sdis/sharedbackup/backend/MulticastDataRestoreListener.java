@@ -36,16 +36,8 @@ public class MulticastDataRestoreListener implements Runnable {
 		while (true) {
 			String message = receiver.receiveMessage();
 			final String[] components;
-			String separator = null;
-			try {
-				separator = new String(MulticastComunicator.CRLF,
-						MulticastComunicator.ASCII_CODE)
-						+ " "
-						+ new String(MulticastComunicator.CRLF,
-								MulticastComunicator.ASCII_CODE);
-			} catch (UnsupportedEncodingException e1) {
-				e1.printStackTrace();
-			}
+			String separator = MulticastComunicator.CRLF
+					+ MulticastComunicator.CRLF;
 
 			components = message.trim().split(separator);
 
@@ -107,18 +99,6 @@ public class MulticastDataRestoreListener implements Runnable {
 
 	public synchronized void subscribeToChunkData(String fileId, long chunkNo) {
 		mSubscribedChunks.add(new ChunkRecord(fileId, (int) chunkNo));
-	}
-
-	static class ChunkRecord {
-		String fileId;
-		int chunkNo;
-		boolean isNotified;
-
-		public ChunkRecord(String fileId, int chunkNo) {
-			this.fileId = fileId;
-			this.chunkNo = chunkNo;
-			this.isNotified = false;
-		}
 	}
 
 }

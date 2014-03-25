@@ -40,24 +40,8 @@ public class ChunkRestore {
 
 		String message = "";
 
-		try {
-			message += GET_COMMAND
-					+ " "
-					+ version
-					+ " "
-					+ fileId
-					+ " "
-					+ chunkNo
-					+ " "
-					+ new String(MulticastComunicator.CRLF,
-							MulticastComunicator.ASCII_CODE)
-					+ " "
-					+ new String(MulticastComunicator.CRLF,
-							MulticastComunicator.ASCII_CODE);
-
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
+		message += GET_COMMAND + " " + version + " " + fileId + " " + chunkNo
+				+ " " + MulticastComunicator.CRLF + MulticastComunicator.CRLF;
 
 		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCPort = ConfigsManager.getInstance().getMCPort();
@@ -100,24 +84,9 @@ public class ChunkRestore {
 
 		String message = "";
 
-		try {
-			message += CHUNK_COMMAND
-					+ " "
-					+ version
-					+ " "
-					+ chunk.getFileId()
-					+ " "
-					+ chunk.getChunkNo()
-					+ " "
-					+ new String(MulticastComunicator.CRLF,
-							MulticastComunicator.ASCII_CODE)
-					+ " "
-					+ new String(MulticastComunicator.CRLF,
-							MulticastComunicator.ASCII_CODE) + chunk.getData();
-
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
+		message += CHUNK_COMMAND + " " + version + " " + chunk.getFileId()
+				+ " " + chunk.getChunkNo() + " " + MulticastComunicator.CRLF
+				+ MulticastComunicator.CRLF + chunk.getData();
 
 		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCPort = ConfigsManager.getInstance().getMCPort();
@@ -126,7 +95,7 @@ public class ChunkRestore {
 				multCPort);
 
 		sender.join();
-		
+
 		sender.sendMessage(message);
 
 		return true;

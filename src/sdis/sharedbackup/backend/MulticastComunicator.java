@@ -17,7 +17,7 @@ public class MulticastComunicator {
 	private static final int MAX_PACKET_SIZE = 70000;
 	public static final String ASCII_CODE = "US-ASCII";
 	
-	public static final byte[] CRLF = { 0xD, 0xA };
+	public static final String CRLF = new String("\r\n");
 
 	public MulticastComunicator(InetAddress addr, int port) {
 		this.mAddr = addr;

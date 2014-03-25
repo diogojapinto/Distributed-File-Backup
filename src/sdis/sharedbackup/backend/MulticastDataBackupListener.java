@@ -42,16 +42,8 @@ public class MulticastDataBackupListener implements Runnable {
 		while (true) {
 			String message = receiver.receiveMessage();
 			final String[] components;
-			String separator = null;
-			try {
-				separator = new String(MulticastComunicator.CRLF,
-						MulticastComunicator.ASCII_CODE)
-						+ " "
-						+ new String(MulticastComunicator.CRLF,
-								MulticastComunicator.ASCII_CODE);
-			} catch (UnsupportedEncodingException e1) {
-				e1.printStackTrace();
-			}
+			String separator = MulticastComunicator.CRLF
+					+ MulticastComunicator.CRLF;
 
 			components = message.trim().split(separator);
 
@@ -70,8 +62,12 @@ public class MulticastDataBackupListener implements Runnable {
 
 			switch (messageType) {
 			case ChunkBackup.PUT_COMMAND:
-				
-				// TODO: check actual size
+
+				if (ConfigsManager.getInstance().getBackupDirActualSize()
+						+ FileChunk.MAX_CHUNK_SIZE >= ConfigsManager
+						.getInstance().getMaxBackupSize()) {
+					continue;
+				}
 
 				final String fileId = header_components[2].trim();
 				final int chunkNo = Integer.parseInt(header_components[3]
