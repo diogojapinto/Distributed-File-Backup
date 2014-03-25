@@ -223,7 +223,10 @@ public class ConfigsManager {
 	public boolean deleteChunk(ChunkRecord record) {
 		return database.removeSingleChunk(record);
 	}
-
+	
+	public boolean fileIsTracked (String fileId){
+		return database.fileIsTracked(fileId);
+	}
 	/*
 	 * Exceptions
 	 */

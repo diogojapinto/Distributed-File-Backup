@@ -12,6 +12,7 @@ import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 import sdis.sharedbackup.functionality.FileBackup;
 import sdis.sharedbackup.protocols.SpaceReclaiming;
+import sdis.sharedbackup.protocols.FileDeletion;
 
 public class ApplicationInterface {
 
@@ -68,9 +69,14 @@ public class ApplicationInterface {
 		File f = new File(filepath);
 		String deletedFileID = sdis.sharedbackup.utils.Encoder
 				.generateBitString(f);
-		// funcao para mandar a msg de delete com deleted File ID
-		ConfigsManager.getInstance().removeSharedFile(deletedFileID);
-		return false;
+		if (ConfigsManager.getInstance().fileIsTracked(deletedFileID)) {
+			FileDeletion.getInstance().deleteFile(deletedFileID);
+			ConfigsManager.getInstance().removeSharedFile(deletedFileID);
+			return true;
+		} else {
+			System.out.println("File is not tracked");
+			return false;
+		}
 	}
 
 	public boolean setNewSpace(int newSpace) {
@@ -81,13 +87,15 @@ public class ApplicationInterface {
 				System.out.println("The selected size is invalid");
 			}
 		} else {
-			
+
 			do {
-			FileChunk chunk = ConfigsManager.getInstance().getNextDispensableChunk();
+				FileChunk chunk = ConfigsManager.getInstance()
+						.getNextDispensableChunk();
 				SpaceReclaiming.getInstance().reclaimSpace(chunk);
-			} while( ConfigsManager.getInstance().getBackupDirActualSize() > ConfigsManager.getInstance().getMaxBackupSize());
+			} while (ConfigsManager.getInstance().getBackupDirActualSize() > ConfigsManager
+					.getInstance().getMaxBackupSize());
 		}
-		
+
 		return false;
 	}
 

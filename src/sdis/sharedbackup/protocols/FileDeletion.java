@@ -12,7 +12,7 @@ public class FileDeletion {
 
 	private static FileDeletion sInstance = null;
 
-	private static FileDeletion getInstance() {
+	public static FileDeletion getInstance() {
 		if (sInstance == null) {
 			sInstance = new FileDeletion();
 		}
@@ -31,11 +31,11 @@ public class FileDeletion {
 		message += DELETE_COMMAND + " " + fileId + " "
 				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
 
-		InetAddress multDBAddr = ConfigsManager.getInstance().getMDBAddr();
-		int multDBPort = ConfigsManager.getInstance().getMDBPort();
+		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
+		int multCPort = ConfigsManager.getInstance().getMCPort();
 
-		MulticastComunicator sender = new MulticastComunicator(multDBAddr,
-				multDBPort);
+		MulticastComunicator sender = new MulticastComunicator(multCAddr,
+				multCPort);
 		sender.join();
 
 		return true;
