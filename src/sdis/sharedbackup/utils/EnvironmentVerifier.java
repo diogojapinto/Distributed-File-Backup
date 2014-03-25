@@ -14,7 +14,7 @@ public class EnvironmentVerifier {
 
 		if (folder.isDirectory()) {
 			return folder.getTotalSpace();
-		}
+		}	
 
 		return -1;
 	}
