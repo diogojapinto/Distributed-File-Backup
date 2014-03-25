@@ -184,6 +184,10 @@ public class ConfigsManager {
 		database.incChunkReplication(fileId, chunkNo);
 	}
 	
+	public boolean fileIsTracked (String fileId){
+		return database.fileIsTracked(fileId);
+	}
+	
 	/*
 	 * Exceptions
 	 */

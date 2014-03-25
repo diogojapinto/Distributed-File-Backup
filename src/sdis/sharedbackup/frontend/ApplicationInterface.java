@@ -10,6 +10,7 @@ import sdis.sharedbackup.backend.SharedFile;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 import sdis.sharedbackup.functionality.FileBackup;
+import sdis.sharedbackup.protocols.FileDeletion;
 
 public class ApplicationInterface {
 
@@ -66,9 +67,14 @@ public class ApplicationInterface {
 		File f = new File(filepath);
 		String deletedFileID = sdis.sharedbackup.utils.Encoder
 				.generateBitString(f);
-		// funcao para mandar a msg de delete com deleted File ID
-		ConfigsManager.getInstance().removeSharedFile(deletedFileID);
-		return false;
+		if (ConfigsManager.getInstance().fileIsTracked(deletedFileID)) {
+			FileDeletion.getInstance().deleteFile(deletedFileID);
+			ConfigsManager.getInstance().removeSharedFile(deletedFileID);
+			return true;
+		} else {
+			System.out.println("File is not tracked");
+			return false;
+		}
 	}
 
 	public boolean setNewSpace(int newSpace) {
@@ -83,11 +89,11 @@ public class ApplicationInterface {
 		}
 		return false;
 	}
-	
+
 	public void startConfigsManager() {
 		ConfigsManager.getInstance();
 	}
-	
+
 	public boolean getDatabaseStatus() {
 		return ConfigsManager.getInstance().getDatabaseStatus();
 	}

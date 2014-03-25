@@ -23,6 +23,7 @@ public class BackupsDatabase implements Serializable {
 	private Map<String, SharedFile> mSharedFiles;	// my shared files
 	private ArrayList<FileChunk> mSavedChunks;	// chunks from other users
 	private boolean mIsInitialized;
+	private ArrayList<SharedFile> mDeletedFiles;
 
 	public BackupsDatabase() {
 		mIsInitialized = false;
@@ -153,5 +154,9 @@ public class BackupsDatabase implements Serializable {
 				// TODO CALL removeData
 			}
 		}
+	}
+	
+	public boolean fileIsTracked (String fileId) {
+		return mSharedFiles.containsKey(fileId);
 	}
 }
