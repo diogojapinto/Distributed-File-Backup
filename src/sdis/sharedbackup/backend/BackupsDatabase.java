@@ -23,7 +23,7 @@ public class BackupsDatabase implements Serializable {
 	private Map<String, SharedFile> mSharedFiles;	// my shared files
 	private ArrayList<FileChunk> mSavedChunks;	// chunks from other users
 	private boolean mIsInitialized;
-	private ArrayList<SharedFile> mDeletedFiles;
+	private ArrayList<String> mDeletedFiles;
 
 	public BackupsDatabase() {
 		mIsInitialized = false;
@@ -39,6 +39,7 @@ public class BackupsDatabase implements Serializable {
 
 	public void removeSharedFile(String fileID) {
 		mSharedFiles.remove(fileID);
+		mDeletedFiles.add(fileID);
 	}
 
 	public synchronized void setAvailSpace(int space) throws InvalidBackupSizeException {
