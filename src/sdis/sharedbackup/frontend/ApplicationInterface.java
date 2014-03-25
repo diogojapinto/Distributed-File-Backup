@@ -6,10 +6,12 @@ import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
+import sdis.sharedbackup.backend.FileChunk;
 import sdis.sharedbackup.backend.SharedFile;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 import sdis.sharedbackup.functionality.FileBackup;
+import sdis.sharedbackup.protocols.SpaceReclaiming;
 import sdis.sharedbackup.protocols.FileDeletion;
 
 public class ApplicationInterface {
@@ -85,8 +87,15 @@ public class ApplicationInterface {
 				System.out.println("The selected size is invalid");
 			}
 		} else {
-			// launch space reclamation
+
+			do {
+				FileChunk chunk = ConfigsManager.getInstance()
+						.getNextDispensableChunk();
+				SpaceReclaiming.getInstance().reclaimSpace(chunk);
+			} while (ConfigsManager.getInstance().getBackupDirActualSize() > ConfigsManager
+					.getInstance().getMaxBackupSize());
 		}
+
 		return false;
 	}
 

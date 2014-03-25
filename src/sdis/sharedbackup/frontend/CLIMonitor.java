@@ -23,6 +23,8 @@ public class CLIMonitor {
 		// TODO: manage threads through executor in config manager
 		
 		// TODO: extra: log messages
+		// TODO: separate by just CRLF
+		// TODO: get folder size
 
 
 		try {

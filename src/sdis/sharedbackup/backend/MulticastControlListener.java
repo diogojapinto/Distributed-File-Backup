@@ -7,7 +7,6 @@ import java.util.Random;
 
 import javax.naming.ConfigurationException;
 
-import sdis.sharedbackup.backend.MulticastDataRestoreListener.ChunkRecord;
 import sdis.sharedbackup.protocols.ChunkBackup;
 import sdis.sharedbackup.protocols.ChunkRestore;
 import sdis.sharedbackup.protocols.FileDeletion;
@@ -47,16 +46,8 @@ public class MulticastControlListener implements Runnable {
 		while (true) {
 			String message = receiver.receiveMessage();
 			String[] components;
-			String separator = null;
-			try {
-				separator = new String(MulticastComunicator.CRLF,
-						MulticastComunicator.ASCII_CODE)
-						+ " "
-						+ new String(MulticastComunicator.CRLF,
-								MulticastComunicator.ASCII_CODE);
-			} catch (UnsupportedEncodingException e1) {
-				e1.printStackTrace();
-			}
+			String separator = MulticastComunicator.CRLF
+					+ MulticastComunicator.CRLF;
 
 			components = message.trim().split(separator);
 

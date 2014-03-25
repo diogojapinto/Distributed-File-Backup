@@ -39,26 +39,10 @@ public class ChunkBackup {
 
 		String message = "";
 
-		try {
-			message += PUT_COMMAND
-					+ " "
-					+ version
-					+ " "
-					+ chunk.getFileId()
-					+ " "
-					+ chunk.getChunkNo()
-					+ " "
-					+ chunk.getDesiredReplicationDeg()
-					+ " "
-					+ new String(MulticastComunicator.CRLF,
-							MulticastComunicator.ASCII_CODE)
-					+ " "
-					+ new String(MulticastComunicator.CRLF,
-							MulticastComunicator.ASCII_CODE) + " "
-					+ chunk.getData();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
+		message += PUT_COMMAND + " " + version + " " + chunk.getFileId() + " "
+				+ chunk.getChunkNo() + " " + chunk.getDesiredReplicationDeg()
+				+ " " + MulticastComunicator.CRLF + MulticastComunicator.CRLF
+				+ chunk.getData();
 
 		InetAddress multDBAddr = ConfigsManager.getInstance().getMDBAddr();
 		int multDBPort = ConfigsManager.getInstance().getMDBPort();
@@ -100,23 +84,11 @@ public class ChunkBackup {
 		chunk.saveToFile(data);
 
 		String message = null;
-		try {
-			message = STORED_COMMAND
-					+ " "
-					+ ConfigsManager.getInstance().getVersion()
-					+ " "
-					+ chunk.getFileId()
-					+ " "
-					+ String.valueOf(chunk.getChunkNo())
-					+ " "
-					+ new String(MulticastComunicator.CRLF,
-							MulticastComunicator.ASCII_CODE)
-					+ " "
-					+ new String(MulticastComunicator.CRLF,
-							MulticastComunicator.ASCII_CODE);
-		} catch (UnsupportedEncodingException e2) {
-			e2.printStackTrace();
-		}
+
+		message = STORED_COMMAND + " "
+				+ ConfigsManager.getInstance().getVersion() + " "
+				+ chunk.getFileId() + " " + String.valueOf(chunk.getChunkNo())
+				+ " " + MulticastComunicator.CRLF + MulticastComunicator.CRLF;
 
 		sender.sendMessage(message);
 

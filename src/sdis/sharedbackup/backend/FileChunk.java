@@ -76,6 +76,17 @@ public class FileChunk {
 		}
 	}
 
+	public boolean removeData() {
+		if (!isOwnMachineFile) {
+			File file = new File(getFilePath());
+
+			return file.delete();
+
+		} else {
+			return false;
+		}
+	}
+
 	// Getters
 	public String getFileId() {
 		return mFileId;

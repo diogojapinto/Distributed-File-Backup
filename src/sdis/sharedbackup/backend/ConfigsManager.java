@@ -8,11 +8,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Random;
 
 import javax.imageio.stream.FileImageInputStream;
 
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
+import sdis.sharedbackup.utils.EnvironmentVerifier;
 
 public class ConfigsManager {
 
@@ -34,10 +37,13 @@ public class ConfigsManager {
 	private boolean mIsInitialized = false;
 	private BackupsDatabase database = null;
 
+	private Random random;
+
 	private ConfigsManager() {
 		mMCListener = null;
 		mMDBListener = null;
 		mMDRListener = null;
+		random = new Random();
 	}
 
 	public static ConfigsManager getInstance() {
@@ -47,10 +53,11 @@ public class ConfigsManager {
 		}
 		return sInstance;
 	}
-	
-	public boolean getDatabaseStatus(){
+
+	public boolean getDatabaseStatus() {
 		return mDatabaseLoaded;
 	}
+
 	private boolean loadDatabase() {
 		try {
 			FileInputStream fileIn = new FileInputStream(".database.ser");
@@ -58,7 +65,7 @@ public class ConfigsManager {
 			database = (BackupsDatabase) in.readObject();
 			in.close();
 			fileIn.close();
-			
+
 		} catch (FileNotFoundException e) {
 			database = new BackupsDatabase();
 			return false;
@@ -71,7 +78,7 @@ public class ConfigsManager {
 		}
 		return true;
 	}
-	
+
 	public String getVersion() {
 		return VERSION;
 	}
@@ -124,15 +131,41 @@ public class ConfigsManager {
 	public String getChunksDestination() {
 		return database.getChunksDestination();
 	}
-	
+
 	public FileChunk getSavedChunk(String fileId, int chunkNo) {
 		return database.getSavedChunk(fileId, chunkNo);
 	}
 
-	// Setters
+	public FileChunk getNextDispensableChunk() {
+		ArrayList<FileChunk> savedChunks = database.getSavedChunks();
+
+		for (FileChunk chunk : savedChunks) {
+			if (chunk.getCurrentReplicationDeg() > chunk
+					.getDesiredReplicationDeg()) {
+				return chunk;
+			}
+		}
+
+		// else there is no chunk with replication degree higher than desired
+
+		FileChunk retChunk = null;
+
+		do {
+			retChunk = savedChunks.get(random.nextInt(savedChunks.size()));
+		} while (retChunk.getCurrentReplicationDeg() <= 0);
+
+		return retChunk;
+	}
 	
-	public void setBackupsDestination(String dirPath) throws InvalidFolderException {
-	database.setBackupsDestination(dirPath);		
+	public long getBackupDirActualSize() {
+		return EnvironmentVerifier.getFolderSize(database.getChunksDestination());
+	}
+
+	// Setters
+
+	public void setBackupsDestination(String dirPath)
+			throws InvalidFolderException {
+		database.setBackupsDestination(dirPath);
 	}
 
 	// Others
@@ -160,16 +193,18 @@ public class ConfigsManager {
 		}
 	}
 
-	public SharedFile getNewSharedFileInstance(String filePath, int replication) throws FileTooLargeException, FileDoesNotExistsExeption {
-		
+	public SharedFile getNewSharedFileInstance(String filePath, int replication)
+			throws FileTooLargeException, FileDoesNotExistsExeption {
+
 		return database.getNewSharedFileInstance(filePath, replication);
 	}
-	
-	public void removeByFileId (String fileId) {
+
+	public void removeByFileId(String fileId) {
 		database.removeByFileId(fileId);
 	}
+
 	public void removeSharedFile(String deletedFileID) {
-		database.removeSharedFile(deletedFileID);		
+		database.removeSharedFile(deletedFileID);
 	}
 
 	public int getMaxBackupSize() {
@@ -180,14 +215,18 @@ public class ConfigsManager {
 		database.setAvailSpace(newSpace);
 	}
 
-	public void incChunkReplication(String fileId, int chunkNo) throws InvalidChunkException {
+	public void incChunkReplication(String fileId, int chunkNo)
+			throws InvalidChunkException {
 		database.incChunkReplication(fileId, chunkNo);
+	}
+
+	public boolean deleteChunk(ChunkRecord record) {
+		return database.removeSingleChunk(record);
 	}
 	
 	public boolean fileIsTracked (String fileId){
 		return database.fileIsTracked(fileId);
 	}
-	
 	/*
 	 * Exceptions
 	 */

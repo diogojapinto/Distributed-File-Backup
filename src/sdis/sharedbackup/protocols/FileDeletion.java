@@ -28,18 +28,8 @@ public class FileDeletion {
 
 		String message = "";
 
-		try {
-			message += DELETE_COMMAND
-					+ " "
-					+ fileId
-					+ " "
-					+ new String(MulticastComunicator.CRLF,
-							MulticastComunicator.ASCII_CODE)
-					+ new String(MulticastComunicator.CRLF,
-							MulticastComunicator.ASCII_CODE);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
+		message += DELETE_COMMAND + " " + fileId + " "
+				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
 
 		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCPort = ConfigsManager.getInstance().getMCPort();
