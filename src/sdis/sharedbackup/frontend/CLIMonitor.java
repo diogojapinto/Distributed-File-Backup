@@ -19,9 +19,7 @@ public class CLIMonitor {
 
 		// TODO: save the database whenever needed
 		// TODO: manage threads through executor in config manager
-		// TODO: see if some thread.start is missing
 		// TODO: see if the database is being backed up in the executable dir (or exectudion environment dir)
-		// TODO: set the TTL to 1 in multicast messages
 		// TODO: make it beutiful (maybe use 
 		/*
                                __              _       _          

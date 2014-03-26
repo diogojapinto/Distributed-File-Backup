@@ -111,7 +111,7 @@ public class MulticastControlListener implements Runnable {
 						}
 					}
 
-				});
+				}).start();
 				break;
 			case ChunkRestore.GET_COMMAND:
 
@@ -168,7 +168,7 @@ public class MulticastControlListener implements Runnable {
 							}
 						}// else I don't have it
 					}
-				});
+				}).start();
 				break;
 
 			case FileDeletion.DELETE_COMMAND:
@@ -180,7 +180,7 @@ public class MulticastControlListener implements Runnable {
 					public void run() {
 						ConfigsManager.getInstance().removeByFileId(fileId);
 					}
-				});
+				}).start();
 				break;
 			case FileDeletion.RESPONSE_COMMAND:
 
@@ -192,7 +192,7 @@ public class MulticastControlListener implements Runnable {
 						ConfigsManager.getInstance().decDeletedFileReplication(
 								fileId);
 					}
-				});
+				}).start();
 				break;
 			case SpaceReclaiming.REMOVED_COMMAND:
 
@@ -221,7 +221,7 @@ public class MulticastControlListener implements Runnable {
 
 						} // else I don't have it
 					}
-				});
+				}).start();
 				break;
 			default:
 				System.out.println("Received non recognized command");
