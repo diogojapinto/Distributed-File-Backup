@@ -208,10 +208,12 @@ public class ConfigsManager {
 
 	public void removeByFileId(String fileId) {
 		database.removeByFileId(fileId);
+		database.saveDatabase();
 	}
 
 	public void removeSharedFile(String deletedFileID) {
 		database.removeSharedFile(deletedFileID);
+		database.saveDatabase();
 	}
 
 	public int getMaxBackupSize() {
@@ -220,14 +222,17 @@ public class ConfigsManager {
 
 	public void setAvailSpace(int newSpace) throws InvalidBackupSizeException {
 		database.setAvailSpace(newSpace);
+		database.saveDatabase();
 	}
 
 	public void incChunkReplication(String fileId, int chunkNo)
 			throws InvalidChunkException {
 		database.incChunkReplication(fileId, chunkNo);
+		database.saveDatabase();
 	}
 
 	public boolean deleteChunk(ChunkRecord record) {
+		database.saveDatabase();
 		return database.removeSingleChunk(record);
 	}
 
@@ -241,8 +246,12 @@ public class ConfigsManager {
 
 	public void decDeletedFileReplication(String fileId) {
 		database.decDeletedFileCount(fileId);
+		database.saveDatabase();
 	}
 
+	private void saveDatabase(){
+		database.saveDatabase();
+	}
 	/*
 	 * Exceptions
 	 */

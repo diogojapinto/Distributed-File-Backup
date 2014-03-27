@@ -123,7 +123,7 @@ public class BackupsDatabase implements Serializable {
 		return file;
 	}
 
-	private void saveDatabase() {
+	public void saveDatabase() {
 		try {
 			FileOutputStream fileOut = new FileOutputStream(".database.ser");
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
