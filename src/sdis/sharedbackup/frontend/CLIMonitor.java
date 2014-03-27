@@ -54,7 +54,7 @@ public class CLIMonitor {
 	 * initiates the configuration of the Multicast addresses and ports
 	 */
 	private static void parseArgs(String[] args) throws ArgsException {
-		if (args.length != 6) {
+		/*if (args.length != 6) {
 			throw new ArgsException();
 		}
 
@@ -62,7 +62,10 @@ public class CLIMonitor {
 				Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]),
 				args[4], Integer.parseInt(args[5]))) {
 			throw new ArgsException();
-		}
+		}*/
+		ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
+				Integer.parseInt("50001"), "239.254.254.253", Integer.parseInt("50002"),
+				"239.254.254.254", Integer.parseInt("50003"));
 	}
 
 	private static void setupService() {
