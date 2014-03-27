@@ -35,11 +35,17 @@ public class Encoder {
 		}
 
 		byte[] lastFileBytes = new byte[LAST_FILE_BYTES_SIZE];
+
 		try {
-			in.read(lastFileBytes, (int) f.length() - LAST_FILE_BYTES_SIZE - 1,
+			in.skip(f.length() - LAST_FILE_BYTES_SIZE);
+			in.read(lastFileBytes, 0,
 					LAST_FILE_BYTES_SIZE);
+		} catch (IndexOutOfBoundsException e2) {
+			e2.printStackTrace();
+			System.exit(1);
 		} catch (IOException e1) {
 			e1.printStackTrace();
+			System.exit(1);
 		}
 
 		try {

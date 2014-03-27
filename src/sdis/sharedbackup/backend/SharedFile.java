@@ -12,9 +12,9 @@ import sdis.sharedbackup.utils.Encoder;
  */
 
 public class SharedFile {
-	public static final int CHUNK_SIZE = 64000;
-	public static final int MAX_NR_CHUNKS = 1000000;
-	public static final int MAX_FILE_SIZE = CHUNK_SIZE * (MAX_NR_CHUNKS - 1);
+	public static final long CHUNK_SIZE = 64000;
+	public static final long MAX_NR_CHUNKS = 1000000;
+	public static final long MAX_FILE_SIZE = CHUNK_SIZE * (MAX_NR_CHUNKS - 1);
 	private String mFilePath;
 	private String mFileId;
 	private ArrayList<FileChunk> mChunkList;

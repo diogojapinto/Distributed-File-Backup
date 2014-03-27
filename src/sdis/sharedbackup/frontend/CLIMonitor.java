@@ -18,6 +18,7 @@ public class CLIMonitor {
 	public static void main(String[] args) {
 
 		// TODO: create dir if not exists
+		// TODO: verify every input
 
 		try {
 			parseArgs(args);

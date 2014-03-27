@@ -109,7 +109,7 @@ public class FileChunk {
 		if (isOwnMachineFile) {
 			if (mParentFile.exists()) {
 				File file = new File(mParentFile.getFilePath());
-				byte[] chunk = new byte[SharedFile.CHUNK_SIZE];
+				byte[] chunk = new byte[(int) SharedFile.CHUNK_SIZE];
 				FileInputStream in = null;
 
 				try {
@@ -117,10 +117,9 @@ public class FileChunk {
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}
-
 				try {
-					if (in.read(chunk, SharedFile.CHUNK_SIZE * (int) mChunkNo,
-							SharedFile.CHUNK_SIZE) == -1) {
+					in.skip((int) SharedFile.CHUNK_SIZE * (int) mChunkNo);
+					if (in.read(chunk, 0, (int) SharedFile.CHUNK_SIZE) == -1) {
 						return new byte[0];
 					}
 				} catch (IOException e) {
