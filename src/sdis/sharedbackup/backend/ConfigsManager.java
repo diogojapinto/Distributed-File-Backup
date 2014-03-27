@@ -2,16 +2,15 @@ package sdis.sharedbackup.backend;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Random;
-
-import javax.imageio.stream.FileImageInputStream;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
@@ -22,6 +21,7 @@ public class ConfigsManager {
 	// constants
 	private static final String VERSION = "1.0";
 	private static final String ENHANCEMENTS_VERSION = "1.24";
+	private static final int NR_CONCURRENT_THREADS = 10;
 
 	// static members
 	private static ConfigsManager sInstance = null;
@@ -35,16 +35,16 @@ public class ConfigsManager {
 	private MulticastDataBackupListener mMDBListener;
 	private MulticastDataRestoreListener mMDRListener;
 	private boolean mDatabaseLoaded = false;
-	private boolean mIsInitialized = false;
-	private BackupsDatabase database = null;
-
-	private Random random;
+	private BackupsDatabase mDatabase = null;
+	private ExecutorService mExecutor = null;
+	private Random mRandom;
 
 	private ConfigsManager() {
 		mMCListener = null;
 		mMDBListener = null;
 		mMDRListener = null;
-		random = new Random();
+		mExecutor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
+		mRandom = new Random();
 	}
 
 	public static ConfigsManager getInstance() {
@@ -63,18 +63,16 @@ public class ConfigsManager {
 		try {
 			FileInputStream fileIn = new FileInputStream(".database.ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
-			database = (BackupsDatabase) in.readObject();
+			mDatabase = (BackupsDatabase) in.readObject();
 			in.close();
 			fileIn.close();
 
 		} catch (FileNotFoundException e) {
-			database = new BackupsDatabase();
+			mDatabase = new BackupsDatabase();
 			return false;
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return true;
@@ -134,15 +132,15 @@ public class ConfigsManager {
 	}
 
 	public String getChunksDestination() {
-		return database.getChunksDestination();
+		return mDatabase.getChunksDestination();
 	}
 
 	public FileChunk getSavedChunk(String fileId, int chunkNo) {
-		return database.getSavedChunk(fileId, chunkNo);
+		return mDatabase.getSavedChunk(fileId, chunkNo);
 	}
 
 	public FileChunk getNextDispensableChunk() {
-		ArrayList<FileChunk> savedChunks = database.getSavedChunks();
+		ArrayList<FileChunk> savedChunks = mDatabase.getSavedChunks();
 
 		for (FileChunk chunk : savedChunks) {
 			if (chunk.getCurrentReplicationDeg() > chunk
@@ -156,28 +154,32 @@ public class ConfigsManager {
 		FileChunk retChunk = null;
 
 		do {
-			retChunk = savedChunks.get(random.nextInt(savedChunks.size()));
+			retChunk = savedChunks.get(mRandom.nextInt(savedChunks.size()));
 		} while (retChunk.getCurrentReplicationDeg() <= 0);
 
 		return retChunk;
 	}
 
 	public long getBackupDirActualSize() {
-		return EnvironmentVerifier.getFolderSize(database
+		return EnvironmentVerifier.getFolderSize(mDatabase
 				.getChunksDestination());
 	}
 
+	public Executor getExecutor() {
+		return mExecutor;
+	}
+	
 	// Setters
 
 	public void setBackupsDestination(String dirPath)
 			throws InvalidFolderException {
-		database.setBackupsDestination(dirPath);
+		mDatabase.setBackupsDestination(dirPath);
 	}
 
 	// Others
 
 	public void init() throws ConfigurationsNotInitializedException {
-		if (mIsInitialized) {
+		if (mDatabase.isInitialized()) {
 			startupListeners();
 			new Thread(new FileDeletionChecker()).start();
 		} else {
@@ -203,67 +205,91 @@ public class ConfigsManager {
 	public SharedFile getNewSharedFileInstance(String filePath, int replication)
 			throws FileTooLargeException, FileDoesNotExistsExeption {
 
-		return database.getNewSharedFileInstance(filePath, replication);
+		return mDatabase.getNewSharedFileInstance(filePath, replication);
 	}
 
 	public void removeByFileId(String fileId) {
-		database.removeByFileId(fileId);
+		mDatabase.removeByFileId(fileId);
 	}
 
 	public void removeSharedFile(String deletedFileID) {
-		database.removeSharedFile(deletedFileID);
+		mDatabase.removeSharedFile(deletedFileID);
 	}
 
 	public int getMaxBackupSize() {
-		return database.getMaxBackupSize();
+		return mDatabase.getMaxBackupSize();
 	}
 	
 	public SharedFile getFileById(String fileId) {
-		return database.getFileByPath(fileId);
+		return mDatabase.getFileByPath(fileId);
 	}
 	
 	public SharedFile getFileByPath(String filePath) {
-		return database.getFileByPath(filePath);
+		return mDatabase.getFileByPath(filePath);
 	}
 
 	public void setAvailSpace(int newSpace) throws InvalidBackupSizeException {
-		database.setAvailSpace(newSpace);
+		mDatabase.setAvailSpace(newSpace);
 	}
 
 	public void incChunkReplication(String fileId, int chunkNo)
 			throws InvalidChunkException {
-		database.incChunkReplication(fileId, chunkNo);
+		mDatabase.incChunkReplication(fileId, chunkNo);
 	}
 
 	public boolean deleteChunk(ChunkRecord record) {
-		return database.removeSingleChunk(record);
+		return mDatabase.removeSingleChunk(record);
 	}
 
 	public boolean fileIsTracked(String fileId) {
-		return database.fileIsTracked(fileId);
+		return mDatabase.fileIsTracked(fileId);
 	}
 
 	public ArrayList<String> getRestorableFiles() {
-		return database.getFilesDeletedFromFileSystem();
+		return mDatabase.getFilesDeletedFromFileSystem();
+	}
+	
+	public ArrayList<String> getDeletedFiles() {
+		return mDatabase.getDeletedFilesIds();
 	}
 
 	public void decDeletedFileReplication(String fileId) {
-		database.decDeletedFileCount(fileId);
+		mDatabase.decDeletedFileCount(fileId);
 	}
 
 	/*
 	 * Exceptions
 	 */
 	public static class ConfigurationsNotInitializedException extends Exception {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 	}
 
 	public static class InvalidFolderException extends Exception {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 	}
 
 	public static class InvalidBackupSizeException extends Exception {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 	}
 
 	public static class InvalidChunkException extends Exception {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 	}
 
 }

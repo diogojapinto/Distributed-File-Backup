@@ -87,7 +87,7 @@ public class MulticastControlListener implements Runnable {
 				fileId = header_components[2].trim();
 				chunkNo = Integer.parseInt(header_components[3].trim());
 
-				new Thread(new Runnable() {
+				ConfigsManager.getInstance().getExecutor().execute(new Runnable() {
 
 					@Override
 					public void run() {
@@ -111,14 +111,14 @@ public class MulticastControlListener implements Runnable {
 						}
 					}
 
-				}).start();
+				});
 				break;
 			case ChunkRestore.GET_COMMAND:
 
 				fileId = header_components[2].trim();
 				chunkNo = Integer.parseInt(header_components[3].trim());
 
-				new Thread(new Runnable() {
+				ConfigsManager.getInstance().getExecutor().execute(new Runnable() {
 
 					@Override
 					public void run() {
@@ -142,7 +142,7 @@ public class MulticastControlListener implements Runnable {
 
 								synchronized (mSentChunks) {
 									mSentChunks.add(record);
-									new Thread(new restoreSenderIPListener()).start();
+									ConfigsManager.getInstance().getExecutor().execute(new restoreSenderIPListener());
 								}
 
 								ChunkRestore.getInstance().sendChunk(chunk,
@@ -168,38 +168,38 @@ public class MulticastControlListener implements Runnable {
 							}
 						}// else I don't have it
 					}
-				}).start();
+				});
 				break;
 
 			case FileDeletion.DELETE_COMMAND:
 
 				fileId = header_components[1].trim();
 
-				new Thread(new Runnable() {
+				ConfigsManager.getInstance().getExecutor().execute(new Runnable() {
 
 					public void run() {
 						ConfigsManager.getInstance().removeByFileId(fileId);
 					}
-				}).start();
+				});
 				break;
 			case FileDeletion.RESPONSE_COMMAND:
 
 				fileId = header_components[1].trim();
 
-				new Thread(new Runnable() {
+				ConfigsManager.getInstance().getExecutor().execute(new Runnable() {
 
 					public void run() {
 						ConfigsManager.getInstance().decDeletedFileReplication(
 								fileId);
 					}
-				}).start();
+				});
 				break;
 			case SpaceReclaiming.REMOVED_COMMAND:
 
 				fileId = header_components[2].trim();
 				chunkNo = Integer.parseInt(header_components[3].trim());
 
-				new Thread(new Runnable() {
+				ConfigsManager.getInstance().getExecutor().execute(new Runnable() {
 
 					@Override
 					public void run() {
@@ -221,7 +221,7 @@ public class MulticastControlListener implements Runnable {
 
 						} // else I don't have it
 					}
-				}).start();
+				});
 				break;
 			default:
 				System.out.println("Received non recognized command");

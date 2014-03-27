@@ -22,14 +22,7 @@ public class FileBackup {
 		int i;
 		for (i = 0; i < list.size(); i++) {
 			final FileChunk chunk = list.get(i);
-			new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					ChunkBackup.getInstance().putChunk(chunk);
-				}
-
-			}).start();
+			ChunkBackup.getInstance().putChunk(chunk);
 		}
 		return true;
 	}

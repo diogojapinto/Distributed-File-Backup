@@ -75,7 +75,7 @@ public class MulticastDataBackupListener implements Runnable {
 				final int desiredReplication = Integer
 						.parseInt(header_components[4].trim());
 
-				new Thread(new Runnable() {
+				ConfigsManager.getInstance().getExecutor().execute(new Runnable() {
 
 					@Override
 					public void run() {
@@ -123,7 +123,7 @@ public class MulticastDataBackupListener implements Runnable {
 							}
 						}
 					}
-				}).start();
+				});
 
 				break;
 			default:

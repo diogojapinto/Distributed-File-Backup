@@ -41,7 +41,7 @@ public class MulticastDataRestoreListener implements Runnable {
 
 		MulticastComunicator receiver = new MulticastComunicator(addr, port);
 		
-		new Thread(new restoreListenerIPListener()).start();
+		ConfigsManager.getInstance().getExecutor().execute(new restoreListenerIPListener());
 
 		while (true) {
 			String message = receiver.receiveMessage();
@@ -72,7 +72,7 @@ public class MulticastDataRestoreListener implements Runnable {
 				fileId = header_components[2].trim();
 				chunkNo = Integer.parseInt(header_components[3].trim());
 
-				new Thread(new Runnable() {
+				ConfigsManager.getInstance().getExecutor().execute(new Runnable() {
 
 					@Override
 					public void run() {
@@ -101,7 +101,7 @@ public class MulticastDataRestoreListener implements Runnable {
 							}
 						}
 					}
-				}).start();
+				});
 
 				break;
 			default:
@@ -161,7 +161,7 @@ public class MulticastDataRestoreListener implements Runnable {
 					final String fileId = headerComponents[2];
 					final int chunkNo = Integer.parseInt(headerComponents[3]);
 
-					new Thread(new Runnable() {
+					ConfigsManager.getInstance().getExecutor().execute(new Runnable() {
 
 						@Override
 						public void run() {
@@ -193,7 +193,7 @@ public class MulticastDataRestoreListener implements Runnable {
 								}
 							}
 						}
-					}).start();
+					});
 
 					break;
 				default:

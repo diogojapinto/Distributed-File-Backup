@@ -17,6 +17,10 @@ import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 
 public class BackupsDatabase implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String mBackupFolder;
 	private int maxBackupSize; // stored in KB
 	private Map<String, SharedFile> mSharedFiles; // my shared files
@@ -75,6 +79,10 @@ public class BackupsDatabase implements Serializable {
 		if (!mBackupFolder.equals("") && maxBackupSize != 0) {
 			mIsInitialized = true;
 		}
+	}
+	
+	public boolean isInitialized() {
+		return mIsInitialized;
 	}
 
 	public synchronized void incChunkReplication(String fileId, int chunkNo)
