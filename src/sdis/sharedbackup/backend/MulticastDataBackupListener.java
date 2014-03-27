@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Random;
 
+import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
 import sdis.sharedbackup.protocols.ChunkBackup;
 
 /*
@@ -39,96 +40,111 @@ public class MulticastDataBackupListener implements Runnable {
 
 		MulticastComunicator receiver = new MulticastComunicator(addr, port);
 
-		while (ConfigsManager.getInstance().isAppRunning()) {
-			String message = receiver.receiveMessage();
-			final String[] components;
-			String separator = MulticastComunicator.CRLF
-					+ MulticastComunicator.CRLF;
+		receiver.join();
 
-			components = message.trim().split(separator);
+		try {
+			while (ConfigsManager.getInstance().isAppRunning()) {
+				String message;
 
-			String header = components[0].trim();
+				message = receiver.receiveMessage();
+				final String[] components;
+				String separator = MulticastComunicator.CRLF
+						+ MulticastComunicator.CRLF;
 
-			final String[] header_components = header.split(" ");
+				components = message.trim().split(separator);
 
-			if (!header_components[1].equals(ConfigsManager.getInstance()
-					.getVersion())) {
-				System.err
-						.println("Received message with protocol with different version");
-				continue;
-			}
+				String header = components[0].trim();
 
-			String messageType = header_components[0].trim();
+				final String[] header_components = header.split(" ");
 
-			switch (messageType) {
-			case ChunkBackup.PUT_COMMAND:
-
-				if (ConfigsManager.getInstance().getBackupDirActualSize()
-						+ FileChunk.MAX_CHUNK_SIZE >= ConfigsManager
-						.getInstance().getMaxBackupSize()) {
+				if (!header_components[1].equals(ConfigsManager.getInstance()
+						.getVersion())) {
+					System.err
+							.println("Received message with protocol with different version");
 					continue;
 				}
 
-				final String fileId = header_components[2].trim();
-				final int chunkNo = Integer.parseInt(header_components[3]
-						.trim());
-				final int desiredReplication = Integer
-						.parseInt(header_components[4].trim());
+				String messageType = header_components[0].trim();
 
-				ConfigsManager.getInstance().getExecutor().execute(new Runnable() {
+				switch (messageType) {
+				case ChunkBackup.PUT_COMMAND:
 
-					@Override
-					public void run() {
-
-						FileChunk savedChunk = ConfigsManager.getInstance()
-								.getSavedChunk(fileId, chunkNo);
-
-						if (savedChunk != null) {
-							FileChunk pendingChunk = new FileChunk(fileId,
-									chunkNo, desiredReplication);
-
-							synchronized (mPendingChunks) {
-								mPendingChunks.add(pendingChunk);
-							}
-
-							try {
-								Thread.sleep(mRand.nextInt(MAX_WAIT_TIME));
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-
-							// verify if it is needed to save the chunk
-
-							if (pendingChunk.getCurrentReplicationDeg() < pendingChunk
-									.getDesiredReplicationDeg()) {
-
-								try {
-									ChunkBackup
-											.getInstance()
-											.storeChunk(
-													pendingChunk,
-													components[1]
-															.getBytes(MulticastComunicator.ASCII_CODE));
-								} catch (UnsupportedEncodingException e) {
-									e.printStackTrace();
-								}
-
-							}
-
-							// remove the temporary chunk from the pending
-							// chunks
-							// list
-							synchronized (mPendingChunks) {
-								mPendingChunks.remove(pendingChunk);
-							}
-						}
+					if (ConfigsManager.getInstance().getBackupDirActualSize()
+							+ FileChunk.MAX_CHUNK_SIZE >= ConfigsManager
+							.getInstance().getMaxBackupSize()) {
+						continue;
 					}
-				});
 
-				break;
-			default:
-				System.out.println("Received non recognized command");
+					final String fileId = header_components[2].trim();
+					final int chunkNo = Integer.parseInt(header_components[3]
+							.trim());
+					final int desiredReplication = Integer
+							.parseInt(header_components[4].trim());
+
+					ConfigsManager.getInstance().getExecutor()
+							.execute(new Runnable() {
+
+								@Override
+								public void run() {
+
+									FileChunk savedChunk = ConfigsManager
+											.getInstance().getSavedChunk(
+													fileId, chunkNo);
+
+									if (savedChunk != null) {
+										FileChunk pendingChunk = new FileChunk(
+												fileId, chunkNo,
+												desiredReplication);
+
+										synchronized (mPendingChunks) {
+											mPendingChunks.add(pendingChunk);
+										}
+
+										try {
+											Thread.sleep(mRand
+													.nextInt(MAX_WAIT_TIME));
+										} catch (InterruptedException e) {
+											e.printStackTrace();
+										}
+
+										// verify if it is needed to save the
+										// chunk
+
+										if (pendingChunk
+												.getCurrentReplicationDeg() < pendingChunk
+												.getDesiredReplicationDeg()) {
+
+											try {
+												ChunkBackup
+														.getInstance()
+														.storeChunk(
+																pendingChunk,
+																components[1]
+																		.getBytes(MulticastComunicator.ASCII_CODE));
+											} catch (UnsupportedEncodingException e) {
+												e.printStackTrace();
+											}
+
+										}
+
+										// remove the temporary chunk from the
+										// pending
+										// chunks
+										// list
+										synchronized (mPendingChunks) {
+											mPendingChunks.remove(pendingChunk);
+										}
+									}
+								}
+							});
+
+					break;
+				default:
+					System.out.println("Received non recognized command");
+				}
 			}
+		} catch (HasToJoinException e1) {
+			e1.printStackTrace();
 		}
 	}
 }

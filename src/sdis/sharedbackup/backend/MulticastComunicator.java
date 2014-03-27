@@ -47,7 +47,12 @@ public class MulticastComunicator {
 		mHasJoined = true;
 	}
 
-	public boolean sendMessage(String messg) {
+	public boolean sendMessage(String messg) throws HasToJoinException {
+		
+		if (mMSocket == null) {
+			throw new HasToJoinException();
+		}
+		
 		if (!mHasJoined) {
 			System.out.println("Cannot send message before joining group");
 			return false;
@@ -79,10 +84,15 @@ public class MulticastComunicator {
 		return true;
 	}
 
-	public String receiveMessage() {
+	public String receiveMessage() throws HasToJoinException {
+		
+		if (mMSocket == null) {
+			throw new HasToJoinException();
+		}
+		
 		byte[] bytesMsg = new byte[MAX_PACKET_SIZE];
 
-		DatagramPacket packet = new DatagramPacket(bytesMsg, bytesMsg.length);
+		DatagramPacket packet = new DatagramPacket(bytesMsg, MAX_PACKET_SIZE);
 
 		try {
 			mMSocket.receive(packet);
@@ -108,11 +118,16 @@ public class MulticastComunicator {
 	/*
 	 * Receives as argument a SenderRecord to be initialized in this function
 	 */
-	public String receiveMessage(SenderRecord record) {
+	public String receiveMessage(SenderRecord record) throws HasToJoinException {
+
+		if (mMSocket == null) {
+			throw new HasToJoinException();
+		}
+		
 		byte[] bytesMsg = new byte[MAX_PACKET_SIZE];
 
 		DatagramPacket packet = new DatagramPacket(bytesMsg, bytesMsg.length);
-
+		
 		try {
 			mMSocket.receive(packet);
 		} catch (IOException e) {
@@ -137,6 +152,10 @@ public class MulticastComunicator {
 		}
 
 		return returnStr;
+	}
+	
+	public static class HasToJoinException extends Exception {
+		
 	}
 
 }

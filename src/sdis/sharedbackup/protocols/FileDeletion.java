@@ -4,6 +4,7 @@ import java.net.InetAddress;
 
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.MulticastComunicator;
+import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
 
 public class FileDeletion {
 
@@ -37,7 +38,11 @@ public class FileDeletion {
 				multCPort);
 		sender.join();
 
-		sender.sendMessage(message);
+		try {
+			sender.sendMessage(message);
+		} catch (HasToJoinException e) {
+			e.printStackTrace();
+		}
 
 		return true;
 	}
@@ -56,7 +61,11 @@ public class FileDeletion {
 				multCPort);
 		sender.join();
 
-		sender.sendMessage(message);
+		try {
+			sender.sendMessage(message);
+		} catch (HasToJoinException e) {
+			e.printStackTrace();
+		}
 
 		return true;
 	}

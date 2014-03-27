@@ -12,6 +12,7 @@ import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.FileChunk;
 import sdis.sharedbackup.backend.FileChunkWithData;
 import sdis.sharedbackup.backend.MulticastComunicator;
+import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
 import sdis.sharedbackup.backend.MulticastDataRestoreListener;
 
 public class ChunkRestore {
@@ -62,7 +63,11 @@ public class ChunkRestore {
 				chunkNo);
 
 		do {
-			sender.sendMessage(message);
+			try {
+				sender.sendMessage(message);
+			} catch (HasToJoinException e1) {
+				e1.printStackTrace();
+			}
 			try {
 				Thread.sleep(REQUEST_TIME_INTERVAL);
 			} catch (InterruptedException e) {
@@ -103,7 +108,11 @@ public class ChunkRestore {
 
 		sender.join();
 
-		sender.sendMessage(message);
+		try {
+			sender.sendMessage(message);
+		} catch (HasToJoinException e) {
+			e.printStackTrace();
+		}
 
 		return true;
 	}

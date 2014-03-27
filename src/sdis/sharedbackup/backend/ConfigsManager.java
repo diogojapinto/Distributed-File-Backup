@@ -183,24 +183,25 @@ public class ConfigsManager {
 	public void init() throws ConfigurationsNotInitializedException {
 		if (mDatabase.isInitialized()) {
 			startupListeners();
-			new Thread(new FileDeletionChecker()).start();
+			mExecutor.execute(new FileDeletionChecker());
 		} else {
 			throw new ConfigurationsNotInitializedException();
 		}
+		mDatabase.saveDatabase();
 	}
 
 	private void startupListeners() {
 		if (mMCListener == null) {
 			mMCListener = MulticastControlListener.getInstance();
-			new Thread(mMCListener).start();
+			mExecutor.execute(mMCListener);
 		}
 		if (mMDBListener == null) {
 			mMDBListener = MulticastDataBackupListener.getInstance();
-			new Thread(mMDBListener).start();
+			mExecutor.execute(mMDBListener);
 		}
 		if (mMDRListener == null) {
 			mMDRListener = MulticastDataRestoreListener.getInstance();
-			new Thread(mMDRListener).start();
+			mExecutor.execute(mMDRListener);
 		}
 	}
 
@@ -234,7 +235,6 @@ public class ConfigsManager {
 
 	public void setAvailSpace(int newSpace) throws InvalidBackupSizeException {
 		mDatabase.setAvailSpace(newSpace);
-		mDatabase.saveDatabase();
 	}
 
 	public void incChunkReplication(String fileId, int chunkNo)
@@ -271,16 +271,17 @@ public class ConfigsManager {
 	public void saveDatabase() {
 		mDatabase.saveDatabase();
 	}
-	
+
 	public void terminate() {
 		mIsRunning = false;
 		mExecutor.shutdown();
+
 	}
-	
+
 	public boolean isAppRunning() {
 		return mIsRunning;
 	}
-	
+
 	/*
 	 * Exceptions
 	 */

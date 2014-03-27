@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.FileChunk;
 import sdis.sharedbackup.backend.MulticastComunicator;
+import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
 
 public class ChunkBackup {
 
@@ -41,12 +42,17 @@ public class ChunkBackup {
 
 		MulticastComunicator sender = new MulticastComunicator(multDBAddr,
 				multDBPort);
+		
 		sender.join();
 
 		int counter = 0;
 
 		do {
-			sender.sendMessage(message);
+			try {
+				sender.sendMessage(message);
+			} catch (HasToJoinException e1) {
+				e1.printStackTrace();
+			}
 			try {
 				Thread.sleep(PUT_TIME_INTERVAL);
 			} catch (InterruptedException e) {
@@ -82,7 +88,11 @@ public class ChunkBackup {
 				+ chunk.getFileId() + " " + String.valueOf(chunk.getChunkNo())
 				+ " " + MulticastComunicator.CRLF + MulticastComunicator.CRLF;
 
-		sender.sendMessage(message);
+		try {
+			sender.sendMessage(message);
+		} catch (HasToJoinException e) {
+			e.printStackTrace();
+		}
 
 		return true;
 	}

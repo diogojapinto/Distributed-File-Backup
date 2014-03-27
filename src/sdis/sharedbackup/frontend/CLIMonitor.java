@@ -15,12 +15,9 @@ public class CLIMonitor {
 	private static Scanner sc = new Scanner(System.in);
 	private static boolean exit = false;
 
-	public static int main(String[] args) {
+	public static void main(String[] args) {
 
-		// TODO: save the database whenever needed
-		// : manage threads through executor in config manager
-		// TODO: see if the database is being backed up in the executable dir
-		// (or exectudion environment dir)
+		// TODO: create dir if not exists
 
 		try {
 			parseArgs(args);
@@ -46,33 +43,35 @@ public class CLIMonitor {
 		}
 
 		sc.close();
-
-		return 0;
+		
+		ApplicationInterface.getInstance().terminate();
+		
+		System.exit(0);;
 	}
 
 	/*
 	 * initiates the configuration of the Multicast addresses and ports
 	 */
 	private static void parseArgs(String[] args) throws ArgsException {
-		/*if (args.length != 6) {
-			throw new ArgsException();
-		}
-
-		if (!ConfigsManager.getInstance().setMulticastAddrs(args[0],
-				Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]),
-				args[4], Integer.parseInt(args[5]))) {
-			throw new ArgsException();
-		}*/
-		ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
-				Integer.parseInt("50001"), "239.254.254.253", Integer.parseInt("50002"),
-				"239.254.254.254", Integer.parseInt("50003"));
+		/*
+		 * if (args.length != 6) { throw new ArgsException(); }
+		 * 
+		 * if (!ConfigsManager.getInstance().setMulticastAddrs(args[0],
+		 * Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]),
+		 * args[4], Integer.parseInt(args[5]))) { throw new ArgsException(); }
+		 */
+		ConfigsManager.getInstance().setMulticastAddrs("239.254.254.249",
+				Integer.parseInt("50001"), "239.254.254.250",
+				Integer.parseInt("50002"), "239.254.254.251",
+				Integer.parseInt("50003"));
 	}
 
 	private static void setupService() {
 		ApplicationInterface.getInstance().startConfigsManager();
 
-		while (true) {
-			if (!ApplicationInterface.getInstance().getDatabaseStatus()) {
+		if (!ApplicationInterface.getInstance().getDatabaseStatus()) {
+
+			while (true) {
 				try {
 					ApplicationInterface.getInstance().setAvailableDiskSpace(
 							promptAvailableSpace());
@@ -82,19 +81,18 @@ public class CLIMonitor {
 				} catch (InputMismatchException e1) {
 					System.err.println("Please input a valid integer value");
 				}
-
-				while (true) {
-					try {
-						ApplicationInterface
-								.getInstance()
-								.setDestinationDirectory(promptDestinationDir());
-						break;
-					} catch (InvalidFolderException e) {
-						System.err.println("Folder does not exist!!");
-					}
-				}
-				System.out.println("Setup Successfull");
 			}
+
+			while (true) {
+				try {
+					ApplicationInterface.getInstance().setDestinationDirectory(
+							promptDestinationDir());
+					break;
+				} catch (InvalidFolderException e) {
+					System.err.println("Folder does not exist!!");
+				}
+			}
+			System.out.println("Setup Successfull");
 		}
 	}
 
@@ -166,8 +164,9 @@ public class CLIMonitor {
 			int file_i = sc.nextInt();
 			sc.nextLine();
 			files.get(file_i - 1);
-			
-			ApplicationInterface.getInstance().restoreFileByPath(files.get(file_i));
+
+			ApplicationInterface.getInstance().restoreFileByPath(
+					files.get(file_i));
 
 			return false;
 		case 4:
@@ -228,8 +227,9 @@ public class CLIMonitor {
 	}
 
 	private static void printHead() {
+		System.out.println("Welcome to the...");
 		System.out
-				.println("Welcome to the    __  ___         __    ___                               ");
+				.println("   __  ___         __    ___                               ");
 		System.out
 				.println("  /  |/  /__  ___ / /_  / _ |_    _____ ___ ___  __ _  ___ ");
 		System.out

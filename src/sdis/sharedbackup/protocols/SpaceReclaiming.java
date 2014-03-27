@@ -6,6 +6,7 @@ import sdis.sharedbackup.backend.ChunkRecord;
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.FileChunk;
 import sdis.sharedbackup.backend.MulticastComunicator;
+import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
 
 public class SpaceReclaiming {
 
@@ -45,7 +46,11 @@ public class SpaceReclaiming {
 				multCPort);
 		sender.join();
 
-		sender.sendMessage(message);
+		try {
+			sender.sendMessage(message);
+		} catch (HasToJoinException e) {
+			e.printStackTrace();
+		}
 
 		return true;
 

@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 
+import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
 import sdis.sharedbackup.protocols.ChunkRestore;
 
 /*
@@ -39,69 +40,80 @@ public class MulticastDataRestoreListener implements Runnable {
 
 		MulticastComunicator receiver = new MulticastComunicator(addr, port);
 		
-		ConfigsManager.getInstance().getExecutor().execute(new restoreListenerIPListener());
+		receiver.join();
 
-		while (ConfigsManager.getInstance().isAppRunning()) {
-			String message = receiver.receiveMessage();
-			final String[] components;
-			String separator = MulticastComunicator.CRLF
-					+ MulticastComunicator.CRLF;
+		ConfigsManager.getInstance().getExecutor()
+				.execute(new restoreListenerIPListener());
 
-			components = message.trim().split(separator);
+		try {
+			while (ConfigsManager.getInstance().isAppRunning()) {
+				String message;
+				message = receiver.receiveMessage();
+				final String[] components;
+				String separator = MulticastComunicator.CRLF
+						+ MulticastComunicator.CRLF;
 
-			String header = components[0].trim();
+				components = message.trim().split(separator);
 
-			String[] header_components = header.split(" ");
+				String header = components[0].trim();
 
-			if (!header_components[1].equals(ConfigsManager.getInstance()
-					.getVersion())) {
-				System.err
-						.println("Received message with protocol with different version");
-				continue;
-			}
+				String[] header_components = header.split(" ");
 
-			String messageType = header_components[0].trim();
-			final String fileId;
-			final int chunkNo;
+				if (!header_components[1].equals(ConfigsManager.getInstance()
+						.getVersion())) {
+					System.err
+							.println("Received message with protocol with different version");
+					continue;
+				}
 
-			switch (messageType) {
-			case ChunkRestore.CHUNK_COMMAND:
+				String messageType = header_components[0].trim();
+				final String fileId;
+				final int chunkNo;
 
-				fileId = header_components[2].trim();
-				chunkNo = Integer.parseInt(header_components[3].trim());
+				switch (messageType) {
+				case ChunkRestore.CHUNK_COMMAND:
 
-				ConfigsManager.getInstance().getExecutor().execute(new Runnable() {
+					fileId = header_components[2].trim();
+					chunkNo = Integer.parseInt(header_components[3].trim());
 
-					@Override
-					public void run() {
-						for (ChunkRecord record : mSubscribedChunks) {
-							if (record.fileId.equals(fileId)
-									&& record.chunkNo == chunkNo) {
-								byte[] data;
-								try {
-									data = components[1]
-											.getBytes(MulticastComunicator.ASCII_CODE);
+					ConfigsManager.getInstance().getExecutor()
+							.execute(new Runnable() {
 
-									FileChunkWithData requestedChunk = new FileChunkWithData(
-											fileId, chunkNo, data);
+								@Override
+								public void run() {
+									for (ChunkRecord record : mSubscribedChunks) {
+										if (record.fileId.equals(fileId)
+												&& record.chunkNo == chunkNo) {
+											byte[] data;
+											try {
+												data = components[1]
+														.getBytes(MulticastComunicator.ASCII_CODE);
 
-									ChunkRestore.getInstance()
-											.addRequestedChunk(requestedChunk);
+												FileChunkWithData requestedChunk = new FileChunkWithData(
+														fileId, chunkNo, data);
 
-									mSubscribedChunks.remove(record);
-									break;
-								} catch (UnsupportedEncodingException e) {
-									e.printStackTrace();
+												ChunkRestore.getInstance()
+														.addRequestedChunk(
+																requestedChunk);
+
+												mSubscribedChunks
+														.remove(record);
+												break;
+											} catch (UnsupportedEncodingException e) {
+												e.printStackTrace();
+											}
+										}
+									}
 								}
-							}
-						}
-					}
-				});
+							});
 
-				break;
-			default:
-				System.out.println("Received non recognized command");
+					break;
+				default:
+					System.out.println("Received non recognized command");
+				}
 			}
+		} catch (HasToJoinException e1) {
+			e1.printStackTrace();
 		}
 	}
 
@@ -156,39 +168,42 @@ public class MulticastDataRestoreListener implements Runnable {
 					final String fileId = headerComponents[2];
 					final int chunkNo = Integer.parseInt(headerComponents[3]);
 
-					ConfigsManager.getInstance().getExecutor().execute(new Runnable() {
+					ConfigsManager.getInstance().getExecutor()
+							.execute(new Runnable() {
 
-						@Override
-						public void run() {
-							for (ChunkRecord record : mSubscribedChunks) {
-								if (record.fileId.equals(fileId)
-										&& record.chunkNo == chunkNo) {
-									byte[] data;
-									try {
-										data = components[1]
-												.getBytes(MulticastComunicator.ASCII_CODE);
+								@Override
+								public void run() {
+									for (ChunkRecord record : mSubscribedChunks) {
+										if (record.fileId.equals(fileId)
+												&& record.chunkNo == chunkNo) {
+											byte[] data;
+											try {
+												data = components[1]
+														.getBytes(MulticastComunicator.ASCII_CODE);
 
-										FileChunkWithData requestedChunk = new FileChunkWithData(
-												fileId, chunkNo, data);
+												FileChunkWithData requestedChunk = new FileChunkWithData(
+														fileId, chunkNo, data);
 
-										ChunkRestore.getInstance()
-												.addRequestedChunk(
-														requestedChunk);
+												ChunkRestore.getInstance()
+														.addRequestedChunk(
+																requestedChunk);
 
-										ChunkRestore.getInstance()
-												.answerToChunkMessage(
-														sender.getAddr(),
-														sender.getPort());
+												ChunkRestore
+														.getInstance()
+														.answerToChunkMessage(
+																sender.getAddr(),
+																sender.getPort());
 
-										mSubscribedChunks.remove(record);
-										break;
-									} catch (UnsupportedEncodingException e) {
-										e.printStackTrace();
+												mSubscribedChunks
+														.remove(record);
+												break;
+											} catch (UnsupportedEncodingException e) {
+												e.printStackTrace();
+											}
+										}
 									}
 								}
-							}
-						}
-					});
+							});
 
 					break;
 				default:
