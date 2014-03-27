@@ -1,6 +1,5 @@
 package sdis.sharedbackup.protocols;
 
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 
 import sdis.sharedbackup.backend.ConfigsManager;
@@ -25,7 +24,6 @@ public class FileDeletion {
 	}
 
 	public boolean deleteFile(String fileId) {
-		String version = ConfigsManager.getInstance().getVersion();
 
 		String message = "";
 
@@ -44,8 +42,7 @@ public class FileDeletion {
 		return true;
 	}
 
-	public boolean respond(String fileId) {
-		String version = ConfigsManager.getInstance().getEnhancementsVersion();
+	public boolean reply(String fileId) {
 
 		String message = "";
 

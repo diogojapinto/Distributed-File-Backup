@@ -53,7 +53,7 @@ public class MulticastControlListener implements Runnable {
 
 		MulticastComunicator receiver = new MulticastComunicator(addr, port);
 
-		while (true) {
+		while (ConfigsManager.getInstance().isAppRunning()) {
 
 			final SenderRecord sender = new SenderRecord();
 

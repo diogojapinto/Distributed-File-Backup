@@ -2,7 +2,6 @@ package sdis.sharedbackup.backend;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.PriorityQueue;
 
 import sdis.sharedbackup.backend.ConfigsManager.InvalidChunkException;
 import sdis.sharedbackup.utils.Encoder;
@@ -107,8 +106,18 @@ public class SharedFile {
 	}
 
 	public class FileTooLargeException extends Exception {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 	}
 
 	public class FileDoesNotExistsExeption extends Exception {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 	}
 }

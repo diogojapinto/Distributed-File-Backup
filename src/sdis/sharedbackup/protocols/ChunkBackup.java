@@ -1,18 +1,10 @@
 package sdis.sharedbackup.protocols;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Random;
 
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.FileChunk;
 import sdis.sharedbackup.backend.MulticastComunicator;
-import sdis.sharedbackup.backend.SharedFile;
 
 public class ChunkBackup {
 

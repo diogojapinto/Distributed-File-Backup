@@ -38,6 +38,7 @@ public class ConfigsManager {
 	private BackupsDatabase mDatabase = null;
 	private ExecutorService mExecutor = null;
 	private Random mRandom;
+	private boolean mIsRunning;
 
 	private ConfigsManager() {
 		mMCListener = null;
@@ -45,6 +46,7 @@ public class ConfigsManager {
 		mMDRListener = null;
 		mExecutor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
 		mRandom = new Random();
+		mIsRunning = true;
 	}
 
 	public static ConfigsManager getInstance() {
@@ -266,10 +268,19 @@ public class ConfigsManager {
 		mDatabase.saveDatabase();
 	}
 
-	private void saveDatabase() {
+	public void saveDatabase() {
 		mDatabase.saveDatabase();
 	}
-
+	
+	public void terminate() {
+		mIsRunning = false;
+		mExecutor.shutdown();
+	}
+	
+	public boolean isAppRunning() {
+		return mIsRunning;
+	}
+	
 	/*
 	 * Exceptions
 	 */

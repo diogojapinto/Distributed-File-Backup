@@ -119,4 +119,9 @@ public class ApplicationInterface {
 	public ArrayList<String> getRestorableFiles() {
 		return ConfigsManager.getInstance().getRestorableFiles();
 	}
+	
+	public void terminate() {
+		ConfigsManager.getInstance().saveDatabase();
+		ConfigsManager.getInstance().terminate();
+	}
 }

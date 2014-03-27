@@ -39,7 +39,7 @@ public class MulticastDataBackupListener implements Runnable {
 
 		MulticastComunicator receiver = new MulticastComunicator(addr, port);
 
-		while (true) {
+		while (ConfigsManager.getInstance().isAppRunning()) {
 			String message = receiver.receiveMessage();
 			final String[] components;
 			String separator = MulticastComunicator.CRLF

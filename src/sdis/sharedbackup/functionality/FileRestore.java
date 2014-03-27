@@ -1,11 +1,9 @@
 package sdis.sharedbackup.functionality;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
 
 import sdis.sharedbackup.backend.FileChunk;
 import sdis.sharedbackup.backend.FileChunkWithData;
@@ -15,8 +13,6 @@ import sdis.sharedbackup.protocols.ChunkRestore;
 public class FileRestore {
 	private static FileRestore mInstance = null;
 
-	private Map<String, ArrayList<FileChunk>> receivedChunks;
-
 	private FileRestore() {
 	}
 
@@ -25,7 +21,6 @@ public class FileRestore {
 	}
 
 	public boolean restoreFile(SharedFile file) {
-		// TODO: set file's path ???
 		ArrayList<FileChunkWithData> receivedChunks = new ArrayList<FileChunkWithData>();
 
 		for (FileChunk chunk : file.getChunkList()) {

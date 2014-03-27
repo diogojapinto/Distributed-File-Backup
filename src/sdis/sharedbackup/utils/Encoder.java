@@ -4,12 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import sdis.sharedbackup.backend.MulticastComunicator;
 
 public class Encoder {
 
@@ -19,7 +16,6 @@ public class Encoder {
 	// generate the SHA256 hash key for some desired file. use filename,
 	// datemodified, owner, filedata
 	public static String generateBitString(File f) {
-		// TODO: Testar se funca
 		MessageDigest md = null;
 		try {
 			md = MessageDigest.getInstance("SHA-256");

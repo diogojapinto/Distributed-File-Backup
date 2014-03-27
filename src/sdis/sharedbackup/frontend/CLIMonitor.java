@@ -189,6 +189,11 @@ public class CLIMonitor {
 
 	private static class ArgsException extends Exception {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 		public void error() {
 			System.out
 					.println("usage: java CLIMonitor <MCaddr> <MCport> <MDBaddr> <MDBport> <MDRaddr> <MDRport>");
@@ -204,6 +209,7 @@ public class CLIMonitor {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private static void clearConsole() {
 		try {
 			String os = System.getProperty("os.name");

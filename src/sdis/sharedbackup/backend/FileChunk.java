@@ -97,7 +97,7 @@ public class FileChunk {
 	}
 
 	public int getDesiredReplicationDeg() {
-		return mCurrentReplicationDegree;
+		return mDesiredReplicationDegree;
 	}
 
 	public int getCurrentReplicationDeg() {

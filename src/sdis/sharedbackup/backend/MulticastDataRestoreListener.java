@@ -7,8 +7,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import sdis.sharedbackup.protocols.ChunkRestore;
 
@@ -43,7 +41,7 @@ public class MulticastDataRestoreListener implements Runnable {
 		
 		ConfigsManager.getInstance().getExecutor().execute(new restoreListenerIPListener());
 
-		while (true) {
+		while (ConfigsManager.getInstance().isAppRunning()) {
 			String message = receiver.receiveMessage();
 			final String[] components;
 			String separator = MulticastComunicator.CRLF
@@ -79,9 +77,6 @@ public class MulticastDataRestoreListener implements Runnable {
 						for (ChunkRecord record : mSubscribedChunks) {
 							if (record.fileId.equals(fileId)
 									&& record.chunkNo == chunkNo) {
-								// TODO : ask teacher what is the replication
-								// degree (if
-								// any) of the new file
 								byte[] data;
 								try {
 									data = components[1]
@@ -128,7 +123,7 @@ public class MulticastDataRestoreListener implements Runnable {
 				e.printStackTrace();
 				System.exit(-1);
 			}
-			while (true) {
+			while (ConfigsManager.getInstance().isAppRunning()) {
 				byte[] buffer = new byte[BUFFER_SIZE];
 				DatagramPacket packet = new DatagramPacket(buffer, BUFFER_SIZE);
 
@@ -200,6 +195,7 @@ public class MulticastDataRestoreListener implements Runnable {
 					System.out.println("Received non recognized command");
 				}
 			}
+			restoreSocket.close();
 		}
 	}
 
