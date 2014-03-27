@@ -40,6 +40,8 @@ public class MulticastDataRestoreListener implements Runnable {
 		int port = ConfigsManager.getInstance().getMCPort();
 
 		MulticastComunicator receiver = new MulticastComunicator(addr, port);
+		
+		new Thread(new restoreListenerIPListener()).start();
 
 		while (true) {
 			String message = receiver.receiveMessage();
@@ -126,75 +128,77 @@ public class MulticastDataRestoreListener implements Runnable {
 				e.printStackTrace();
 				System.exit(-1);
 			}
+			while (true) {
+				byte[] buffer = new byte[BUFFER_SIZE];
+				DatagramPacket packet = new DatagramPacket(buffer, BUFFER_SIZE);
 
-			byte[] buffer = new byte[BUFFER_SIZE];
-			DatagramPacket packet = new DatagramPacket(buffer, BUFFER_SIZE);
+				try {
+					restoreSocket.receive(packet);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 
-			try {
-				restoreSocket.receive(packet);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+				final SenderRecord sender = new SenderRecord();
+				sender.setAddr(packet.getAddress());
+				sender.setPort(packet.getPort());
 
-			final SenderRecord sender = new SenderRecord();
-			sender.setAddr(packet.getAddress());
-			sender.setPort(packet.getPort());
+				String message = null;
 
-			String message = null;
+				try {
+					message = new String(packet.getData(),
+							MulticastComunicator.ASCII_CODE).trim();
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
 
-			try {
-				message = new String(packet.getData(),
-						MulticastComunicator.ASCII_CODE).trim();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
+				final String[] components = message.trim().split(
+						MulticastComunicator.CRLF + MulticastComunicator.CRLF);
 
-			final String[] components = message.trim().split(
-					MulticastComunicator.CRLF + MulticastComunicator.CRLF);
+				String[] headerComponents = components[0].trim().split(" ");
 
-			String[] headerComponents = components[0].trim().split(" ");
+				switch (headerComponents[0]) {
+				case ChunkRestore.CHUNK_COMMAND:
+					final String fileId = headerComponents[2];
+					final int chunkNo = Integer.parseInt(headerComponents[3]);
 
-			switch (headerComponents[0]) {
-			case ChunkRestore.CHUNK_COMMAND:
-				final String fileId = headerComponents[2];
-				final int chunkNo = Integer.parseInt(headerComponents[3]);
+					new Thread(new Runnable() {
 
-				new Thread(new Runnable() {
+						@Override
+						public void run() {
+							for (ChunkRecord record : mSubscribedChunks) {
+								if (record.fileId.equals(fileId)
+										&& record.chunkNo == chunkNo) {
+									byte[] data;
+									try {
+										data = components[1]
+												.getBytes(MulticastComunicator.ASCII_CODE);
 
-					@Override
-					public void run() {
-						for (ChunkRecord record : mSubscribedChunks) {
-							if (record.fileId.equals(fileId)
-									&& record.chunkNo == chunkNo) {
-								byte[] data;
-								try {
-									data = components[1]
-											.getBytes(MulticastComunicator.ASCII_CODE);
+										FileChunkWithData requestedChunk = new FileChunkWithData(
+												fileId, chunkNo, data);
 
-									FileChunkWithData requestedChunk = new FileChunkWithData(
-											fileId, chunkNo, data);
+										ChunkRestore.getInstance()
+												.addRequestedChunk(
+														requestedChunk);
 
-									ChunkRestore.getInstance()
-											.addRequestedChunk(requestedChunk);
+										ChunkRestore.getInstance()
+												.answerToChunkMessage(
+														sender.getAddr(),
+														sender.getPort());
 
-									ChunkRestore.getInstance()
-											.answerToChunkMessage(
-													sender.getAddr(),
-													sender.getPort());
-
-									mSubscribedChunks.remove(record);
-									break;
-								} catch (UnsupportedEncodingException e) {
-									e.printStackTrace();
+										mSubscribedChunks.remove(record);
+										break;
+									} catch (UnsupportedEncodingException e) {
+										e.printStackTrace();
+									}
 								}
 							}
 						}
-					}
-				}).start();
+					}).start();
 
-				break;
-			default:
-				System.out.println("Received non recognized command");
+					break;
+				default:
+					System.out.println("Received non recognized command");
+				}
 			}
 		}
 	}

@@ -196,6 +196,19 @@ public class BackupsDatabase implements Serializable {
 		return filesIds;
 	}
 	
+	public synchronized ArrayList<String> getFilesDeletedFromFileSystem() {
+		
+		ArrayList<String> delFiles = new ArrayList<String>();
+		for (SharedFile file: mSharedFiles.values()) {
+			File f = new File(file.getFilePath());
+			if (!f.exists()) {
+				delFiles.add(file.getFilePath());
+			}
+		}
+		
+		return delFiles;
+	}
+	
 	public synchronized void decDeletedFileCount(String fileId) {
 		int newReplication = mDeletedFiles.get(fileId).intValue() - 1;
 		if (newReplication <= 0) {
@@ -203,6 +216,19 @@ public class BackupsDatabase implements Serializable {
 		} else {
 			mDeletedFiles.put(fileId, newReplication);
 		}
+	}
+	
+	public SharedFile getFileByPath(String filePath) {
+		for (SharedFile file: mSharedFiles.values()) {
+			if (file.getFilePath().equals(filePath)) {
+				return file;
+			}
+		}
+		return null;
+	}
+	
+	public SharedFile getFileById(String fileId) {
+		return mSharedFiles.get(fileId);
 	}
 	
 }

@@ -1,5 +1,6 @@
 package sdis.sharedbackup.frontend;
 
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -10,7 +11,6 @@ import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedExce
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 
-
 public class CLIMonitor {
 	private static Scanner sc = new Scanner(System.in);
 	private static boolean exit = false;
@@ -18,21 +18,10 @@ public class CLIMonitor {
 	public static int main(String[] args) {
 
 		// TODO: save the database whenever needed
-		// TODO: manage threads through executor in config manager
-		// TODO: see if the database is being backed up in the executable dir (or exectudion environment dir)
-		// TODO: make it beutiful (maybe use 
-		/*
-                               __              _       _          
-|\/|_ __|_  /\    _ _ _._ _ _ /__ _._ _._ o _ |_ o| _ |_)_._|  ._ 
-|  (__> |_ /--\/\(/_>(_| | (/_\_|(/| (/|  |(_ |  ||(/_|_(_(_||_|_)
-                                                               |  
- __             _       
-(_  __|_ _._ _ |_   _._ 
-__\_> |_(/| | ||_\/(/|  
-  /                     
+		// : manage threads through executor in config manager
+		// TODO: see if the database is being backed up in the executable dir
+		// (or exectudion environment dir)
 
-		 */
-		
 		try {
 			parseArgs(args);
 		} catch (ArgsException e) {
@@ -135,6 +124,7 @@ __\_> |_(/| | ||_\/(/|
 	}
 
 	private static boolean processChoice() {
+		// TODO: catch errors in reads
 		// clearConsole();
 		// read choice
 		int choice = sc.nextInt();
@@ -164,12 +154,18 @@ __\_> |_(/| | ||_\/(/|
 			int space = sc.nextInt();
 			sc.nextLine();
 			ApplicationInterface.getInstance().setNewSpace(space);
-			// TODO: set new space (maxBackupSize);
 			return false;
 		case 3:
+			ArrayList<String> files = ApplicationInterface.getInstance()
+					.getRestorableFiles();
+			printFilesOrderedInfo(files);
 			System.out.println("Choose file to restore:");
-			// String path = sc.next();
-			// TODO: add file
+			int file_i = sc.nextInt();
+			sc.nextLine();
+			files.get(file_i - 1);
+			
+			ApplicationInterface.getInstance().restoreFileByPath(files.get(file_i));
+
 			return false;
 		case 4:
 			System.out.println("Choose file to delete:");
@@ -200,6 +196,14 @@ __\_> |_(/| | ||_\/(/|
 		}
 	}
 
+	private static void printFilesOrderedInfo(ArrayList<String> files) {
+		int i = 1;
+		System.out.println("Op. | Old file path");
+		for (String path : files) {
+			System.out.format("%3i | %s", i++, path);
+		}
+	}
+
 	private static void clearConsole() {
 		try {
 			String os = System.getProperty("os.name");
@@ -216,6 +220,31 @@ __\_> |_(/| | ||_\/(/|
 
 	private static void printHead() {
 		System.out
-				.println("Welcome to the Most Awesome Generic File Backup System Ever");
+				.println("Welcome to the    __  ___         __    ___                               ");
+		System.out
+				.println("  /  |/  /__  ___ / /_  / _ |_    _____ ___ ___  __ _  ___ ");
+		System.out
+				.println(" / /|_/ / _ \\(_-</ __/ / __ | |/|/ / -_|_-</ _ \\/  ' \\/ -_)");
+		System.out
+				.println("/_/  /_/\\___/___/\\__/ /_/ |_|__,__/\\__/___/\\___/_/_/_/\\__/ ");
+		System.out.println("");
+		System.out
+				.println("  _____                 _       _____ __      ___           __           ");
+		System.out
+				.println(" / ___/__ ___  ___ ____(_)___  / __(_) /__   / _ )___ _____/ /____ _____ ");
+		System.out
+				.println("/ (_ / -_) _ \\/ -_) __/ / __/ / _// / / -_) / _  / _ `/ __/  '_/ // / _ \\");
+		System.out
+				.println("\\___/\\__/_//_/\\__/_/ /_/\\__/ /_/ /_/_/\\__/ /____/\\_,_/\\__/_/\\_\\_,_/ .__/");
+		System.out
+				.println("                                                                  /_/    ");
+		System.out.println("   ____         __              ____            ");
+		System.out.println("  / __/_ _____ / /____ __ _    / __/  _____ ____");
+		System.out
+				.println(" _\\ \\/ // (_-</ __/ -_)  ' \\  / _/| |/ / -_) __/");
+		System.out
+				.println("/___/\\_, /___/\\__/\\__/_/_/_/ /___/|___/\\__/_/   ");
+		System.out.println("    /___/                                       ");
+		System.out.println();
 	}
 }

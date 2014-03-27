@@ -1,6 +1,7 @@
 package sdis.sharedbackup.frontend;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
@@ -11,6 +12,7 @@ import sdis.sharedbackup.backend.SharedFile;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 import sdis.sharedbackup.functionality.FileBackup;
+import sdis.sharedbackup.functionality.FileRestore;
 import sdis.sharedbackup.protocols.SpaceReclaiming;
 import sdis.sharedbackup.protocols.FileDeletion;
 
@@ -61,8 +63,15 @@ public class ApplicationInterface {
 		return true;
 	}
 
-	public boolean restoreFile(String fileId) {
-		return false;
+	public boolean restoreFileByPath(String oldFilePath) {
+		SharedFile file = ConfigsManager.getInstance().getFileByPath(oldFilePath);
+		return restoreFileById(file.getFileId());
+	}
+
+	public boolean restoreFileById(String fileId) {
+		SharedFile file = ConfigsManager.getInstance().getFileById(fileId);
+		
+		return FileRestore.getInstance().restoreFile(file);
 	}
 
 	public boolean deleteFile(String filepath) throws FileDoesNotExistsExeption {
@@ -105,5 +114,9 @@ public class ApplicationInterface {
 
 	public boolean getDatabaseStatus() {
 		return ConfigsManager.getInstance().getDatabaseStatus();
+	}
+
+	public ArrayList<String> getRestorableFiles() {
+		return ConfigsManager.getInstance().getRestorableFiles();
 	}
 }
