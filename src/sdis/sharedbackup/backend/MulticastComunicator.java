@@ -29,6 +29,7 @@ public class MulticastComunicator {
 	public void join() {
 		try {
 			mMSocket = new MulticastSocket(mPort);
+			mMSocket.setTimeToLive(1);
 		} catch (IOException e) {
 			System.out.println("Could not create MulticastSocket.");
 			e.printStackTrace();
