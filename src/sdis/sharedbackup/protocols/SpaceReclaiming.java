@@ -44,7 +44,6 @@ public class SpaceReclaiming {
 
 		MulticastComunicator sender = new MulticastComunicator(multCAddr,
 				multCPort);
-		sender.join();
 
 		try {
 			sender.sendMessage(message);

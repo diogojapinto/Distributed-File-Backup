@@ -6,6 +6,7 @@ import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.FileChunk;
 import sdis.sharedbackup.backend.MulticastComunicator;
 import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
+import sdis.sharedbackup.frontend.ApplicationInterface;
 
 public class ChunkBackup {
 
@@ -42,10 +43,13 @@ public class ChunkBackup {
 
 		MulticastComunicator sender = new MulticastComunicator(multDBAddr,
 				multDBPort);
-		
-		sender.join();
 
 		int counter = 0;
+
+		if (ApplicationInterface.DEBUGG) {
+			System.out.println("Sending chunk " + chunk.getChunkNo()
+					+ " of file " + chunk.getFileId());
+		}
 
 		do {
 			try {
@@ -60,11 +64,15 @@ public class ChunkBackup {
 			}
 			counter++;
 		} while (chunk.getDesiredReplicationDeg() > chunk
-				.getCurrentReplicationDeg() || counter < MAX_RETRIES);
+				.getCurrentReplicationDeg() && counter < MAX_RETRIES);
 
 		if (counter == MAX_RETRIES) {
 			return false;
 		} else {
+			if (ApplicationInterface.DEBUGG) {
+				System.out.println("Sent");
+			}
+			System.out.println("Sent chunk ");
 			return true;
 		}
 
@@ -77,7 +85,6 @@ public class ChunkBackup {
 
 		MulticastComunicator sender = new MulticastComunicator(multCtrlAddr,
 				multCtrlPort);
-		sender.join();
 
 		chunk.saveToFile(data);
 

@@ -12,7 +12,6 @@ public class MulticastComunicator {
 	private MulticastSocket mMSocket;
 	private InetAddress mAddr;
 	private int mPort;
-	private boolean mHasJoined;
 
 	private static final int MAX_PACKET_SIZE = 70000;
 	public static final String ASCII_CODE = "US-ASCII";
@@ -22,14 +21,13 @@ public class MulticastComunicator {
 	public MulticastComunicator(InetAddress addr, int port) {
 		this.mAddr = addr;
 		this.mPort = port;
-		this.mHasJoined = false;
 		this.mMSocket = null;
 	}
 
 	public void join() {
 		try {
 			mMSocket = new MulticastSocket(mPort);
-
+			mMSocket.setTimeToLive(TTL);
 		} catch (IOException e) {
 			System.out.println("Could not create MulticastSocket.");
 			e.printStackTrace();
@@ -44,36 +42,26 @@ public class MulticastComunicator {
 			System.exit(1);
 		}
 
-		mHasJoined = true;
 	}
 
 	public boolean sendMessage(String messg) throws HasToJoinException {
 
-		if (mMSocket == null) {
-			throw new HasToJoinException();
+		try {
+			mMSocket = new MulticastSocket();
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 
-		if (!mHasJoined) {
-			System.out.println("Cannot send message before joining group");
-			return false;
-		}
 		byte[] bytesMsg = null;
+		
 		try {
 			bytesMsg = messg.getBytes(ASCII_CODE);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println(bytesMsg);
 
-		DatagramPacket packet = new DatagramPacket(bytesMsg, bytesMsg.length);
-		try {
-			mMSocket.setTimeToLive(TTL);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		
-		System.out.println(messg);
+		DatagramPacket packet = new DatagramPacket(bytesMsg, bytesMsg.length, mAddr, mPort);
 
 		try {
 			mMSocket.send(packet);

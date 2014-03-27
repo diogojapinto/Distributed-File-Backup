@@ -57,8 +57,6 @@ public class ChunkRestore {
 		MulticastComunicator sender = new MulticastComunicator(multCAddr,
 				multCPort);
 
-		sender.join();
-
 		MulticastDataRestoreListener.getInstance().subscribeToChunkData(fileId,
 				chunkNo);
 
@@ -105,8 +103,6 @@ public class ChunkRestore {
 
 		MulticastComunicator sender = new MulticastComunicator(multDBAddr,
 				multDBPort);
-
-		sender.join();
 
 		try {
 			sender.sendMessage(message);

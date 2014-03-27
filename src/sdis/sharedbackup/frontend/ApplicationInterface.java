@@ -17,6 +17,8 @@ import sdis.sharedbackup.protocols.SpaceReclaiming;
 import sdis.sharedbackup.protocols.FileDeletion;
 
 public class ApplicationInterface {
+	
+	public static boolean DEBUGG = true;
 
 	private static ApplicationInterface instance = null;
 

@@ -281,6 +281,10 @@ public class ConfigsManager {
 	public boolean isAppRunning() {
 		return mIsRunning;
 	}
+	
+	public void addSavedChunk(FileChunk chunk) {
+		mDatabase.addSavedChunk(chunk);
+	}
 
 	/*
 	 * Exceptions

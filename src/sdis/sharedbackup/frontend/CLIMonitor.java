@@ -61,9 +61,9 @@ public class CLIMonitor {
 		 * Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]),
 		 * args[4], Integer.parseInt(args[5]))) { throw new ArgsException(); }
 		 */
-		ConfigsManager.getInstance().setMulticastAddrs("239.254.254.249",
-				Integer.parseInt("50001"), "239.254.254.250",
-				Integer.parseInt("50002"), "239.254.254.251",
+		ConfigsManager.getInstance().setMulticastAddrs("235.168.2.211",
+				Integer.parseInt("50001"), "235.168.2.212",
+				Integer.parseInt("50002"), "235.168.2.213",
 				Integer.parseInt("50003"));
 	}
 

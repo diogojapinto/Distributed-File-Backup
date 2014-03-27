@@ -33,13 +33,15 @@ public class Encoder {
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
+		
+		int skipBytes = Math.min(LAST_FILE_BYTES_SIZE, (int) f.length());
 
-		byte[] lastFileBytes = new byte[LAST_FILE_BYTES_SIZE];
+		byte[] lastFileBytes = new byte[skipBytes];
 
 		try {
-			in.skip(f.length() - LAST_FILE_BYTES_SIZE);
+			in.skip(f.length() - skipBytes);
 			in.read(lastFileBytes, 0,
-					LAST_FILE_BYTES_SIZE);
+					skipBytes);
 		} catch (IndexOutOfBoundsException e2) {
 			e2.printStackTrace();
 			System.exit(1);

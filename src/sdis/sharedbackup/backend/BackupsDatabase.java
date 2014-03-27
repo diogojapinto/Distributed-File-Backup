@@ -238,5 +238,9 @@ public class BackupsDatabase implements Serializable {
 	public SharedFile getFileById(String fileId) {
 		return mSharedFiles.get(fileId);
 	}
+
+	public void addSavedChunk(FileChunk chunk) {
+		mSavedChunks.add(chunk);
+	}
 	
 }

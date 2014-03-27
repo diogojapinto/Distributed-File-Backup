@@ -36,7 +36,6 @@ public class FileDeletion {
 
 		MulticastComunicator sender = new MulticastComunicator(multCAddr,
 				multCPort);
-		sender.join();
 
 		try {
 			sender.sendMessage(message);
@@ -59,7 +58,6 @@ public class FileDeletion {
 
 		MulticastComunicator sender = new MulticastComunicator(multCAddr,
 				multCPort);
-		sender.join();
 
 		try {
 			sender.sendMessage(message);
