@@ -172,6 +172,7 @@ public class ConfigsManager {
 	public void setBackupsDestination(String dirPath)
 			throws InvalidFolderException {
 		database.setBackupsDestination(dirPath);
+		database.saveDatabase();
 	}
 
 	// Others
