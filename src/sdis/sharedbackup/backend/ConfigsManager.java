@@ -81,7 +81,7 @@ public class ConfigsManager {
 	public String getVersion() {
 		return VERSION;
 	}
-	
+
 	public String getEnhancementsVersion() {
 		return ENHANCEMENTS_VERSION;
 	}
@@ -168,7 +168,7 @@ public class ConfigsManager {
 	public Executor getExecutor() {
 		return mExecutor;
 	}
-	
+
 	// Setters
 
 	public void setBackupsDestination(String dirPath)
@@ -210,35 +210,42 @@ public class ConfigsManager {
 
 	public void removeByFileId(String fileId) {
 		mDatabase.removeByFileId(fileId);
+		mDatabase.saveDatabase();
 	}
 
 	public void removeSharedFile(String deletedFileID) {
 		mDatabase.removeSharedFile(deletedFileID);
+		mDatabase.saveDatabase();
 	}
 
 	public int getMaxBackupSize() {
 		return mDatabase.getMaxBackupSize();
 	}
-	
+
 	public SharedFile getFileById(String fileId) {
 		return mDatabase.getFileByPath(fileId);
 	}
-	
+
 	public SharedFile getFileByPath(String filePath) {
 		return mDatabase.getFileByPath(filePath);
 	}
 
 	public void setAvailSpace(int newSpace) throws InvalidBackupSizeException {
 		mDatabase.setAvailSpace(newSpace);
+		mDatabase.saveDatabase();
 	}
 
 	public void incChunkReplication(String fileId, int chunkNo)
 			throws InvalidChunkException {
 		mDatabase.incChunkReplication(fileId, chunkNo);
+		mDatabase.saveDatabase();
 	}
 
 	public boolean deleteChunk(ChunkRecord record) {
-		return mDatabase.removeSingleChunk(record);
+		boolean state = mDatabase.removeSingleChunk(record);
+		mDatabase.saveDatabase();
+
+		return state;
 	}
 
 	public boolean fileIsTracked(String fileId) {
@@ -248,13 +255,19 @@ public class ConfigsManager {
 	public ArrayList<String> getRestorableFiles() {
 		return mDatabase.getFilesDeletedFromFileSystem();
 	}
-	
+
 	public ArrayList<String> getDeletedFiles() {
 		return mDatabase.getDeletedFilesIds();
 	}
 
 	public void decDeletedFileReplication(String fileId) {
+
 		mDatabase.decDeletedFileCount(fileId);
+		mDatabase.saveDatabase();
+	}
+
+	private void saveDatabase() {
+		mDatabase.saveDatabase();
 	}
 
 	/*
