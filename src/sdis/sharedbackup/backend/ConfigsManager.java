@@ -217,6 +217,14 @@ public class ConfigsManager {
 	public int getMaxBackupSize() {
 		return database.getMaxBackupSize();
 	}
+	
+	public SharedFile getFileById(String fileId) {
+		return database.getFileByPath(fileId);
+	}
+	
+	public SharedFile getFileByPath(String filePath) {
+		return database.getFileByPath(filePath);
+	}
 
 	public void setAvailSpace(int newSpace) throws InvalidBackupSizeException {
 		database.setAvailSpace(newSpace);
@@ -235,8 +243,8 @@ public class ConfigsManager {
 		return database.fileIsTracked(fileId);
 	}
 
-	public ArrayList<String> getDeletedFiles() {
-		return database.getDeletedFilesIds();
+	public ArrayList<String> getRestorableFiles() {
+		return database.getFilesDeletedFromFileSystem();
 	}
 
 	public void decDeletedFileReplication(String fileId) {
