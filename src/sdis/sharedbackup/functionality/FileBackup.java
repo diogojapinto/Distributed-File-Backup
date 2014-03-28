@@ -19,8 +19,9 @@ public class FileBackup {
 	// call putChunk for each chunk in SharedFile
 	public boolean saveFile(SharedFile file) {
 		ArrayList<FileChunk> list = file.getChunkList();
-		int i;
-		for (i = 0; i < list.size(); i++) {
+
+		for (int i = 0; i < list.size(); i++) {
+			
 			final FileChunk chunk = list.get(i);
 			ChunkBackup.getInstance().putChunk(chunk);
 		}

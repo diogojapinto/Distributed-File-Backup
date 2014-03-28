@@ -22,6 +22,7 @@ public class Encoder {
 		} catch (NoSuchAlgorithmException e) {
 			System.err.println("Selected algorithm does not exit");
 			e.printStackTrace();
+			System.exit(1);
 		}
 		// get string
 		String file_string = f.getName();
@@ -33,15 +34,14 @@ public class Encoder {
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		int skipBytes = Math.min(LAST_FILE_BYTES_SIZE, (int) f.length());
 
 		byte[] lastFileBytes = new byte[skipBytes];
 
 		try {
 			in.skip(f.length() - skipBytes);
-			in.read(lastFileBytes, 0,
-					skipBytes);
+			in.read(lastFileBytes, 0, skipBytes);
 		} catch (IndexOutOfBoundsException e2) {
 			e2.printStackTrace();
 			System.exit(1);
@@ -50,25 +50,17 @@ public class Encoder {
 			System.exit(1);
 		}
 
+		file_string += new String(lastFileBytes);
+
 		try {
-			file_string += new String(lastFileBytes, ASCII_CODE);
+			md.update(file_string.getBytes("UTF-8"));
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		}
 
-		try {
-			md.update(file_string.getBytes(ASCII_CODE));
-		} catch (UnsupportedEncodingException e) {
-			System.out.println("Unsuported Encoding");
-			e.printStackTrace();
-		}
 		byte[] digest = md.digest();
-		String key = null;
-		try {
-			key = new String(digest, ASCII_CODE);
-		} catch (UnsupportedEncodingException e1) {
-			e1.printStackTrace();
-		}
+
+		String key = new String(digest);
 
 		try {
 			in.close();

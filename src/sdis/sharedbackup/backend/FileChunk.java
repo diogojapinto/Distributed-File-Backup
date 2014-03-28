@@ -24,9 +24,9 @@ public class FileChunk implements Serializable {
 
 	private boolean isOwnMachineFile;
 
-	public FileChunk(SharedFile parentFile, long mChunkCounter) {
+	public FileChunk(SharedFile parentFile, long chunkNo) {
 		this.mParentFile = parentFile;
-		this.mChunkNo = mChunkCounter;
+		this.mChunkNo = chunkNo;
 		this.mFileId = mParentFile.getFileId();
 		this.mCurrentReplicationDegree = 0;
 		this.mDesiredReplicationDegree = mParentFile.getDesiredReplication();
@@ -167,7 +167,7 @@ public class FileChunk implements Serializable {
 					+ "_"
 					+ String.valueOf(mChunkNo) + ".cnk");
 		} else {
-			return null;
+			return mParentFile.getFilePath();
 		}
 	}
 
