@@ -151,13 +151,13 @@ public class CLIMonitor {
 				System.out.println("The selected file does not exists");
 				return false;
 			}
-		case 2:
+		case 4:
 			System.out.println("Enter new allocated space:");
 			int space = sc.nextInt();
 			sc.nextLine();
 			ApplicationInterface.getInstance().setNewSpace(space);
 			return false;
-		case 3:
+		case 2:
 			ArrayList<String> files = ApplicationInterface.getInstance()
 					.getRestorableFiles();
 			printFilesOrderedInfo(files);
@@ -170,7 +170,7 @@ public class CLIMonitor {
 					files.get(file_i));
 
 			return false;
-		case 4:
+		case 3:
 			System.out.println("Choose file to delete:");
 			String deletepath = sc.next();
 			try {
