@@ -114,7 +114,8 @@ public class MulticastDataRestoreListener implements Runnable {
 
 					break;
 				default:
-					System.out.println("Received non recognized command");
+					System.out.println("MDR received non recognized command");
+					System.out.println(message);
 				}
 			}
 		} catch (HasToJoinException e1) {

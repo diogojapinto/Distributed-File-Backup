@@ -252,7 +252,8 @@ public class MulticastControlListener implements Runnable {
 							});
 					break;
 				default:
-					System.out.println("Received non recognized command");
+					System.out.println("MC received non recognized command:");
+					System.out.println(message);
 				}
 			}
 		} catch (HasToJoinException e1) {

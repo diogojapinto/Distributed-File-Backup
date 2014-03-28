@@ -141,7 +141,8 @@ public class MulticastDataBackupListener implements Runnable {
 
 					break;
 				default:
-					System.out.println("Received non recognized command");
+					System.out.println("MDB received non recognized command");
+					System.out.println(message);
 				}
 			}
 		} catch (HasToJoinException e1) {
