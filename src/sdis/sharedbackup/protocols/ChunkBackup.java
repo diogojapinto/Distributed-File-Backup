@@ -47,7 +47,7 @@ public class ChunkBackup {
 		int counter = 0;
 
 		Log.log("Sending chunk " + chunk.getChunkNo() + " of file "
-				+ chunk.getFilePath());
+				+ chunk.getFileId());
 
 		do {
 			try {
