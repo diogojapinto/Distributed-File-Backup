@@ -68,7 +68,14 @@ public class BackupsDatabase implements Serializable {
 
 		if (destination.isDirectory()) {
 			mBackupFolder = destination.getAbsolutePath();
-			mBackupFolder += new String("\\");
+            String os = System.getProperty("os.name");
+
+            if (os.contains("Windows")) {
+                mBackupFolder += "\\";
+            } else {
+                mBackupFolder += "/";
+            }
+
 			checkInitialization();
 		} else {
 			throw new InvalidFolderException();
