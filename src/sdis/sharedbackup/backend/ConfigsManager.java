@@ -63,17 +63,15 @@ public class ConfigsManager {
 
 	private boolean loadDatabase() {
 		try {
-			FileInputStream fileIn = new FileInputStream(".database.ser");
+			FileInputStream fileIn = new FileInputStream(BackupsDatabase.FILE);
 			ObjectInputStream in = new ObjectInputStream(fileIn);
-			mDatabase = (BackupsDatabase) in.readObject();
+
 			in.close();
 			fileIn.close();
 
 		} catch (FileNotFoundException e) {
 			mDatabase = new BackupsDatabase();
 			return false;
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -226,7 +224,7 @@ public class ConfigsManager {
 	}
 
 	public SharedFile getFileById(String fileId) {
-		return mDatabase.getFileByPath(fileId);
+		return mDatabase.getFileById(fileId);
 	}
 
 	public SharedFile getFileByPath(String filePath) {

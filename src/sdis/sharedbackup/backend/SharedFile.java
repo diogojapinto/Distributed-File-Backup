@@ -1,6 +1,7 @@
 package sdis.sharedbackup.backend;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import sdis.sharedbackup.backend.ConfigsManager.InvalidChunkException;
@@ -11,7 +12,11 @@ import sdis.sharedbackup.utils.Encoder;
  * 
  */
 
-public class SharedFile {
+public class SharedFile implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1;
 	public static final long CHUNK_SIZE = 64000;
 	public static final long MAX_NR_CHUNKS = 1000000;
 	public static final long MAX_FILE_SIZE = CHUNK_SIZE * (MAX_NR_CHUNKS - 1);
@@ -110,7 +115,7 @@ public class SharedFile {
 		/**
 		 * 
 		 */
-		private static final long serialVersionUID = 1L;
+		private static final long serialVersionUID = 1;
 	}
 
 	public class FileDoesNotExistsExeption extends Exception {
@@ -118,6 +123,6 @@ public class SharedFile {
 		/**
 		 * 
 		 */
-		private static final long serialVersionUID = 1L;
+		private static final long serialVersionUID = 1;
 	}
 }

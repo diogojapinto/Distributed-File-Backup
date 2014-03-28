@@ -5,8 +5,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 
-public class FileChunk {
+public class FileChunk implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1;
 
 	public static int MAX_CHUNK_SIZE = 64000;
 

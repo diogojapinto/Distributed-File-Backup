@@ -16,11 +16,14 @@ import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 
 public class BackupsDatabase implements Serializable {
-
+	
+	public static final String FILE = ".database.ser";
+	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1;
+	
 	private String mBackupFolder;
 	private int maxBackupSize; // stored in KB
 	private Map<String, SharedFile> mSharedFiles; // my shared files
