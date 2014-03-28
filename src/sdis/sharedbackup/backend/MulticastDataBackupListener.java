@@ -35,8 +35,8 @@ public class MulticastDataBackupListener implements Runnable {
 
 	@Override
 	public void run() {
-		InetAddress addr = ConfigsManager.getInstance().getMCAddr();
-		int port = ConfigsManager.getInstance().getMCPort();
+		InetAddress addr = ConfigsManager.getInstance().getMDBAddr();
+		int port = ConfigsManager.getInstance().getMDBPort();
 
 		MulticastComunicator receiver = new MulticastComunicator(addr, port);
 
