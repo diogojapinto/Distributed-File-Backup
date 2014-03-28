@@ -36,8 +36,8 @@ public class MulticastDataRestoreListener implements Runnable {
 
 	@Override
 	public void run() {
-		InetAddress addr = ConfigsManager.getInstance().getMCAddr();
-		int port = ConfigsManager.getInstance().getMCPort();
+		InetAddress addr = ConfigsManager.getInstance().getMDRAddr();
+		int port = ConfigsManager.getInstance().getMDRPort();
 
 		MulticastComunicator receiver = new MulticastComunicator(addr, port);
 
