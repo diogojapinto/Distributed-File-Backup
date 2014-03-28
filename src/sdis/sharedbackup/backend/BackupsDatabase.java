@@ -16,14 +16,14 @@ import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 
 public class BackupsDatabase implements Serializable {
-	
+
 	public static final String FILE = ".database.ser";
-	
+
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1;
-	
+
 	private String mBackupFolder;
 	private int maxBackupSize; // stored in KB
 	private Map<String, SharedFile> mSharedFiles; // my shared files
@@ -45,7 +45,8 @@ public class BackupsDatabase implements Serializable {
 	}
 
 	public void removeSharedFile(String fileID) {
-		mDeletedFiles.put(fileID, mSharedFiles.get(fileID).getDesiredReplication());
+		mDeletedFiles.put(fileID, mSharedFiles.get(fileID)
+				.getDesiredReplication());
 		mSharedFiles.remove(fileID);
 	}
 
@@ -68,16 +69,29 @@ public class BackupsDatabase implements Serializable {
 			throws InvalidFolderException {
 
 		File destination = new File(dest);
-
-		if (destination.isDirectory()) {
+		if (!destination.exists()) {
+			
+			destination.mkdir();
 			mBackupFolder = destination.getAbsolutePath();
-            String os = System.getProperty("os.name");
+			String os = System.getProperty("os.name");
 
-            if (os.contains("Windows")) {
-                mBackupFolder += "\\";
-            } else {
-                mBackupFolder += "/";
-            }
+			if (os.contains("Windows")) {
+				mBackupFolder += "\\";
+			} else {
+				mBackupFolder += "/";
+			}
+
+			checkInitialization();
+			
+		} else if (destination.isDirectory()) {
+			mBackupFolder = destination.getAbsolutePath();
+			String os = System.getProperty("os.name");
+
+			if (os.contains("Windows")) {
+				mBackupFolder += "\\";
+			} else {
+				mBackupFolder += "/";
+			}
 
 			checkInitialization();
 		} else {
@@ -90,7 +104,7 @@ public class BackupsDatabase implements Serializable {
 			mIsInitialized = true;
 		}
 	}
-	
+
 	public boolean isInitialized() {
 		return mIsInitialized;
 	}
@@ -196,37 +210,37 @@ public class BackupsDatabase implements Serializable {
 		}
 		return false;
 	}
-	
+
 	public ArrayList<FileChunk> getSavedChunks() {
 		return mSavedChunks;
 	}
-	
-	public boolean fileIsTracked (String fileId) {
+
+	public boolean fileIsTracked(String fileId) {
 		return mSharedFiles.containsKey(fileId);
 	}
-	
+
 	public synchronized ArrayList<String> getDeletedFilesIds() {
 		ArrayList<String> filesIds = new ArrayList<String>();
-		for (String key: mDeletedFiles.keySet()) {
+		for (String key : mDeletedFiles.keySet()) {
 			filesIds.add(key);
 		}
-		
+
 		return filesIds;
 	}
-	
+
 	public synchronized ArrayList<String> getFilesDeletedFromFileSystem() {
-		
+
 		ArrayList<String> delFiles = new ArrayList<String>();
-		for (SharedFile file: mSharedFiles.values()) {
+		for (SharedFile file : mSharedFiles.values()) {
 			File f = new File(file.getFilePath());
 			if (!f.exists()) {
 				delFiles.add(file.getFilePath());
 			}
 		}
-		
+
 		return delFiles;
 	}
-	
+
 	public synchronized void decDeletedFileCount(String fileId) {
 		int newReplication = mDeletedFiles.get(fileId).intValue() - 1;
 		if (newReplication <= 0) {
@@ -235,16 +249,16 @@ public class BackupsDatabase implements Serializable {
 			mDeletedFiles.put(fileId, newReplication);
 		}
 	}
-	
+
 	public SharedFile getFileByPath(String filePath) {
-		for (SharedFile file: mSharedFiles.values()) {
+		for (SharedFile file : mSharedFiles.values()) {
 			if (file.getFilePath().equals(filePath)) {
 				return file;
 			}
 		}
 		return null;
 	}
-	
+
 	public SharedFile getFileById(String fileId) {
 		return mSharedFiles.get(fileId);
 	}
@@ -252,5 +266,5 @@ public class BackupsDatabase implements Serializable {
 	public void addSavedChunk(FileChunk chunk) {
 		mSavedChunks.add(chunk);
 	}
-	
+
 }

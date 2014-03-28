@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.MulticastComunicator;
 import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
+import sdis.sharedbackup.utils.Log;
 
 public class FileDeletion {
 
@@ -28,8 +29,8 @@ public class FileDeletion {
 
 		String message = "";
 
-		message += DELETE_COMMAND + " " + fileId + " "
-				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
+		message += DELETE_COMMAND + " " + fileId + MulticastComunicator.CRLF
+				+ MulticastComunicator.CRLF;
 
 		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCPort = ConfigsManager.getInstance().getMCPort();
@@ -43,6 +44,8 @@ public class FileDeletion {
 			e.printStackTrace();
 		}
 
+		Log.log("Sent DELETE command for file " + fileId);
+		
 		return true;
 	}
 
@@ -50,14 +53,15 @@ public class FileDeletion {
 
 		String message = "";
 
-		message += RESPONSE_COMMAND + " " + fileId + " "
-				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
+		message += RESPONSE_COMMAND + " " + fileId + MulticastComunicator.CRLF
+				+ MulticastComunicator.CRLF;
 
 		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCPort = ConfigsManager.getInstance().getMCPort();
 
 		MulticastComunicator sender = new MulticastComunicator(multCAddr,
 				multCPort);
+		
 
 		try {
 			sender.sendMessage(message);
@@ -65,6 +69,8 @@ public class FileDeletion {
 			e.printStackTrace();
 		}
 
+		Log.log("Sent RESPONSE to file deletion of " + fileId);
+		
 		return true;
 	}
 }

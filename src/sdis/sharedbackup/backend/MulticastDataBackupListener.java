@@ -121,8 +121,7 @@ public class MulticastDataBackupListener implements Runnable {
 																pendingChunk,
 																components[1]
 																		.getBytes(MulticastComunicator.ASCII_CODE));
-												pendingChunk.incCurrentReplication();
-												ConfigsManager.getInstance().addSavedChunk(pendingChunk);
+												
 											} catch (UnsupportedEncodingException e) {
 												e.printStackTrace();
 											}

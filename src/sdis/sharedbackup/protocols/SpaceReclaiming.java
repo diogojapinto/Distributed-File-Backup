@@ -7,6 +7,7 @@ import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.FileChunk;
 import sdis.sharedbackup.backend.MulticastComunicator;
 import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
+import sdis.sharedbackup.utils.Log;
 
 public class SpaceReclaiming {
 
@@ -36,7 +37,7 @@ public class SpaceReclaiming {
 		String message = "";
 
 		message += REMOVED_COMMAND + " " + version + " " + chunk.getFileId()
-				+ " " + chunk.getChunkNo() + " " + MulticastComunicator.CRLF
+				+ " " + chunk.getChunkNo() + MulticastComunicator.CRLF
 				+ MulticastComunicator.CRLF;
 
 		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
@@ -50,6 +51,8 @@ public class SpaceReclaiming {
 		} catch (HasToJoinException e) {
 			e.printStackTrace();
 		}
+		
+		Log.log("Sent REMOVED cmd of " + chunk.getFileId() + ":" + chunk.getChunkNo());
 
 		return true;
 

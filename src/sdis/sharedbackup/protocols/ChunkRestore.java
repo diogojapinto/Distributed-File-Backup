@@ -14,6 +14,7 @@ import sdis.sharedbackup.backend.FileChunkWithData;
 import sdis.sharedbackup.backend.MulticastComunicator;
 import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
 import sdis.sharedbackup.backend.MulticastDataRestoreListener;
+import sdis.sharedbackup.utils.Log;
 
 public class ChunkRestore {
 
@@ -49,7 +50,7 @@ public class ChunkRestore {
 		String message = "";
 
 		message += GET_COMMAND + " " + version + " " + fileId + " " + chunkNo
-				+ " " + MulticastComunicator.CRLF + MulticastComunicator.CRLF;
+				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
 
 		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCPort = ConfigsManager.getInstance().getMCPort();
@@ -98,7 +99,7 @@ public class ChunkRestore {
 		String message = "";
 
 		message += CHUNK_COMMAND + " " + version + " " + chunk.getFileId()
-				+ " " + chunk.getChunkNo() + " " + MulticastComunicator.CRLF
+				+ " " + chunk.getChunkNo() + MulticastComunicator.CRLF
 				+ MulticastComunicator.CRLF + chunk.getData();
 
 		MulticastComunicator sender = new MulticastComunicator(multDBAddr,
@@ -109,6 +110,8 @@ public class ChunkRestore {
 		} catch (HasToJoinException e) {
 			e.printStackTrace();
 		}
+		
+		Log.log("Sent CHUNK command to MULTICAST in response to request of " + chunk.getFileId() + " no " + chunk.getChunkNo());
 
 		return true;
 	}
@@ -121,7 +124,7 @@ public class ChunkRestore {
 		String message = "";
 
 		message += CHUNK_COMMAND + " " + version + " " + chunk.getFileId()
-				+ " " + chunk.getChunkNo() + " " + MulticastComunicator.CRLF
+				+ " " + chunk.getChunkNo() + MulticastComunicator.CRLF
 				+ MulticastComunicator.CRLF + chunk.getData();
 
 		DatagramSocket socket = null;
@@ -148,6 +151,9 @@ public class ChunkRestore {
 			e.printStackTrace();
 		}
 		socket.close();
+
+		Log.log("Sent CHUNK command to IP in response to request of " + chunk.getFileId() + " no " + chunk.getChunkNo());
+		
 		return true;
 	}
 
@@ -184,6 +190,8 @@ public class ChunkRestore {
 		}
 		
 		socket.close();
+
+		Log.log("Answerd to CHUNK command to IP");
 	}
 
 	public synchronized void addRequestedChunk(FileChunkWithData chunk) {

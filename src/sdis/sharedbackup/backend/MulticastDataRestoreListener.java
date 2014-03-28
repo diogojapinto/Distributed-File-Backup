@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
 import sdis.sharedbackup.protocols.ChunkRestore;
+import sdis.sharedbackup.utils.Log;
 
 /*
  * Class that receives and dispatches messages from the multicast data restore channel
@@ -39,7 +40,7 @@ public class MulticastDataRestoreListener implements Runnable {
 		int port = ConfigsManager.getInstance().getMCPort();
 
 		MulticastComunicator receiver = new MulticastComunicator(addr, port);
-		
+
 		receiver.join();
 
 		ConfigsManager.getInstance().getExecutor()
@@ -75,6 +76,10 @@ public class MulticastDataRestoreListener implements Runnable {
 
 					fileId = header_components[2].trim();
 					chunkNo = Integer.parseInt(header_components[3].trim());
+
+					Log.log("Received CHUNK command for file " + fileId
+							+ " chunk " + chunkNo);
+					Log.log("Size: " + components[1].length());
 
 					ConfigsManager.getInstance().getExecutor()
 							.execute(new Runnable() {

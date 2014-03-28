@@ -6,7 +6,7 @@ import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.FileChunk;
 import sdis.sharedbackup.backend.MulticastComunicator;
 import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
-import sdis.sharedbackup.frontend.ApplicationInterface;
+import sdis.sharedbackup.utils.Log;
 
 public class ChunkBackup {
 
@@ -35,7 +35,7 @@ public class ChunkBackup {
 
 		message += PUT_COMMAND + " " + version + " " + chunk.getFileId() + " "
 				+ chunk.getChunkNo() + " " + chunk.getDesiredReplicationDeg()
-				+ " " + MulticastComunicator.CRLF + MulticastComunicator.CRLF
+				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF
 				+ chunk.getData();
 
 		InetAddress multDBAddr = ConfigsManager.getInstance().getMDBAddr();
@@ -46,10 +46,8 @@ public class ChunkBackup {
 
 		int counter = 0;
 
-		if (ApplicationInterface.DEBUGG) {
-			System.out.println("Sending chunk " + chunk.getChunkNo()
-					+ " of file " + chunk.getFileId());
-		}
+		Log.log("Sending chunk " + chunk.getChunkNo() + " of file "
+				+ chunk.getFilePath());
 
 		do {
 			try {
@@ -67,12 +65,14 @@ public class ChunkBackup {
 				.getCurrentReplicationDeg() && counter < MAX_RETRIES);
 
 		if (counter == MAX_RETRIES) {
+
+			Log.log("Did not reach necessary replication");
+
 			return false;
 		} else {
-			if (ApplicationInterface.DEBUGG) {
-				System.out.println("Sent");
-			}
-			System.out.println("Sent chunk ");
+
+			Log.log("Sent successfully");
+
 			return true;
 		}
 
@@ -86,20 +86,29 @@ public class ChunkBackup {
 		MulticastComunicator sender = new MulticastComunicator(multCtrlAddr,
 				multCtrlPort);
 
+		// save chunk in file
 		chunk.saveToFile(data);
+
+		chunk.incCurrentReplication();
+
+		// add chunk to database
+		ConfigsManager.getInstance().addSavedChunk(chunk);
 
 		String message = null;
 
 		message = STORED_COMMAND + " "
 				+ ConfigsManager.getInstance().getVersion() + " "
 				+ chunk.getFileId() + " " + String.valueOf(chunk.getChunkNo())
-				+ " " + MulticastComunicator.CRLF + MulticastComunicator.CRLF;
+				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
 
 		try {
 			sender.sendMessage(message);
 		} catch (HasToJoinException e) {
 			e.printStackTrace();
 		}
+
+		Log.log("Sent STORED command for chunk of file " + chunk.getFileId()
+				+ " no " + chunk.getChunkNo());
 
 		return true;
 	}
