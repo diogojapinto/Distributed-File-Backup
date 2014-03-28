@@ -52,21 +52,26 @@ public class Encoder {
 
 		file_string += new String(lastFileBytes);
 
-		try {
+		md.update(file_string.getBytes());
+		/*try {
 			md.update(file_string.getBytes("UTF-8"));
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
-		}
+		}*/
 
 		byte[] digest = md.digest();
-
-		String key = new String(digest);
+		
+		//convert the byte to hex format method 1
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < digest.length; i++) {
+          sb.append(Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1));
+        }
 
 		try {
 			in.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return key;
+		return sb.toString();
 	}
 }
