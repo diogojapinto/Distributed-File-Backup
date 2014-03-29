@@ -152,6 +152,9 @@ public class MulticastDataBackupListener implements Runnable {
 											mPendingChunks.remove(pendingChunk);
 										}
 									}
+									else { 
+										System.out.println("Received CHUNK IS ALREADY SAVED");
+									}
 								}
 							});
 
