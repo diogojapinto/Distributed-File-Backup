@@ -33,7 +33,6 @@ public class MulticastDataRestoreListener implements Runnable {
 		}
 		return mInstance;
 	}
-
 	@Override
 	public void run() {
 		InetAddress addr = ConfigsManager.getInstance().getMDRAddr();

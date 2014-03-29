@@ -46,9 +46,9 @@ public class FileChunk implements Serializable {
 	public boolean saveToFile(byte[] data) {
 		if (isOwnMachineFile) {
 			return false;
-		} else {		
+		} else {
 			FileOutputStream out = null;
-			
+
 			try {
 				out = new FileOutputStream(getFilePath());
 			} catch (FileNotFoundException e) {
@@ -122,10 +122,9 @@ public class FileChunk implements Serializable {
 					e.printStackTrace();
 				}
 				try {
-					in.skip((int) SharedFile.CHUNK_SIZE * (int) mChunkNo);
-					if (in.read(chunk, 0, (int) SharedFile.CHUNK_SIZE) == -1) {
-						return new byte[0];
-					}
+					in.skip(SharedFile.CHUNK_SIZE * mChunkNo);
+					in.read(chunk, 0, (int) SharedFile.CHUNK_SIZE);
+					System.out.println("Lenght chunk" + chunk.length + " " + chunk);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

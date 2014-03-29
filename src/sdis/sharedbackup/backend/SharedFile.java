@@ -100,13 +100,15 @@ public class SharedFile implements Serializable {
 	private void generateChunks() {
 		
 		long fileSize = getFileSize();
-		
+		System.out.println("Tamanho ficheiro: " + fileSize);
 		for (int i = 0; i < fileSize; i += CHUNK_SIZE) {
+			System.out.println("Tamanho I: " + i);
 			mChunkList.add(new FileChunk(this, mChunkCounter++));
 		}
 		
 		// verify if there is the need to add the last empty chunk
-		if (fileSize % fileSize == 0) {
+		if (fileSize % CHUNK_SIZE == 0) {
+			System.out.println("MOD");
 			mChunkList.add(new FileChunk(this, mChunkCounter++));
 		}
 		

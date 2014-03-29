@@ -14,7 +14,6 @@ public class ChunkBackup {
 	public static final String STORED_COMMAND = "STORED";
 	private static final int PUT_TIME_INTERVAL = 500;
 	private static final int MAX_RETRIES = 5;
-
 	private static ChunkBackup sInstance = null;
 
 	public static ChunkBackup getInstance() {
@@ -47,7 +46,8 @@ public class ChunkBackup {
 		int counter = 0;
 
 		Log.log("Sending chunk " + chunk.getChunkNo() + " of file "
-				+ chunk.getFileId() + "with " + chunk.getData().length + " bytes");
+				+ chunk.getFileId() + "with " + chunk.getData().length
+				+ " bytes");
 		System.out.println("Sending: " + message);
 
 		do {
@@ -57,12 +57,14 @@ public class ChunkBackup {
 				e1.printStackTrace();
 			}
 			try {
-				Thread.sleep(PUT_TIME_INTERVAL);
+				System.out.println("WAITING : " + PUT_TIME_INTERVAL * (int) Math.pow(2, counter));
+				Thread.sleep(PUT_TIME_INTERVAL * (int) Math.pow(2, counter));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			counter++;
-			System.out.println("REP DEG: " + chunk.getChunkNo() + " " + chunk.getCurrentReplicationDeg() );
+			System.out.println("REP DEG: " + chunk.getChunkNo() + " "
+					+ chunk.getCurrentReplicationDeg());
 		} while (chunk.getDesiredReplicationDeg() > chunk
 				.getCurrentReplicationDeg() && counter < MAX_RETRIES);
 
@@ -89,14 +91,14 @@ public class ChunkBackup {
 				multCtrlPort);
 
 		// save chunk in file
-		System.out.println("print");
+
 		chunk.saveToFile(data);
-		System.out.println("print1");
+
 		chunk.incCurrentReplication();
-		System.out.println("print2");
+
 		// add chunk to database
 		ConfigsManager.getInstance().addSavedChunk(chunk);
-		System.out.println("print3");
+
 		String message = null;
 
 		message = STORED_COMMAND + " "
@@ -111,7 +113,8 @@ public class ChunkBackup {
 		}
 
 		Log.log("Sent STORED command for chunk of file " + chunk.getFileId()
-				+ " no " + chunk.getChunkNo() + " with " + data.length + " bytes");
+				+ " no " + chunk.getChunkNo() + " with " + data.length
+				+ " bytes");
 
 		return true;
 	}
