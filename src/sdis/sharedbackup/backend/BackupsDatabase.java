@@ -25,7 +25,7 @@ public class BackupsDatabase implements Serializable {
 	private static final long serialVersionUID = 1;
 
 	private String mBackupFolder;
-	private int maxBackupSize; // stored in KB
+	private int maxBackupSize; // stored in B
 	private Map<String, SharedFile> mSharedFiles; // my shared files
 	private ArrayList<FileChunk> mSavedChunks; // chunks from other users
 	private boolean mIsInitialized;
