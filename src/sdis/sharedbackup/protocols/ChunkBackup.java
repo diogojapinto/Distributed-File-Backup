@@ -62,6 +62,7 @@ public class ChunkBackup {
 				e.printStackTrace();
 			}
 			counter++;
+			System.out.println("REP DEG: " + chunk.getChunkNo() + " " + chunk.getCurrentReplicationDeg() );
 		} while (chunk.getDesiredReplicationDeg() > chunk
 				.getCurrentReplicationDeg() && counter < MAX_RETRIES);
 

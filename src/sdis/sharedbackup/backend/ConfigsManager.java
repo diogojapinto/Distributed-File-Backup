@@ -23,7 +23,7 @@ public class ConfigsManager {
 	// constants
 	private static final String VERSION = "1.0";
 	private static final String ENHANCEMENTS_VERSION = "1.24";
-	private static final int NR_CONCURRENT_THREADS = 10;
+	private static final int NR_CONCURRENT_THREADS = 50;
 
 	// static members
 	private static ConfigsManager sInstance = null;
@@ -67,25 +67,25 @@ public class ConfigsManager {
 		try {
 			FileInputStream fileIn = new FileInputStream(BackupsDatabase.FILE);
 			ObjectInputStream in = new ObjectInputStream(fileIn);
-			
+
 			try {
 				mDatabase = (BackupsDatabase) in.readObject();
 			} catch (ClassNotFoundException e) {
 
-					Log.log("Error while reading from saved database. Starting fresh");
+				Log.log("Error while reading from saved database. Starting fresh");
 
 				mDatabase = new BackupsDatabase();
 			}
-			
-				Log.log("Loaded database");
+
+			Log.log("Loaded database");
 
 			in.close();
 			fileIn.close();
 
 		} catch (FileNotFoundException e) {
-			
-				Log.log("Fresh database");
-				
+
+			Log.log("Fresh database");
+
 			mDatabase = new BackupsDatabase();
 			return false;
 		} catch (IOException e) {
@@ -295,7 +295,7 @@ public class ConfigsManager {
 	public boolean isAppRunning() {
 		return mIsRunning;
 	}
-	
+
 	public void addSavedChunk(FileChunk chunk) {
 		mDatabase.addSavedChunk(chunk);
 	}
