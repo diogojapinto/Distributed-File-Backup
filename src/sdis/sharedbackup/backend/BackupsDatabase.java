@@ -70,7 +70,7 @@ public class BackupsDatabase implements Serializable {
 
 		File destination = new File(dest);
 		if (!destination.exists()) {
-			
+
 			destination.mkdir();
 			mBackupFolder = destination.getAbsolutePath();
 			String os = System.getProperty("os.name");
@@ -82,7 +82,7 @@ public class BackupsDatabase implements Serializable {
 			}
 
 			checkInitialization();
-			
+
 		} else if (destination.isDirectory()) {
 			mBackupFolder = destination.getAbsolutePath();
 			String os = System.getProperty("os.name");
@@ -265,6 +265,14 @@ public class BackupsDatabase implements Serializable {
 
 	public void addSavedChunk(FileChunk chunk) {
 		mSavedChunks.add(chunk);
+	}
+
+	public boolean isMyFile(String fileId) {
+		if (mSharedFiles.containsKey(fileId)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }

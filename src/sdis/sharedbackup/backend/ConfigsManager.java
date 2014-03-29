@@ -154,6 +154,10 @@ public class ConfigsManager {
 		return mDatabase.getSavedChunk(fileId, chunkNo);
 	}
 
+	public boolean isMyFile(String fileId) {
+		return mDatabase.isMyFile(fileId);
+	}
+
 	public FileChunk getNextDispensableChunk() {
 		ArrayList<FileChunk> savedChunks = mDatabase.getSavedChunks();
 

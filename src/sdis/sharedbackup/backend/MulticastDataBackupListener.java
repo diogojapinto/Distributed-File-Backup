@@ -92,12 +92,18 @@ public class MulticastDataBackupListener implements Runnable {
 										return;
 									}
 
-									final String fileId = header_components[2]
-											.trim();
-									final int chunkNo = Integer
+									String fileId = header_components[2].trim();
+
+									if (ConfigsManager.getInstance().isMyFile(
+											fileId)) {
+										Log.log("Received PUTCHUNK for a file of mine");
+										return;
+									}
+
+									int chunkNo = Integer
 											.parseInt(header_components[3]
 													.trim());
-									final int desiredReplication = Integer
+									int desiredReplication = Integer
 											.parseInt(header_components[4]
 													.trim());
 
