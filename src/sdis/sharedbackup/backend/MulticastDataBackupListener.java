@@ -35,6 +35,7 @@ public class MulticastDataBackupListener implements Runnable {
 
 	@Override
 	public void run() {
+		System.out.println("MDB listener started");
 		InetAddress addr = ConfigsManager.getInstance().getMDBAddr();
 		int port = ConfigsManager.getInstance().getMDBPort();
 
@@ -108,7 +109,6 @@ public class MulticastDataBackupListener implements Runnable {
 									FileChunk savedChunk = ConfigsManager
 											.getInstance().getSavedChunk(
 													fileId, chunkNo);
-
 									// file not yet saved
 									if (savedChunk == null) {
 										FileChunk pendingChunk = new FileChunk(
