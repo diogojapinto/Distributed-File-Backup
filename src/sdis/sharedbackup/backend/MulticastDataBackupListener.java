@@ -1,6 +1,5 @@
 package sdis.sharedbackup.backend;
 
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Random;

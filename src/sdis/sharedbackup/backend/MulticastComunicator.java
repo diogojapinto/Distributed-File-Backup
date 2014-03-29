@@ -1,7 +1,6 @@
 package sdis.sharedbackup.backend;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -136,13 +135,14 @@ public class MulticastComunicator {
 
 		String returnStr;
 
-		try {
+		returnStr = new String(packet.getData());
+		/*try {
 			returnStr = new String(packet.getData(), ASCII_CODE);
 		} catch (UnsupportedEncodingException e) {
 			System.err.println("Could not parse received message");
 			e.printStackTrace();
 			return null;
-		}
+		}*/
 
 		return returnStr;
 	}

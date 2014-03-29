@@ -46,20 +46,11 @@ public class FileChunk implements Serializable {
 	public boolean saveToFile(byte[] data) {
 		if (isOwnMachineFile) {
 			return false;
-		} else {
-			File newChunk = new File(getFilePath());
-			System.out.println(getFilePath());
+		} else {		
+			FileOutputStream out = null;
 			
 			try {
-				newChunk.createNewFile();
-			} catch (IOException e2) {
-				e2.printStackTrace();
-			}
-
-			FileOutputStream out = null;
-
-			try {
-				out = new FileOutputStream(newChunk);
+				out = new FileOutputStream(getFilePath());
 			} catch (FileNotFoundException e) {
 				System.err.println("Error outputing to new Chunk");
 				e.printStackTrace();

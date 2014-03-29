@@ -50,44 +50,48 @@ public class MulticastDataRestoreListener implements Runnable {
 
 		try {
 			while (ConfigsManager.getInstance().isAppRunning()) {
-				String message;
+				final String message;
 				message = receiver.receiveMessage();
-				final String[] components;
-				String separator = MulticastComunicator.CRLF
-						+ MulticastComunicator.CRLF;
 
-				components = message.trim().split(separator);
+				ConfigsManager.getInstance().getExecutor()
+						.execute(new Runnable() {
 
-				String header = components[0].trim();
+							@Override
+							public void run() {
+								String[] components;
+								String separator = MulticastComunicator.CRLF
+										+ MulticastComunicator.CRLF;
 
-				String[] header_components = header.split(" ");
+								components = message.trim().split(separator);
 
-				if (!header_components[1].equals(ConfigsManager.getInstance()
-						.getVersion())) {
-					System.err
-							.println("Received message with protocol with different version");
-					continue;
-				}
+								String header = components[0].trim();
 
-				String messageType = header_components[0].trim();
-				final String fileId;
-				final int chunkNo;
+								String[] header_components = header.split(" ");
 
-				switch (messageType) {
-				case ChunkRestore.CHUNK_COMMAND:
+								if (!header_components[1].equals(ConfigsManager
+										.getInstance().getVersion())) {
+									System.err
+											.println("Received message with protocol with different version");
+									return;
+								}
 
-					fileId = header_components[2].trim();
-					chunkNo = Integer.parseInt(header_components[3].trim());
+								String messageType = header_components[0]
+										.trim();
+								String fileId;
+								int chunkNo;
 
-					Log.log("Received CHUNK command for file " + fileId
-							+ " chunk " + chunkNo);
-					Log.log("Size: " + components[1].length());
+								switch (messageType) {
+								case ChunkRestore.CHUNK_COMMAND:
 
-					ConfigsManager.getInstance().getExecutor()
-							.execute(new Runnable() {
+									fileId = header_components[2].trim();
+									chunkNo = Integer
+											.parseInt(header_components[3]
+													.trim());
 
-								@Override
-								public void run() {
+									Log.log("Received CHUNK command for file "
+											+ fileId + " chunk " + chunkNo);
+									Log.log("Size: " + components[1].length());
+
 									for (ChunkRecord record : mSubscribedChunks) {
 										if (record.fileId.equals(fileId)
 												&& record.chunkNo == chunkNo) {
@@ -111,14 +115,17 @@ public class MulticastDataRestoreListener implements Runnable {
 											}
 										}
 									}
-								}
-							});
 
-					break;
-				default:
-					System.out.println("MDR received non recognized command");
-					System.out.println(message);
-				}
+									break;
+								default:
+									System.out
+											.println("MDR received non recognized command");
+									System.out.println(message);
+								}
+							}
+
+						});
+
 			}
 		} catch (HasToJoinException e1) {
 			e1.printStackTrace();
