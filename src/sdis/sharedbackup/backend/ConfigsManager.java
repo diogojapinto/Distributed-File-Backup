@@ -14,7 +14,6 @@ import java.util.concurrent.Executors;
 
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
-import sdis.sharedbackup.frontend.ApplicationInterface;
 import sdis.sharedbackup.utils.EnvironmentVerifier;
 import sdis.sharedbackup.utils.Log;
 
@@ -67,25 +66,25 @@ public class ConfigsManager {
 		try {
 			FileInputStream fileIn = new FileInputStream(BackupsDatabase.FILE);
 			ObjectInputStream in = new ObjectInputStream(fileIn);
-			
+
 			try {
 				mDatabase = (BackupsDatabase) in.readObject();
 			} catch (ClassNotFoundException e) {
 
-					Log.log("Error while reading from saved database. Starting fresh");
+				Log.log("Error while reading from saved database. Starting fresh");
 
 				mDatabase = new BackupsDatabase();
 			}
-			
-				Log.log("Loaded database");
+
+			Log.log("Loaded database");
 
 			in.close();
 			fileIn.close();
 
 		} catch (FileNotFoundException e) {
-			
-				Log.log("Fresh database");
-				
+
+			Log.log("Fresh database");
+
 			mDatabase = new BackupsDatabase();
 			return false;
 		} catch (IOException e) {
@@ -295,7 +294,7 @@ public class ConfigsManager {
 	public boolean isAppRunning() {
 		return mIsRunning;
 	}
-	
+
 	public void addSavedChunk(FileChunk chunk) {
 		mDatabase.addSavedChunk(chunk);
 	}

@@ -47,7 +47,7 @@ public class ChunkBackup {
 		int counter = 0;
 
 		Log.log("Sending chunk " + chunk.getChunkNo() + " of file "
-				+ chunk.getFileId());
+				+ chunk.getFileId() + "with " + chunk.getData() + " bytes");
 		System.out.println("Sending: " + message);
 
 		do {
@@ -62,6 +62,7 @@ public class ChunkBackup {
 				e.printStackTrace();
 			}
 			counter++;
+			System.out.println("REP DEG: " + chunk.getChunkNo() + " " + chunk.getCurrentReplicationDeg() );
 		} while (chunk.getDesiredReplicationDeg() > chunk
 				.getCurrentReplicationDeg() && counter < MAX_RETRIES);
 
