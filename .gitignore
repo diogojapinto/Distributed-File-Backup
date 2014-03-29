@@ -4,4 +4,6 @@
 .settings/*
 .directory
 .database.ser
+.idea/
+YetAnotherDropbox.iml
 
