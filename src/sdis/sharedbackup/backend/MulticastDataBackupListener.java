@@ -7,6 +7,7 @@ import java.util.Random;
 
 import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
 import sdis.sharedbackup.protocols.ChunkBackup;
+import sdis.sharedbackup.utils.Log;
 
 /*
  * Class that receives and dispatches messages from the multicast data backup channel
@@ -43,11 +44,16 @@ public class MulticastDataBackupListener implements Runnable {
 
 		receiver.join();
 
+		Log.log("Listening on " + addr.getHostAddress() + ":" + port);
+
 		try {
 			while (ConfigsManager.getInstance().isAppRunning()) {
 				String message;
 
 				message = receiver.receiveMessage();
+				
+				Log.log("MDB:Received message");
+
 				final String[] components;
 				String separator = MulticastComunicator.CRLF
 						+ MulticastComunicator.CRLF;
@@ -59,17 +65,19 @@ public class MulticastDataBackupListener implements Runnable {
 				final String[] header_components = header.split(" ");
 
 				if (!header_components[1].equals(ConfigsManager.getInstance()
-						.getVersion())) {
+						.getVersion())
+						&& !header_components[1].equals(ConfigsManager.getInstance()
+								.getEnhancementsVersion())) {
 					System.err
 							.println("Received message with protocol with different version");
 					continue;
 				}
 
 				String messageType = header_components[0].trim();
-				System.out.println("I RECEIVED A MDB message: " + header);
+
 				switch (messageType) {
 				case ChunkBackup.PUT_COMMAND:
-					System.out.println("I am starting a PUTCHUNK ");
+
 					if (ConfigsManager.getInstance().getBackupDirActualSize()
 							+ FileChunk.MAX_CHUNK_SIZE >= ConfigsManager
 							.getInstance().getMaxBackupSize()) {
@@ -81,7 +89,7 @@ public class MulticastDataBackupListener implements Runnable {
 							.trim());
 					final int desiredReplication = Integer
 							.parseInt(header_components[4].trim());
-					
+
 					ConfigsManager.getInstance().getExecutor()
 							.execute(new Runnable() {
 
@@ -91,16 +99,16 @@ public class MulticastDataBackupListener implements Runnable {
 									FileChunk savedChunk = ConfigsManager
 											.getInstance().getSavedChunk(
 													fileId, chunkNo);
-					
+									// file not yet saved
 									if (savedChunk == null) {
 										FileChunk pendingChunk = new FileChunk(
 												fileId, chunkNo,
 												desiredReplication);
-								
+
 										synchronized (mPendingChunks) {
 											mPendingChunks.add(pendingChunk);
 										}
-								
+
 										try {
 											Thread.sleep(mRand
 													.nextInt(MAX_WAIT_TIME));
@@ -140,7 +148,7 @@ public class MulticastDataBackupListener implements Runnable {
 									}
 								}
 							});
-					
+
 					break;
 				default:
 					System.out.println("MDB received non recognized command");

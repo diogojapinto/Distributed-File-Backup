@@ -47,7 +47,7 @@ public class ChunkBackup {
 		int counter = 0;
 
 		Log.log("Sending chunk " + chunk.getChunkNo() + " of file "
-				+ chunk.getFileId());
+				+ chunk.getFileId() + "with " + chunk.getData().length + " bytes");
 		System.out.println("Sending: " + message);
 
 		do {
@@ -111,7 +111,7 @@ public class ChunkBackup {
 		}
 
 		Log.log("Sent STORED command for chunk of file " + chunk.getFileId()
-				+ " no " + chunk.getChunkNo());
+				+ " no " + chunk.getChunkNo() + " with " + data.length + " bytes");
 
 		return true;
 	}

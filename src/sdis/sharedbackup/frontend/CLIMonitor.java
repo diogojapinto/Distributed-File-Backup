@@ -1,5 +1,6 @@
 package sdis.sharedbackup.frontend;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -205,10 +206,11 @@ public class CLIMonitor {
 	}
 
 	private static void printFilesOrderedInfo(ArrayList<String> files) {
+		
 		int i = 1;
 		System.out.println("Op. | Old file path");
 		for (String path : files) {
-			System.out.format("%3i | %s", i++, path);
+			System.out.format("%3d | %s", i++, path);
 		}
 	}
 

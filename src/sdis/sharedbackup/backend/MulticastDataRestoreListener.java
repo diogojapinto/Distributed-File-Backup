@@ -45,6 +45,8 @@ public class MulticastDataRestoreListener implements Runnable {
 
 		ConfigsManager.getInstance().getExecutor()
 				.execute(new restoreListenerIPListener());
+		
+		Log.log("Listening on " + addr.getHostAddress() + ":" + port);
 
 		try {
 			while (ConfigsManager.getInstance().isAppRunning()) {
