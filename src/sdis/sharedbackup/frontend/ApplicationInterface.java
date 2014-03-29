@@ -37,7 +37,7 @@ public class ApplicationInterface {
 	 */
 	public void setAvailableDiskSpace(int space)
 			throws InvalidBackupSizeException {
-		ConfigsManager.getInstance().setAvailSpace(space);
+		ConfigsManager.getInstance().setAvailSpace(space*1000);
 	}
 
 	public void setDestinationDirectory(String dirPath)

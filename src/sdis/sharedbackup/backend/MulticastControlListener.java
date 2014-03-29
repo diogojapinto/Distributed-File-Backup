@@ -96,7 +96,7 @@ public class MulticastControlListener implements Runnable {
 										.trim();
 								final String fileId;
 								final int chunkNo;
-								System.out.println("I RECEIVED A MESSAGE!!:");
+								System.out.println("MC RECEIVED A MESSAGE!!:" + header);
 								switch (messageType) {
 								case ChunkBackup.STORED_COMMAND:
 									System.out.println("STORED " + header
