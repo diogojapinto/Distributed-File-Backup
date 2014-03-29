@@ -47,54 +47,60 @@ public class MulticastDataBackupListener implements Runnable {
 
 		try {
 			while (ConfigsManager.getInstance().isAppRunning()) {
-				String message;
+				final String message;
 
 				message = receiver.receiveMessage();
-				
-				Log.log("MDB:Received message");
 
-				final String[] components;
-				String separator = MulticastComunicator.CRLF
-						+ MulticastComunicator.CRLF;
+				ConfigsManager.getInstance().getExecutor()
+						.execute(new Runnable() {
 
-				components = message.trim().split(separator);
+							@Override
+							public void run() {
+								Log.log("MDB:Received message");
 
-				String header = components[0].trim();
+								String[] components;
+								String separator = MulticastComunicator.CRLF
+										+ MulticastComunicator.CRLF;
 
-				final String[] header_components = header.split(" ");
+								components = message.trim().split(separator);
 
-				if (!header_components[1].equals(ConfigsManager.getInstance()
-						.getVersion())
-						&& !header_components[1].equals(ConfigsManager.getInstance()
-								.getEnhancementsVersion())) {
-					System.err
-							.println("Received message with protocol with different version");
-					continue;
-				}
+								String header = components[0].trim();
 
-				String messageType = header_components[0].trim();
+								String[] header_components = header.split(" ");
 
-				switch (messageType) {
-				case ChunkBackup.PUT_COMMAND:
-					System.out.println("REceived a PUT");
-					if (ConfigsManager.getInstance().getBackupDirActualSize()
-							+ FileChunk.MAX_CHUNK_SIZE >= ConfigsManager
-							.getInstance().getMaxBackupSize()) {
-						continue;
-					}
+								if (!header_components[1].equals(ConfigsManager
+										.getInstance().getVersion())
+										&& !header_components[1]
+												.equals(ConfigsManager
+														.getInstance()
+														.getEnhancementsVersion())) {
+									System.err
+											.println("Received message with protocol with different version");
+									return;
+								}
 
-					final String fileId = header_components[2].trim();
-					final int chunkNo = Integer.parseInt(header_components[3]
-							.trim());
-					final int desiredReplication = Integer
-							.parseInt(header_components[4].trim());
+								String messageType = header_components[0]
+										.trim();
 
-					ConfigsManager.getInstance().getExecutor()
-							.execute(new Runnable() {
+								switch (messageType) {
+								case ChunkBackup.PUT_COMMAND:
+									System.out.println("REceived a PUT");
+									if (ConfigsManager.getInstance()
+											.getBackupDirActualSize()
+											+ FileChunk.MAX_CHUNK_SIZE >= ConfigsManager
+											.getInstance().getMaxBackupSize()) {
+										return;
+									}
 
-								@Override
-								public void run() {
-								
+									final String fileId = header_components[2]
+											.trim();
+									final int chunkNo = Integer
+											.parseInt(header_components[3]
+													.trim());
+									final int desiredReplication = Integer
+											.parseInt(header_components[4]
+													.trim());
+
 									FileChunk savedChunk = ConfigsManager
 											.getInstance().getSavedChunk(
 													fileId, chunkNo);
@@ -122,25 +128,27 @@ public class MulticastDataBackupListener implements Runnable {
 												.getCurrentReplicationDeg() < pendingChunk
 												.getDesiredReplicationDeg()) {
 
-											System.out.println("I tried a store ");
+											System.out
+													.println("I tried a store ");
 											ChunkBackup
 													.getInstance()
 													.storeChunk(
 															pendingChunk,
 															components[1]
 																	.getBytes());
-											/*try {
-												System.out.println("I tried a store ");
-												ChunkBackup
-														.getInstance()
-														.storeChunk(
-																pendingChunk,
-																components[1]
-																		.getBytes(MulticastComunicator.ASCII_CODE));
-												
-											} catch (UnsupportedEncodingException e) {
-												e.printStackTrace();
-											}*/
+											/*
+											 * try {
+											 * System.out.println("I tried a store "
+											 * ); ChunkBackup .getInstance()
+											 * .storeChunk( pendingChunk,
+											 * components[1]
+											 * .getBytes(MulticastComunicator
+											 * .ASCII_CODE));
+											 * 
+											 * } catch
+											 * (UnsupportedEncodingException e)
+											 * { e.printStackTrace(); }
+											 */
 
 										}
 
@@ -151,18 +159,20 @@ public class MulticastDataBackupListener implements Runnable {
 										synchronized (mPendingChunks) {
 											mPendingChunks.remove(pendingChunk);
 										}
+									} else {
+										System.out
+												.println("Received CHUNK IS ALREADY SAVED");
 									}
-									else { 
-										System.out.println("Received CHUNK IS ALREADY SAVED");
-									}
-								}
-							});
 
-					break;
-				default:
-					System.out.println("MDB received non recognized command");
-					System.out.println(message);
-				}
+									break;
+								default:
+									System.out
+											.println("MDB received non recognized command");
+									System.out.println(message);
+								}
+							}
+						});
+
 			}
 		} catch (HasToJoinException e1) {
 			e1.printStackTrace();

@@ -64,44 +64,50 @@ public class MulticastControlListener implements Runnable {
 
 				final SenderRecord sender = new SenderRecord();
 
-				String message;
+				final String message;
 
 				message = receiver.receiveMessage(sender);
 
-				String[] components;
-				String separator = MulticastComunicator.CRLF
-						+ MulticastComunicator.CRLF;
+				ConfigsManager.getInstance().getExecutor()
+						.execute(new Runnable() {
 
-				components = message.trim().split(separator);
+							@Override
+							public void run() {
+								String[] components;
+								String separator = MulticastComunicator.CRLF
+										+ MulticastComunicator.CRLF;
 
-				String header = components[0].trim();
+								components = message.trim().split(separator);
 
-				String[] header_components = header.split(" ");
+								String header = components[0].trim();
 
-				if (!header_components[1].equals(ConfigsManager.getInstance()
-						.getVersion())
-						&& !header_components[1].equals(ConfigsManager
-								.getInstance().getEnhancementsVersion())) {
-					System.err
-							.println("Received message with protocol with different version");
-					continue;
-				}
+								String[] header_components = header.split(" ");
 
-				String messageType = header_components[0].trim();
-				final String fileId;
-				final int chunkNo;
-				System.out.println("I RECEIVED A MESSAGE!!:");
-				switch (messageType) {
-				case ChunkBackup.STORED_COMMAND:
-					System.out.println("STORED " + header + " from "+ sender.getAddr());
-					fileId = header_components[2].trim();
-					chunkNo = Integer.parseInt(header_components[3].trim());
+								if (!header_components[1].equals(ConfigsManager
+										.getInstance().getVersion())
+										&& !header_components[1]
+												.equals(ConfigsManager
+														.getInstance()
+														.getEnhancementsVersion())) {
+									System.err
+											.println("Received message with protocol with different version");
+									return;
+								}
 
-					ConfigsManager.getInstance().getExecutor()
-							.execute(new Runnable() {
+								String messageType = header_components[0]
+										.trim();
+								final String fileId;
+								final int chunkNo;
+								System.out.println("I RECEIVED A MESSAGE!!:");
+								switch (messageType) {
+								case ChunkBackup.STORED_COMMAND:
+									System.out.println("STORED " + header
+											+ " from " + sender.getAddr());
+									fileId = header_components[2].trim();
+									chunkNo = Integer
+											.parseInt(header_components[3]
+													.trim());
 
-								@Override
-								public void run() {
 									try {
 										ConfigsManager.getInstance()
 												.incChunkReplication(fileId,
@@ -122,20 +128,14 @@ public class MulticastControlListener implements Runnable {
 											}
 										}
 									}
-								}
+									break;
+								case ChunkRestore.GET_COMMAND:
 
-							});
-					break;
-				case ChunkRestore.GET_COMMAND:
+									fileId = header_components[2].trim();
+									chunkNo = Integer
+											.parseInt(header_components[3]
+													.trim());
 
-					fileId = header_components[2].trim();
-					chunkNo = Integer.parseInt(header_components[3].trim());
-
-					ConfigsManager.getInstance().getExecutor()
-							.execute(new Runnable() {
-
-								@Override
-								public void run() {
 									ChunkRecord record = new ChunkRecord(
 											fileId, chunkNo);
 									synchronized (interestingChunks) {
@@ -155,7 +155,8 @@ public class MulticastControlListener implements Runnable {
 										}
 
 										if (!record.isNotified) {
-											// if no one else sent it:
+											// if no one else
+											// sent it:
 
 											synchronized (mSentChunks) {
 												mSentChunks.add(record);
@@ -181,7 +182,9 @@ public class MulticastControlListener implements Runnable {
 												if (!record.isNotified
 														&& mSentChunks
 																.contains(record)) {
-													// if no one else sent it:
+													// if no one
+													// else sent
+													// it:
 													mSentChunks.remove(record);
 													ChunkRestore.getInstance()
 															.sendChunk(chunk);
@@ -191,53 +194,35 @@ public class MulticastControlListener implements Runnable {
 											interestingChunks.remove(record);
 										}
 									}// else I don't have it
-								}
-							});
-					break;
+									break;
 
-				case FileDeletion.DELETE_COMMAND:
+								case FileDeletion.DELETE_COMMAND:
 
-					fileId = header_components[1].trim();
+									fileId = header_components[1].trim();
 
-					ConfigsManager.getInstance().getExecutor()
-							.execute(new Runnable() {
-
-								public void run() {
 									ConfigsManager.getInstance()
 											.removeByFileId(fileId);
-								}
-							});
-					break;
-				case FileDeletion.RESPONSE_COMMAND:
+									break;
+								case FileDeletion.RESPONSE_COMMAND:
 
-					fileId = header_components[1].trim();
+									fileId = header_components[1].trim();
 
-					ConfigsManager.getInstance().getExecutor()
-							.execute(new Runnable() {
-
-								public void run() {
 									ConfigsManager.getInstance()
 											.decDeletedFileReplication(fileId);
-								}
-							});
-					break;
-				case SpaceReclaiming.REMOVED_COMMAND:
+									break;
+								case SpaceReclaiming.REMOVED_COMMAND:
 
-					fileId = header_components[2].trim();
-					chunkNo = Integer.parseInt(header_components[3].trim());
+									fileId = header_components[2].trim();
+									chunkNo = Integer
+											.parseInt(header_components[3]
+													.trim());
 
-					ConfigsManager.getInstance().getExecutor()
-							.execute(new Runnable() {
-
-								@Override
-								public void run() {
-
-									FileChunk chunk = ConfigsManager
+									FileChunk chunk2 = ConfigsManager
 											.getInstance().getSavedChunk(
 													fileId, chunkNo);
 
-									if (chunk != null) {
-										if (chunk.decCurrentReplication() < chunk
+									if (chunk2 != null) {
+										if (chunk2.decCurrentReplication() < chunk2
 												.getDesiredReplicationDeg()) {
 											try {
 												Thread.sleep(random
@@ -247,17 +232,19 @@ public class MulticastControlListener implements Runnable {
 											}
 
 											ChunkBackup.getInstance().putChunk(
-													chunk);
+													chunk2);
 										}
 
 									} // else I don't have it
+									break;
+								default:
+									System.out
+											.println("MC received non recognized command:");
+									System.out.println(message);
 								}
-							});
-					break;
-				default:
-					System.out.println("MC received non recognized command:");
-					System.out.println(message);
-				}
+							}
+						});
+
 			}
 		} catch (HasToJoinException e1) {
 			e1.printStackTrace();
