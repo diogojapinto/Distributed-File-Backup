@@ -1,12 +1,12 @@
 package sdis.sharedbackup.backend;
 
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Random;
 
 import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
 import sdis.sharedbackup.protocols.ChunkBackup;
+import sdis.sharedbackup.utils.Log;
 
 /*
  * Class that receives and dispatches messages from the multicast data backup channel
@@ -42,6 +42,8 @@ public class MulticastDataBackupListener implements Runnable {
 
 		receiver.join();
 
+		Log.log("Listening on " + addr.getHostAddress() + ":" + port);
+
 		try {
 			while (ConfigsManager.getInstance().isAppRunning()) {
 				String message;
@@ -58,7 +60,9 @@ public class MulticastDataBackupListener implements Runnable {
 				final String[] header_components = header.split(" ");
 
 				if (!header_components[1].equals(ConfigsManager.getInstance()
-						.getVersion())) {
+						.getVersion())
+						|| !header_components[1].equals(ConfigsManager.getInstance()
+								.getEnhancementsVersion())) {
 					System.err
 							.println("Received message with protocol with different version");
 					continue;
@@ -68,12 +72,6 @@ public class MulticastDataBackupListener implements Runnable {
 
 				switch (messageType) {
 				case ChunkBackup.PUT_COMMAND:
-
-					if (ConfigsManager.getInstance().getBackupDirActualSize()
-							+ FileChunk.MAX_CHUNK_SIZE >= ConfigsManager
-							.getInstance().getMaxBackupSize()) {
-						continue;
-					}
 
 					final String fileId = header_components[2].trim();
 					final int chunkNo = Integer.parseInt(header_components[3]
@@ -86,12 +84,23 @@ public class MulticastDataBackupListener implements Runnable {
 
 								@Override
 								public void run() {
-
+									
+									if (ConfigsManager.getInstance().getBackupDirActualSize()
+											+ FileChunk.MAX_CHUNK_SIZE >= ConfigsManager
+											.getInstance().getMaxBackupSize()) {
+										return;
+									}
+									
+									if (ConfigsManager.getInstance().getFileById(fileId) == null) {
+										return;
+									}
+									
 									FileChunk savedChunk = ConfigsManager
 											.getInstance().getSavedChunk(
 													fileId, chunkNo);
 
-									if (savedChunk != null) {
+									// file not yet saved
+									if (savedChunk == null) {
 										FileChunk pendingChunk = new FileChunk(
 												fileId, chunkNo,
 												desiredReplication);
@@ -114,7 +123,13 @@ public class MulticastDataBackupListener implements Runnable {
 												.getCurrentReplicationDeg() < pendingChunk
 												.getDesiredReplicationDeg()) {
 
-											try {
+											ChunkBackup
+											.getInstance()
+											.storeChunk(
+													pendingChunk,
+													components[1]
+															.getBytes());
+											/*try {
 												ChunkBackup
 														.getInstance()
 														.storeChunk(
@@ -124,7 +139,7 @@ public class MulticastDataBackupListener implements Runnable {
 												
 											} catch (UnsupportedEncodingException e) {
 												e.printStackTrace();
-											}
+											}*/
 
 										}
 

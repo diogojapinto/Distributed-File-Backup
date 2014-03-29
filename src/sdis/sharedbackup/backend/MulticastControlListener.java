@@ -14,6 +14,7 @@ import sdis.sharedbackup.protocols.ChunkBackup;
 import sdis.sharedbackup.protocols.ChunkRestore;
 import sdis.sharedbackup.protocols.FileDeletion;
 import sdis.sharedbackup.protocols.SpaceReclaiming;
+import sdis.sharedbackup.utils.Log;
 
 /*
  * Class that receives and dispatches messages from the multicast control channel
@@ -56,6 +57,8 @@ public class MulticastControlListener implements Runnable {
 
 		receiver.join();
 
+		Log.log("Listening on " + addr.getHostAddress() + ":" + port);
+
 		try {
 			while (ConfigsManager.getInstance().isAppRunning()) {
 
@@ -78,7 +81,7 @@ public class MulticastControlListener implements Runnable {
 				if (!header_components[1].equals(ConfigsManager.getInstance()
 						.getVersion())
 						|| !header_components[1].equals(ConfigsManager
-								.getInstance().getVersion())) {
+								.getInstance().getEnhancementsVersion())) {
 					System.err
 							.println("Received message with protocol with different version");
 					continue;
