@@ -77,7 +77,7 @@ public class MulticastDataBackupListener implements Runnable {
 
 				switch (messageType) {
 				case ChunkBackup.PUT_COMMAND:
-
+					System.out.println("REceived a PUT");
 					if (ConfigsManager.getInstance().getBackupDirActualSize()
 							+ FileChunk.MAX_CHUNK_SIZE >= ConfigsManager
 							.getInstance().getMaxBackupSize()) {
@@ -123,7 +123,14 @@ public class MulticastDataBackupListener implements Runnable {
 												.getCurrentReplicationDeg() < pendingChunk
 												.getDesiredReplicationDeg()) {
 
-											try {
+											System.out.println("I tried a store ");
+											ChunkBackup
+													.getInstance()
+													.storeChunk(
+															pendingChunk,
+															components[1]
+																	.getBytes());
+											/*try {
 												System.out.println("I tried a store ");
 												ChunkBackup
 														.getInstance()
@@ -134,7 +141,7 @@ public class MulticastDataBackupListener implements Runnable {
 												
 											} catch (UnsupportedEncodingException e) {
 												e.printStackTrace();
-											}
+											}*/
 
 										}
 

@@ -48,6 +48,7 @@ public class FileChunk implements Serializable {
 			return false;
 		} else {
 			File newChunk = new File(getFilePath());
+			System.out.println(getFilePath());
 			
 			try {
 				newChunk.createNewFile();
