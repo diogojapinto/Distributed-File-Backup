@@ -1,5 +1,7 @@
 package sdis.sharedbackup.backend;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
@@ -53,7 +55,7 @@ public class MulticastComunicator {
 		}
 
 		byte[] bytesMsg = null;
-		
+
 		try {
 			bytesMsg = messg.getBytes(ASCII_CODE);
 		} catch (UnsupportedEncodingException e) {
@@ -61,7 +63,21 @@ public class MulticastComunicator {
 			return false;
 		}
 
-		DatagramPacket packet = new DatagramPacket(bytesMsg, bytesMsg.length, mAddr, mPort);
+		// TODO: remove
+		try {
+			FileOutputStream out = new FileOutputStream("messg_send");
+			try {
+				out.write(bytesMsg);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		}
+
+		DatagramPacket packet = new DatagramPacket(bytesMsg, bytesMsg.length,
+				mAddr, mPort);
 
 		try {
 			mMSocket.send(packet);
@@ -92,8 +108,21 @@ public class MulticastComunicator {
 			return null;
 		}
 
+		// TODO: remove
+		try {
+			FileOutputStream out = new FileOutputStream("messg_send");
+			try {
+				out.write(packet.getData());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		}
+
 		String returnStr;
-		
+
 		try {
 			returnStr = new String(packet.getData(), ASCII_CODE);
 		} catch (UnsupportedEncodingException e) {
@@ -134,13 +163,12 @@ public class MulticastComunicator {
 		String returnStr;
 
 		returnStr = new String(packet.getData());
-		/*try {
-			returnStr = new String(packet.getData(), ASCII_CODE);
-		} catch (UnsupportedEncodingException e) {
-			System.err.println("Could not parse received message");
-			e.printStackTrace();
-			return null;
-		}*/
+		/*
+		 * try { returnStr = new String(packet.getData(), ASCII_CODE); } catch
+		 * (UnsupportedEncodingException e) {
+		 * System.err.println("Could not parse received message");
+		 * e.printStackTrace(); return null; }
+		 */
 
 		return returnStr;
 	}
