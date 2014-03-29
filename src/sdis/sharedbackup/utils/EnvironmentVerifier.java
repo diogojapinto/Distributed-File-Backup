@@ -13,9 +13,17 @@ public class EnvironmentVerifier {
 		File folder = new File(folderPath);
 
 		if (folder.isDirectory()) {
-			return folder.getTotalSpace();
-		}	
 
-		return -1;
+			long length = 0;
+			for (File file : folder.listFiles()) {
+				if (file.isFile())
+					length += file.length();
+				else
+					length += getFolderSize(file.getAbsolutePath());
+			}
+			return length;
+		} else {
+			return -1;
+		}
 	}
 }

@@ -47,8 +47,6 @@ public class MulticastControlListener implements Runnable {
 	@Override
 	public void run() {
 		System.out.println("MC Listener started");
-		// throw thread to listen to responses to CHUNK messages sent directly
-		// to ip
 
 		InetAddress addr = ConfigsManager.getInstance().getMCAddr();
 		int port = ConfigsManager.getInstance().getMCPort();
