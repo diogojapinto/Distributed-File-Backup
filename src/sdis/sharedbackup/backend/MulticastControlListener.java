@@ -45,7 +45,7 @@ public class MulticastControlListener implements Runnable {
 
 	@Override
 	public void run() {
-
+		System.out.println("MC Listener started");
 		// throw thread to listen to responses to CHUNK messages sent directly
 		// to ip
 
@@ -90,7 +90,7 @@ public class MulticastControlListener implements Runnable {
 				System.out.println("I RECEIVED A MESSAGE!!:");
 				switch (messageType) {
 				case ChunkBackup.STORED_COMMAND:
-					System.out.println("STORED " + header );
+					System.out.println("STORED " + header + " from "+ sender.getAddr());
 					fileId = header_components[2].trim();
 					chunkNo = Integer.parseInt(header_components[3].trim());
 

@@ -89,13 +89,14 @@ public class ChunkBackup {
 				multCtrlPort);
 
 		// save chunk in file
+		System.out.println("print");
 		chunk.saveToFile(data);
-
+		System.out.println("print1");
 		chunk.incCurrentReplication();
-
+		System.out.println("print2");
 		// add chunk to database
 		ConfigsManager.getInstance().addSavedChunk(chunk);
-
+		System.out.println("print3");
 		String message = null;
 
 		message = STORED_COMMAND + " "

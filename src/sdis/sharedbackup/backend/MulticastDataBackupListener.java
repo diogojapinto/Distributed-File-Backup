@@ -35,6 +35,7 @@ public class MulticastDataBackupListener implements Runnable {
 
 	@Override
 	public void run() {
+		System.out.println("MDB listener started");
 		InetAddress addr = ConfigsManager.getInstance().getMDBAddr();
 		int port = ConfigsManager.getInstance().getMDBPort();
 
@@ -65,10 +66,10 @@ public class MulticastDataBackupListener implements Runnable {
 				}
 
 				String messageType = header_components[0].trim();
-
+				System.out.println("I RECEIVED A MDB message: " + header);
 				switch (messageType) {
 				case ChunkBackup.PUT_COMMAND:
-
+					System.out.println("I am starting a PUTCHUNK ");
 					if (ConfigsManager.getInstance().getBackupDirActualSize()
 							+ FileChunk.MAX_CHUNK_SIZE >= ConfigsManager
 							.getInstance().getMaxBackupSize()) {
@@ -80,26 +81,26 @@ public class MulticastDataBackupListener implements Runnable {
 							.trim());
 					final int desiredReplication = Integer
 							.parseInt(header_components[4].trim());
-
+					
 					ConfigsManager.getInstance().getExecutor()
 							.execute(new Runnable() {
 
 								@Override
 								public void run() {
-
+								
 									FileChunk savedChunk = ConfigsManager
 											.getInstance().getSavedChunk(
 													fileId, chunkNo);
-
-									if (savedChunk != null) {
+					
+									if (savedChunk == null) {
 										FileChunk pendingChunk = new FileChunk(
 												fileId, chunkNo,
 												desiredReplication);
-
+								
 										synchronized (mPendingChunks) {
 											mPendingChunks.add(pendingChunk);
 										}
-
+								
 										try {
 											Thread.sleep(mRand
 													.nextInt(MAX_WAIT_TIME));
@@ -115,6 +116,7 @@ public class MulticastDataBackupListener implements Runnable {
 												.getDesiredReplicationDeg()) {
 
 											try {
+												System.out.println("I tried a store ");
 												ChunkBackup
 														.getInstance()
 														.storeChunk(
@@ -138,7 +140,7 @@ public class MulticastDataBackupListener implements Runnable {
 									}
 								}
 							});
-
+					
 					break;
 				default:
 					System.out.println("MDB received non recognized command");
