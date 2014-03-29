@@ -80,7 +80,7 @@ public class MulticastControlListener implements Runnable {
 
 				if (!header_components[1].equals(ConfigsManager.getInstance()
 						.getVersion())
-						|| !header_components[1].equals(ConfigsManager
+						&& !header_components[1].equals(ConfigsManager
 								.getInstance().getEnhancementsVersion())) {
 					System.err
 							.println("Received message with protocol with different version");

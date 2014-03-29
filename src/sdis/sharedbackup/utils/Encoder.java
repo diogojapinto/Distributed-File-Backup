@@ -4,14 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Encoder {
 
 	private static final int LAST_FILE_BYTES_SIZE = 8;
-	private static final String ASCII_CODE = "US-ASCII";
+	//private static final String ASCII_CODE = "US-ASCII";
 
 	// generate the SHA256 hash key for some desired file. use filename,
 	// datemodified, owner, filedata

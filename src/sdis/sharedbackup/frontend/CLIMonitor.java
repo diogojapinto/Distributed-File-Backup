@@ -1,5 +1,6 @@
 package sdis.sharedbackup.frontend;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;

@@ -49,6 +49,9 @@ public class MulticastDataBackupListener implements Runnable {
 				String message;
 
 				message = receiver.receiveMessage();
+				
+				Log.log("MDB:Received message");
+
 				final String[] components;
 				String separator = MulticastComunicator.CRLF
 						+ MulticastComunicator.CRLF;
@@ -61,7 +64,7 @@ public class MulticastDataBackupListener implements Runnable {
 
 				if (!header_components[1].equals(ConfigsManager.getInstance()
 						.getVersion())
-						|| !header_components[1].equals(ConfigsManager.getInstance()
+						&& !header_components[1].equals(ConfigsManager.getInstance()
 								.getEnhancementsVersion())) {
 					System.err
 							.println("Received message with protocol with different version");

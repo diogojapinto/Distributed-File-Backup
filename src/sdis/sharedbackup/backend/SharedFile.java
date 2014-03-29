@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import sdis.sharedbackup.backend.ConfigsManager.InvalidChunkException;
 import sdis.sharedbackup.utils.Encoder;
+import sdis.sharedbackup.utils.Log;
 
 /*
  * Create a FileChunk for each chunk for backup
@@ -108,6 +109,9 @@ public class SharedFile implements Serializable {
 		if (fileSize % fileSize == 0) {
 			mChunkList.add(new FileChunk(this, mChunkCounter++));
 		}
+		
+
+		Log.log("Created " + mChunkCounter + " chunks for file " + mFileId);
 	}
 
 	public class FileTooLargeException extends Exception {

@@ -48,6 +48,12 @@ public class FileChunk implements Serializable {
 			return false;
 		} else {
 			File newChunk = new File(getFilePath());
+			
+			try {
+				newChunk.createNewFile();
+			} catch (IOException e2) {
+				e2.printStackTrace();
+			}
 
 			FileOutputStream out = null;
 

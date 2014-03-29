@@ -2,6 +2,10 @@ package sdis.sharedbackup.backend;
 
 public class FileChunkWithData extends FileChunk {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private byte[] data;
 	
 	public FileChunkWithData(String fileId, int chunkNo, byte[] data) {
