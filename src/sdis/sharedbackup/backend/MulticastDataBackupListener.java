@@ -46,58 +46,65 @@ public class MulticastDataBackupListener implements Runnable {
 
 		try {
 			while (ConfigsManager.getInstance().isAppRunning()) {
-				String message;
+				final String message;
 
 				message = receiver.receiveMessage();
-				
-				Log.log("MDB:Received message");
 
-				final String[] components;
-				String separator = MulticastComunicator.CRLF
-						+ MulticastComunicator.CRLF;
+				ConfigsManager.getInstance().getExecutor()
+						.execute(new Runnable() {
 
-				components = message.trim().split(separator);
+							@Override
+							public void run() {
+								Log.log("MDB:Received message");
 
-				String header = components[0].trim();
+								final String[] components;
+								String separator = MulticastComunicator.CRLF
+										+ MulticastComunicator.CRLF;
 
-				final String[] header_components = header.split(" ");
+								components = message.trim().split(separator);
 
-				if (!header_components[1].equals(ConfigsManager.getInstance()
-						.getVersion())
-						&& !header_components[1].equals(ConfigsManager.getInstance()
-								.getEnhancementsVersion())) {
-					System.err
-							.println("Received message with protocol with different version");
-					continue;
-				}
+								String header = components[0].trim();
 
-				String messageType = header_components[0].trim();
+								final String[] header_components = header
+										.split(" ");
 
-				switch (messageType) {
-				case ChunkBackup.PUT_COMMAND:
+								if (!header_components[1].equals(ConfigsManager
+										.getInstance().getVersion())
+										&& !header_components[1]
+												.equals(ConfigsManager
+														.getInstance()
+														.getEnhancementsVersion())) {
+									System.err
+											.println("Received message with protocol with different version");
+									return;
+								}
 
-					final String fileId = header_components[2].trim();
-					final int chunkNo = Integer.parseInt(header_components[3]
-							.trim());
-					final int desiredReplication = Integer
-							.parseInt(header_components[4].trim());
+								String messageType = header_components[0]
+										.trim();
 
-					ConfigsManager.getInstance().getExecutor()
-							.execute(new Runnable() {
+								switch (messageType) {
+								case ChunkBackup.PUT_COMMAND:
 
-								@Override
-								public void run() {
-									
-									if (ConfigsManager.getInstance().getBackupDirActualSize()
+									String fileId = header_components[2].trim();
+									int chunkNo = Integer
+											.parseInt(header_components[3]
+													.trim());
+									int desiredReplication = Integer
+											.parseInt(header_components[4]
+													.trim());
+
+									if (ConfigsManager.getInstance()
+											.getBackupDirActualSize()
 											+ FileChunk.MAX_CHUNK_SIZE >= ConfigsManager
 											.getInstance().getMaxBackupSize()) {
 										return;
 									}
-									
-									if (ConfigsManager.getInstance().getFileById(fileId) == null) {
+
+									if (ConfigsManager.getInstance()
+											.getFileById(fileId) == null) {
 										return;
 									}
-									
+
 									FileChunk savedChunk = ConfigsManager
 											.getInstance().getSavedChunk(
 													fileId, chunkNo);
@@ -119,7 +126,8 @@ public class MulticastDataBackupListener implements Runnable {
 											e.printStackTrace();
 										}
 
-										// verify if it is needed to save the
+										// verify if it is
+										// needed to save the
 										// chunk
 
 										if (pendingChunk
@@ -127,26 +135,27 @@ public class MulticastDataBackupListener implements Runnable {
 												.getDesiredReplicationDeg()) {
 
 											ChunkBackup
-											.getInstance()
-											.storeChunk(
-													pendingChunk,
-													components[1]
-															.getBytes());
-											/*try {
-												ChunkBackup
-														.getInstance()
-														.storeChunk(
-																pendingChunk,
-																components[1]
-																		.getBytes(MulticastComunicator.ASCII_CODE));
-												
-											} catch (UnsupportedEncodingException e) {
-												e.printStackTrace();
-											}*/
+													.getInstance()
+													.storeChunk(
+															pendingChunk,
+															components[1]
+																	.getBytes());
+											/*
+											 * try { ChunkBackup .getInstance()
+											 * .storeChunk( pendingChunk,
+											 * components[1] .getBytes
+											 * (MulticastComunicator
+											 * .ASCII_CODE));
+											 * 
+											 * } catch (
+											 * UnsupportedEncodingException e) {
+											 * e.printStackTrace (); }
+											 */
 
 										}
 
-										// remove the temporary chunk from the
+										// remove the temporary
+										// chunk from the
 										// pending
 										// chunks
 										// list
@@ -154,14 +163,15 @@ public class MulticastDataBackupListener implements Runnable {
 											mPendingChunks.remove(pendingChunk);
 										}
 									}
-								}
-							});
 
-					break;
-				default:
-					System.out.println("MDB received non recognized command");
-					System.out.println(message);
-				}
+									break;
+								default:
+									System.out
+											.println("MDB received non recognized command");
+									System.out.println(message);
+								}
+							}
+						});
 			}
 		} catch (HasToJoinException e1) {
 			e1.printStackTrace();
