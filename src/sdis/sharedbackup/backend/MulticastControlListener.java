@@ -5,12 +5,13 @@ import java.util.ArrayList;
 
 import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
 import sdis.sharedbackup.utils.Log;
+import sdis.sharedbackup.utils.SplittedMessage;
+import sdis.sharedbackup.utils.Splitter;
 
 /*
  * Class that receives and dispatches messages from the multicast control channel
  */
 public class MulticastControlListener implements Runnable {
-
 
 	public ArrayList<FileChunk> mPendingChunks;
 	public ArrayList<ChunkRecord> mSentChunks;
@@ -18,8 +19,6 @@ public class MulticastControlListener implements Runnable {
 	public static ArrayList<ChunkRecord> interestingChunks;
 
 	private static MulticastControlListener mInstance = null;
-
-
 
 	private MulticastControlListener() {
 		interestingChunks = new ArrayList<ChunkRecord>();
@@ -52,19 +51,25 @@ public class MulticastControlListener implements Runnable {
 
 				final SenderRecord sender = new SenderRecord();
 
-				final String message;
+				byte[] message;
 
 				message = receiver.receiveMessage(sender);
 
-				ConfigsManager.getInstance().getExecutor()
-						.execute(new MulticastControlHandler(message,sender));
+				SplittedMessage splittedMessage = Splitter.split(message);
+
+				ConfigsManager
+						.getInstance()
+						.getExecutor()
+						.execute(
+								new MulticastControlHandler(splittedMessage,
+										sender));
 			}
 		} catch (HasToJoinException e1) {
 			e1.printStackTrace();
 		}
 	}
-	
-	//TODO Para que e isto?
+
+	// TODO Para que e isto?
 	public synchronized void notifyChunk(String fileId, int chunkNo) {
 		for (ChunkRecord record : interestingChunks) {
 			if (record.fileId.equals(fileId) && record.chunkNo == chunkNo) {

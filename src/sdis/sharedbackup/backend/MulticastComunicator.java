@@ -89,7 +89,7 @@ public class MulticastComunicator {
 	/*
 	 * Receives as argument a SenderRecord to be initialized in this function
 	 */
-	public String receiveMessage(SenderRecord record) throws HasToJoinException {
+	public byte[] receiveMessage(SenderRecord record) throws HasToJoinException {
 
 		if (mMSocket == null) {
 			throw new HasToJoinException();
@@ -112,17 +112,7 @@ public class MulticastComunicator {
 			record.setPort(packet.getPort());
 		}
 
-		String returnStr;
-
-		returnStr = new String(packet.getData());
-		/*
-		 * try { returnStr = new String(packet.getData(), ASCII_CODE); } catch
-		 * (UnsupportedEncodingException e) {
-		 * System.err.println("Could not parse received message");
-		 * e.printStackTrace(); return null; }
-		 */
-
-		return returnStr;
+		return packet.getData();
 	}
 
 	public static class HasToJoinException extends Exception {

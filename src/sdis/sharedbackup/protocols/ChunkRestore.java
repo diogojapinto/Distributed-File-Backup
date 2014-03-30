@@ -63,9 +63,12 @@ public class ChunkRestore {
 
 		do {
 			try {
-				sender.sendMessage(message);
+				sender.sendMessage(message
+						.getBytes(MulticastComunicator.ASCII_CODE));
 			} catch (HasToJoinException e1) {
 				e1.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
 			}
 			try {
 				Thread.sleep(REQUEST_TIME_INTERVAL);
@@ -96,11 +99,23 @@ public class ChunkRestore {
 
 		String version = ConfigsManager.getInstance().getVersion();
 
-		String message = "";
+		String header = "";
 
-		message += CHUNK_COMMAND + " " + version + " " + chunk.getFileId()
-				+ " " + chunk.getChunkNo() + MulticastComunicator.CRLF
-				+ MulticastComunicator.CRLF + chunk.getData();
+		header += CHUNK_COMMAND + " " + version + " " + chunk.getFileId() + " "
+				+ chunk.getChunkNo() + MulticastComunicator.CRLF
+				+ MulticastComunicator.CRLF;
+
+		byte[] data = chunk.getData();
+
+		byte[] message = new byte[header.length() + data.length];
+
+		try {
+			System.arraycopy(header.getBytes(MulticastComunicator.ASCII_CODE),
+					0, message, 0, header.length());
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
+		System.arraycopy(data, 0, message, header.length(), data.length);
 
 		MulticastComunicator sender = new MulticastComunicator(multDBAddr,
 				multDBPort);
@@ -110,8 +125,9 @@ public class ChunkRestore {
 		} catch (HasToJoinException e) {
 			e.printStackTrace();
 		}
-		
-		Log.log("Sent CHUNK command to MULTICAST in response to request of " + chunk.getFileId() + " no " + chunk.getChunkNo());
+
+		Log.log("Sent CHUNK command to MULTICAST in response to request of "
+				+ chunk.getFileId() + " no " + chunk.getChunkNo());
 
 		return true;
 	}
@@ -152,8 +168,9 @@ public class ChunkRestore {
 		}
 		socket.close();
 
-		Log.log("Sent CHUNK command to IP in response to request of " + chunk.getFileId() + " no " + chunk.getChunkNo());
-		
+		Log.log("Sent CHUNK command to IP in response to request of "
+				+ chunk.getFileId() + " no " + chunk.getChunkNo());
+
 		return true;
 	}
 
@@ -188,7 +205,7 @@ public class ChunkRestore {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		socket.close();
 
 		Log.log("Answerd to CHUNK command to IP");

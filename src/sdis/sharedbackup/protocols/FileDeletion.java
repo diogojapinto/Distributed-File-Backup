@@ -1,5 +1,6 @@
 package sdis.sharedbackup.protocols;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 
 import sdis.sharedbackup.backend.ConfigsManager;
@@ -39,13 +40,18 @@ public class FileDeletion {
 				multCPort);
 
 		try {
-			sender.sendMessage(message);
+			try {
+				sender.sendMessage(message
+						.getBytes(MulticastComunicator.ASCII_CODE));
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
 		} catch (HasToJoinException e) {
 			e.printStackTrace();
 		}
 
 		Log.log("Sent DELETE command for file " + fileId);
-		
+
 		return true;
 	}
 
@@ -61,16 +67,20 @@ public class FileDeletion {
 
 		MulticastComunicator sender = new MulticastComunicator(multCAddr,
 				multCPort);
-		
 
 		try {
-			sender.sendMessage(message);
+			try {
+				sender.sendMessage(message
+						.getBytes(MulticastComunicator.ASCII_CODE));
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
 		} catch (HasToJoinException e) {
 			e.printStackTrace();
 		}
 
 		Log.log("Sent RESPONSE to file deletion of " + fileId);
-		
+
 		return true;
 	}
 }

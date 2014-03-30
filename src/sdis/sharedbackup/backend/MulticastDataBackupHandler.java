@@ -4,15 +4,15 @@ import java.util.Random;
 
 import sdis.sharedbackup.protocols.ChunkBackup;
 import sdis.sharedbackup.utils.Log;
+import sdis.sharedbackup.utils.SplittedMessage;
 
 public class MulticastDataBackupHandler implements Runnable {
-	private String mMessage;
+	private SplittedMessage mMessage;
 	
 	private static final int MAX_WAIT_TIME = 401;
 	private Random mRand;
-	private static MulticastDataBackupHandler mInstance = null;
 
-	public MulticastDataBackupHandler(String message) {
+	public MulticastDataBackupHandler(SplittedMessage message) {
 		mMessage = message;
 		mRand = new Random();
 	}
@@ -23,15 +23,7 @@ public class MulticastDataBackupHandler implements Runnable {
 	public void run() {
 		Log.log("MDB:Received message");
 
-		String[] components;
-		String separator = MulticastComunicator.CRLF
-				+ MulticastComunicator.CRLF;
-
-		components = mMessage.trim().split(separator);
-
-		String header = components[0].trim();
-
-		String[] header_components = header.split(" ");
+		String[] header_components = mMessage.getHeader().split(" ");
 
 		if (!header_components[1].equals(ConfigsManager.getInstance()
 				.getVersion())
@@ -90,7 +82,7 @@ public class MulticastDataBackupHandler implements Runnable {
 
 					System.out.println("I tried a store ");
 					ChunkBackup.getInstance().storeChunk(pendingChunk,
-							components[1].getBytes());
+							mMessage.getBody());
 					/*
 					 * try { System.out.println("I tried a store " );
 					 * ChunkBackup .getInstance() .storeChunk( pendingChunk,

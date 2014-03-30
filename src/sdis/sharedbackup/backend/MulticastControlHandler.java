@@ -11,29 +11,23 @@ import sdis.sharedbackup.protocols.ChunkBackup;
 import sdis.sharedbackup.protocols.ChunkRestore;
 import sdis.sharedbackup.protocols.FileDeletion;
 import sdis.sharedbackup.protocols.SpaceReclaiming;
+import sdis.sharedbackup.utils.SplittedMessage;
 
 public class MulticastControlHandler implements Runnable {
-	private String mMessage;
+	private SplittedMessage mMessage;
 	private Random random;
 	private SenderRecord mSender;
 	private static final int MAX_WAIT_TIME = 400;
 	private static final int BUFFER_SIZE = 128;
 
-	public MulticastControlHandler(String message, SenderRecord sender) {
+	public MulticastControlHandler(SplittedMessage message, SenderRecord sender) {
 		mSender = sender;
 		mMessage = message;
 	}
 
 	public void run() {
-		String[] components;
-		String separator = MulticastComunicator.CRLF
-				+ MulticastComunicator.CRLF;
 
-		components = mMessage.trim().split(separator);
-
-		String header = components[0].trim();
-
-		String[] header_components = header.split(" ");
+		String[] header_components = mMessage.getHeader().split(" ");
 
 		if (!header_components[1].equals(ConfigsManager.getInstance()
 				.getVersion())
@@ -47,7 +41,7 @@ public class MulticastControlHandler implements Runnable {
 		String messageType = header_components[0].trim();
 		final String fileId;
 		final int chunkNo;
-		System.out.println("MC RECEIVED A MESSAGE!!:" + header);
+		System.out.println("MC RECEIVED A MESSAGE!!:" + mMessage.getHeader());
 		switch (messageType) {
 		case ChunkBackup.STORED_COMMAND:
 			fileId = header_components[2].trim();

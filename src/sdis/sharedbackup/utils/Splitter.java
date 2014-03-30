@@ -29,8 +29,14 @@ public class Splitter {
 
 		splittedMessage.setHeader(new String(Arrays.copyOfRange(messg, 0,
 				headerEndIndex)));
+		
+		try {
 		splittedMessage.setBody(Arrays.copyOfRange(messg, headerEndIndex + 4,
 				messg.length));
+		} catch (ArrayIndexOutOfBoundsException e) {
+			// there is no body
+			splittedMessage.setBody(null);
+		}
 
 		return splittedMessage;
 	}

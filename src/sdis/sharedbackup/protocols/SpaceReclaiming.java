@@ -1,5 +1,6 @@
 package sdis.sharedbackup.protocols;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 
 import sdis.sharedbackup.backend.ChunkRecord;
@@ -47,8 +48,10 @@ public class SpaceReclaiming {
 				multCPort);
 
 		try {
-			sender.sendMessage(message);
+			sender.sendMessage(message.getBytes(MulticastComunicator.ASCII_CODE));
 		} catch (HasToJoinException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 		

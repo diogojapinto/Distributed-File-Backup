@@ -1,5 +1,6 @@
 package sdis.sharedbackup.protocols;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 
 import sdis.sharedbackup.backend.ConfigsManager;
@@ -30,12 +31,23 @@ public class ChunkBackup {
 	public boolean putChunk(FileChunk chunk) {
 		String version = ConfigsManager.getInstance().getVersion();
 
-		String message = "";
+		String header = "";
 
-		message += PUT_COMMAND + " " + version + " " + chunk.getFileId() + " "
+		header += PUT_COMMAND + " " + version + " " + chunk.getFileId() + " "
 				+ chunk.getChunkNo() + " " + chunk.getDesiredReplicationDeg()
-				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF
-				+ new String(chunk.getData());
+				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
+
+		byte[] data = chunk.getData();
+
+		byte[] message = new byte[header.length() + data.length];
+
+		try {
+			System.arraycopy(header.getBytes(MulticastComunicator.ASCII_CODE),
+					0, message, 0, header.length());
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
+		System.arraycopy(data, 0, message, header.length(), data.length);
 
 		InetAddress multDBAddr = ConfigsManager.getInstance().getMDBAddr();
 		int multDBPort = ConfigsManager.getInstance().getMDBPort();
@@ -57,7 +69,8 @@ public class ChunkBackup {
 				e1.printStackTrace();
 			}
 			try {
-				System.out.println("WAITING : " + PUT_TIME_INTERVAL * (int) Math.pow(2, counter));
+				System.out.println("WAITING : " + PUT_TIME_INTERVAL
+						* (int) Math.pow(2, counter));
 				Thread.sleep(PUT_TIME_INTERVAL * (int) Math.pow(2, counter));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -107,8 +120,11 @@ public class ChunkBackup {
 				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
 
 		try {
-			sender.sendMessage(message);
+			sender.sendMessage(message
+					.getBytes(MulticastComunicator.ASCII_CODE));
 		} catch (HasToJoinException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 
