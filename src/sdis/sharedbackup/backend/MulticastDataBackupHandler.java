@@ -8,7 +8,7 @@ import sdis.sharedbackup.utils.SplittedMessage;
 
 public class MulticastDataBackupHandler implements Runnable {
 	private SplittedMessage mMessage;
-	
+
 	private static final int MAX_WAIT_TIME = 401;
 	private Random mRand;
 
@@ -16,8 +16,6 @@ public class MulticastDataBackupHandler implements Runnable {
 		mMessage = message;
 		mRand = new Random();
 	}
-	
-	
 
 	@Override
 	public void run() {
@@ -58,14 +56,15 @@ public class MulticastDataBackupHandler implements Runnable {
 
 			FileChunk savedChunk = ConfigsManager.getInstance().getSavedChunk(
 					fileId, chunkNo);
-			
+
 			// file not yet saved
 			if (savedChunk == null) {
 				FileChunk pendingChunk = new FileChunk(fileId, chunkNo,
 						desiredReplication);
 
 				synchronized (MulticastControlListener.getInstance().mPendingChunks) {
-					MulticastControlListener.getInstance().mPendingChunks.add(pendingChunk);
+					MulticastControlListener.getInstance().mPendingChunks
+							.add(pendingChunk);
 				}
 
 				try {
@@ -100,7 +99,8 @@ public class MulticastDataBackupHandler implements Runnable {
 				// chunks
 				// list
 				synchronized (MulticastControlListener.getInstance().mPendingChunks) {
-					MulticastControlListener.getInstance().mPendingChunks.remove(pendingChunk);
+					MulticastControlListener.getInstance().mPendingChunks
+							.remove(pendingChunk);
 				}
 			} else {
 				System.out.println("Received CHUNK IS ALREADY SAVED");

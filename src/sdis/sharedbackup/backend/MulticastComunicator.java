@@ -71,9 +71,9 @@ public class MulticastComunicator {
 			throw new HasToJoinException();
 		}
 
-		byte[] bytesMsg = new byte[MAX_PACKET_SIZE];
+		byte[] buffer = new byte[MAX_PACKET_SIZE];
 
-		DatagramPacket packet = new DatagramPacket(bytesMsg, MAX_PACKET_SIZE);
+		DatagramPacket packet = new DatagramPacket(buffer, MAX_PACKET_SIZE);
 
 		try {
 			mMSocket.receive(packet);
@@ -82,8 +82,12 @@ public class MulticastComunicator {
 			e.printStackTrace();
 			return null;
 		}
+		
+		byte[] message = new byte[packet.getLength()];
+		System.arraycopy(buffer, 0, message, 0, packet.getLength());
+		
 
-		return packet.getData();
+		return message;
 	}
 
 	/*
