@@ -35,7 +35,7 @@ public class ChunkBackup {
 		message += PUT_COMMAND + " " + version + " " + chunk.getFileId() + " "
 				+ chunk.getChunkNo() + " " + chunk.getDesiredReplicationDeg()
 				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF
-				+ chunk.getData();
+				+ new String(chunk.getData());
 
 		InetAddress multDBAddr = ConfigsManager.getInstance().getMDBAddr();
 		int multDBPort = ConfigsManager.getInstance().getMDBPort();

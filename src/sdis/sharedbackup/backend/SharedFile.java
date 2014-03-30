@@ -108,7 +108,6 @@ public class SharedFile implements Serializable {
 		
 		// verify if there is the need to add the last empty chunk
 		if (fileSize % CHUNK_SIZE == 0) {
-			System.out.println("MOD");
 			mChunkList.add(new FileChunk(this, mChunkCounter++));
 		}
 		

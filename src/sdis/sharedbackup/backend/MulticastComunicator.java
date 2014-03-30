@@ -1,9 +1,6 @@
 package sdis.sharedbackup.backend;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -46,37 +43,15 @@ public class MulticastComunicator {
 
 	}
 
-	public boolean sendMessage(String messg) throws HasToJoinException {
+	public boolean sendMessage(byte[] messg) throws HasToJoinException {
 
 		try {
 			mMSocket = new MulticastSocket();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-
-		byte[] bytesMsg = null;
-
-		try {
-			bytesMsg = messg.getBytes(ASCII_CODE);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			return false;
-		}
-
-		// TODO: remove
-		try {
-			FileOutputStream out = new FileOutputStream("messg_send");
-			try {
-				out.write(bytesMsg);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		}
-
-		DatagramPacket packet = new DatagramPacket(bytesMsg, bytesMsg.length,
+		
+		DatagramPacket packet = new DatagramPacket(messg, messg.length,
 				mAddr, mPort);
 
 		try {
@@ -90,7 +65,7 @@ public class MulticastComunicator {
 		return true;
 	}
 
-	public String receiveMessage() throws HasToJoinException {
+	public byte[] receiveMessage() throws HasToJoinException {
 
 		if (mMSocket == null) {
 			throw new HasToJoinException();
@@ -108,30 +83,7 @@ public class MulticastComunicator {
 			return null;
 		}
 
-		// TODO: remove
-		try {
-			FileOutputStream out = new FileOutputStream("messg_send");
-			try {
-				out.write(packet.getData());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		}
-
-		String returnStr;
-
-		try {
-			returnStr = new String(packet.getData(), ASCII_CODE);
-		} catch (UnsupportedEncodingException e) {
-			System.err.println("Could not parse received message");
-			e.printStackTrace();
-			return null;
-		}
-
-		return returnStr;
+		return packet.getData();
 	}
 
 	/*

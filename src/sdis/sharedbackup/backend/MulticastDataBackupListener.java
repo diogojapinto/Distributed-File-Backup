@@ -4,6 +4,8 @@ import java.net.InetAddress;
 
 import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
 import sdis.sharedbackup.utils.Log;
+import sdis.sharedbackup.utils.SplittedMessage;
+import sdis.sharedbackup.utils.Splitter;
 
 /*
  * Class that receives and dispatches messages from the multicast data backup channel
@@ -38,11 +40,14 @@ public class MulticastDataBackupListener implements Runnable {
 
 		try {
 			while (ConfigsManager.getInstance().isAppRunning()) {
-				final String message;
+				final byte[] message;
 
 				message = receiver.receiveMessage();
+				
+				SplittedMessage splittedMessage= Splitter.split(message);
+				
 				ConfigsManager.getInstance().getExecutor()
-						.execute(new MulticastDataBackupHandler(message));
+						.execute(new MulticastDataBackupHandler(splittedMessage));
 
 			}
 		} catch (HasToJoinException e1) {

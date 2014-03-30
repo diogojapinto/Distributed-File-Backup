@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
+import sdis.sharedbackup.utils.Log;
+
 public class FileChunk implements Serializable {
 
 	/**
@@ -113,7 +115,7 @@ public class FileChunk implements Serializable {
 		if (isOwnMachineFile) {
 			if (mParentFile.exists()) {
 				File file = new File(mParentFile.getFilePath());
-				byte[] chunk = new byte[(int) SharedFile.CHUNK_SIZE];
+				byte[] chunk = new byte[(int) SharedFile.CHUNK_SIZE + 1];
 				FileInputStream in = null;
 
 				try {
@@ -122,9 +124,13 @@ public class FileChunk implements Serializable {
 					e.printStackTrace();
 				}
 				try {
-					in.skip(SharedFile.CHUNK_SIZE * mChunkNo);
-					in.read(chunk, 0, (int) SharedFile.CHUNK_SIZE);
-					System.out.println("Lenght chunk" + chunk.length + " " + chunk);
+					int offset = (int) (SharedFile.CHUNK_SIZE * mChunkNo);
+					in.skip(offset);
+					int length = in.read(chunk, 0, (int) SharedFile.CHUNK_SIZE);
+					
+					chunk[length] = '\0';
+					
+					Log.log("Lenght chunk" + length + " ");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
