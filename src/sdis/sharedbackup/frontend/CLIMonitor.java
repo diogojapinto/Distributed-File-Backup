@@ -16,8 +16,8 @@ public class CLIMonitor {
 	private static boolean exit = false;
 
 	public static void main(String[] args) {
-
-		// TODO: create dir if not exists
+		//TODO: fix chunk body
+		//TODO: fix receive chunk multithreading
 		// TODO: verify every input
 
 		try {
