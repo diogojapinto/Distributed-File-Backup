@@ -23,7 +23,7 @@ public class MulticastDataRestoreListener implements Runnable {
 
 	private static MulticastDataRestoreListener mInstance = null;
 
-	private ArrayList<ChunkRecord> mSubscribedChunks;
+	public ArrayList<ChunkRecord> mSubscribedChunks;
 
 	private MulticastDataRestoreListener() {
 		mSubscribedChunks = new ArrayList<ChunkRecord>();
@@ -50,77 +50,20 @@ public class MulticastDataRestoreListener implements Runnable {
 
 		Log.log("Listening on " + addr.getHostAddress() + ":" + port);
 
-		try {
-			while (ConfigsManager.getInstance().isAppRunning()) {
-				final byte[] message;
+		while (ConfigsManager.getInstance().isAppRunning()) {
+			final byte[] message;
+			try {
 				message = receiver.receiveMessage();
-
 				final SplittedMessage splittedMessage = Splitter.split(message);
+				ConfigsManager
+						.getInstance()
+						.getExecutor()
+						.execute(
+								new MulticastDataRestoreHandler(splittedMessage));
+			} catch (HasToJoinException e) {
 
-				ConfigsManager.getInstance().getExecutor()
-						.execute(new Runnable() {
-
-							@Override
-							public void run() {
-
-								String[] header_components = splittedMessage
-										.getHeader().split(" ");
-
-								if (!header_components[1].equals(ConfigsManager
-										.getInstance().getVersion())) {
-									System.err
-											.println("Received message with protocol with different version");
-									return;
-								}
-
-								String messageType = header_components[0]
-										.trim();
-								String fileId;
-								int chunkNo;
-
-								switch (messageType) {
-								case ChunkRestore.CHUNK_COMMAND:
-
-									fileId = header_components[2].trim();
-									chunkNo = Integer
-											.parseInt(header_components[3]
-													.trim());
-
-									Log.log("Received CHUNK command for file "
-											+ fileId + " chunk " + chunkNo);
-									Log.log("Size: "
-											+ splittedMessage.getBody().length);
-
-									for (ChunkRecord record : mSubscribedChunks) {
-										if (record.fileId.equals(fileId)
-												&& record.chunkNo == chunkNo) {
-
-											FileChunkWithData requestedChunk = new FileChunkWithData(
-													fileId, chunkNo,
-													splittedMessage.getBody());
-
-											ChunkRestore.getInstance()
-													.addRequestedChunk(
-															requestedChunk);
-
-											mSubscribedChunks.remove(record);
-											break;
-										}
-									}
-
-									break;
-								default:
-									System.out
-											.println("MDR received non recognized command");
-									System.out.println(new String(message));
-								}
-							}
-
-						});
-
+				e.printStackTrace();
 			}
-		} catch (HasToJoinException e1) {
-			e1.printStackTrace();
 		}
 	}
 
