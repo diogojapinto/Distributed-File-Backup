@@ -20,6 +20,8 @@ public class MulticastControlHandler implements Runnable {
 	private static final int MAX_WAIT_TIME = 400;
 	private static final int BUFFER_SIZE = 128;
 
+	private DatagramSocket restoreEnhSocket = null;
+
 	public MulticastControlHandler(SplittedMessage message, SenderRecord sender) {
 		mSender = sender;
 		mMessage = message;
@@ -67,7 +69,7 @@ public class MulticastControlHandler implements Runnable {
 			}
 			break;
 		case ChunkRestore.GET_COMMAND:
-			
+
 			fileId = header_components[2].trim();
 			chunkNo = Integer.parseInt(header_components[3].trim());
 
@@ -168,22 +170,23 @@ public class MulticastControlHandler implements Runnable {
 
 		@Override
 		public void run() {
-			DatagramSocket restoreSocket = null;
-			try {
-				restoreSocket = new DatagramSocket(
-						ChunkRestore.ENHANCEMENT_SEND_PORT);
-			} catch (SocketException e) {
-				System.out
-						.println("Could not open the desired port for restore");
-				e.printStackTrace();
-				System.exit(-1);
+			if (restoreEnhSocket != null) {
+				try {
+					restoreEnhSocket = new DatagramSocket(
+							ChunkRestore.ENHANCEMENT_SEND_PORT);
+				} catch (SocketException e) {
+					System.out
+							.println("Could not open the desired port for restore");
+					e.printStackTrace();
+					System.exit(-1);
+				}
 			}
 
 			byte[] buffer = new byte[BUFFER_SIZE];
 			DatagramPacket packet = new DatagramPacket(buffer, BUFFER_SIZE);
 
 			try {
-				restoreSocket.receive(packet);
+				restoreEnhSocket.receive(packet);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
