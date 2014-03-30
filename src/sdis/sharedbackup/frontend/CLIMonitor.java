@@ -167,7 +167,7 @@ public class CLIMonitor {
 			files.get(file_i - 1);
 
 			ApplicationInterface.getInstance().restoreFileByPath(
-					files.get(file_i));
+					files.get(file_i-1));
 
 			return false;
 		case 3:
@@ -211,6 +211,7 @@ public class CLIMonitor {
 		for (String path : files) {
 			System.out.format("%3d | %s", i++, path);
 		}
+		System.out.println(" ");
 	}
 
 	@SuppressWarnings("unused")

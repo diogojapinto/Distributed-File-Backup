@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.SocketException;
 
 public class MulticastComunicator {
 	private static int TTL = 1;
@@ -53,6 +54,12 @@ public class MulticastComunicator {
 		
 		DatagramPacket packet = new DatagramPacket(messg, messg.length,
 				mAddr, mPort);
+		
+		try {
+			mMSocket.setLoopbackMode(true);
+		} catch (SocketException e1) {
+			e1.printStackTrace();
+		}
 
 		try {
 			mMSocket.send(packet);
