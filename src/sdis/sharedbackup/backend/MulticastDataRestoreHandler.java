@@ -36,7 +36,10 @@ public class MulticastDataRestoreHandler implements Runnable {
 			Log.log("Received CHUNK command for file " + fileId + " chunk "
 					+ chunkNo);
 			Log.log("Size: " + mMessage.getBody().length);
+			
 
+			// verify if I'm interested in this chunk
+			boolean myRequest = false;
 			for (ChunkRecord record : MulticastDataRestoreListener.getInstance().mSubscribedChunks) {
 				if (record.fileId.equals(fileId) && record.chunkNo == chunkNo) {
 
@@ -47,8 +50,15 @@ public class MulticastDataRestoreHandler implements Runnable {
 							.addRequestedChunk(requestedChunk);
 
 					MulticastDataRestoreListener.getInstance().mSubscribedChunks.remove(record);
+					
+					myRequest = true;
+					
 					break;
 				}
+			}
+			
+			if (!myRequest) {
+				MulticastControlListener.getInstance().notifyChunk(fileId, chunkNo);
 			}
 
 			break;
