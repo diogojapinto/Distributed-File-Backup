@@ -55,6 +55,7 @@ public class MulticastDataRestoreListener implements Runnable {
 			try {
 				message = receiver.receiveMessage();
 				final SplittedMessage splittedMessage = Splitter.split(message);
+				System.out.println("Received a msg on MDR: " + splittedMessage.getHeader() + " " + splittedMessage.getBody().length);
 				ConfigsManager
 						.getInstance()
 						.getExecutor()

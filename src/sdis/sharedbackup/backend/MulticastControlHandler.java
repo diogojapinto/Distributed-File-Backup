@@ -23,6 +23,7 @@ public class MulticastControlHandler implements Runnable {
 	public MulticastControlHandler(SplittedMessage message, SenderRecord sender) {
 		mSender = sender;
 		mMessage = message;
+		random = new Random();
 	}
 
 	public void run() {
@@ -66,7 +67,7 @@ public class MulticastControlHandler implements Runnable {
 			}
 			break;
 		case ChunkRestore.GET_COMMAND:
-
+			
 			fileId = header_components[2].trim();
 			chunkNo = Integer.parseInt(header_components[3].trim());
 
@@ -77,14 +78,14 @@ public class MulticastControlHandler implements Runnable {
 
 			FileChunk chunk = ConfigsManager.getInstance().getSavedChunk(
 					fileId, chunkNo);
-
+			System.out.println("Line 81");
 			if (chunk != null) {
 				try {
 					Thread.sleep(random.nextInt(MAX_WAIT_TIME));
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-
+				System.out.println("88");
 				if (!record.isNotified) {
 					// if no one else
 					// sent it:
