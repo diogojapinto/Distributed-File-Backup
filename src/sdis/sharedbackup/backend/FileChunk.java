@@ -115,7 +115,13 @@ public class FileChunk implements Serializable {
 		if (isOwnMachineFile) {
 			if (mParentFile.exists()) {
 				File file = new File(mParentFile.getFilePath());
-				byte[] chunk = new byte[(int) SharedFile.CHUNK_SIZE + 1];
+
+				int offset = (int) (SharedFile.CHUNK_SIZE * mChunkNo);
+
+				int chunkSize = (int) Math.min(SharedFile.CHUNK_SIZE,
+						mParentFile.getFileSize() - offset);
+
+				byte[] chunk = new byte[chunkSize];
 				FileInputStream in = null;
 
 				try {
@@ -124,13 +130,11 @@ public class FileChunk implements Serializable {
 					e.printStackTrace();
 				}
 				try {
-					int offset = (int) (SharedFile.CHUNK_SIZE * mChunkNo);
 					in.skip(offset);
-					int length = in.read(chunk, 0, (int) SharedFile.CHUNK_SIZE);
 					
-					chunk[length] = '\0';
-					
-					Log.log("Lenght chunk" + length + " ");
+					in.read(chunk, 0, chunkSize);
+
+					Log.log("Lenght chunk" + chunkSize);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
