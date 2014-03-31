@@ -55,28 +55,29 @@ public class CLIMonitor {
 	 * initiates the configuration of the Multicast addresses and ports
 	 */
 	private static void parseArgs(String[] args) throws ArgsException {
+/*
+		if (args.length != 6) {
+			throw new ArgsException();
+		}
 
-		/*
-		 * if (args.length != 6) { throw new ArgsException(); }
-		 */
-
-		/*
-		 * if (!ConfigsManager.getInstance().setMulticastAddrs(args[0],
-		 * Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]),
-		 * args[4], Integer.parseInt(args[5]))) { throw new ArgsException(); }
-		 */
+		if (!ConfigsManager.getInstance().setMulticastAddrs(args[0],
+				Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]),
+				args[4], Integer.parseInt(args[5]))) {
+			throw new ArgsException();
+		}*/
 
 		
-		  ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
-		  Integer.parseInt("50001"), "239.254.254.253",
-		  Integer.parseInt("50002"), "239.254.254.254",
-		  Integer.parseInt("50003"));
-		 
+		 ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
+		 Integer.parseInt("50001"), "239.254.254.253",
+		 Integer.parseInt("50002"), "239.254.254.254",
+		 Integer.parseInt("50003"));
+		
 
-		/*ConfigsManager.getInstance()
-				.setMulticastAddrs("239.0.0.1", Integer.parseInt("8765"),
-						"239.0.0.1", Integer.parseInt("8766"), "239.0.0.1",
-						Integer.parseInt("8767"));*/
+		/*
+		 * ConfigsManager.getInstance() .setMulticastAddrs("239.0.0.1",
+		 * Integer.parseInt("8765"), "239.0.0.1", Integer.parseInt("8766"),
+		 * "239.0.0.1", Integer.parseInt("8767"));
+		 */
 
 	}
 
@@ -92,8 +93,10 @@ public class CLIMonitor {
 					break;
 				} catch (InvalidBackupSizeException e) {
 					System.err.println("Please input a size greater than 0KB");
+					sc.nextLine();
 				} catch (InputMismatchException e1) {
 					System.err.println("Please input a valid integer value");
+					sc.nextLine();
 				}
 			}
 
@@ -113,9 +116,16 @@ public class CLIMonitor {
 	private static long promptAvailableSpace() throws InputMismatchException {
 		// clearConsole();
 		long allocatedSpace = 0;
-		System.out.println("Choose your allocated space (KB):");
-		allocatedSpace = sc.nextLong();
-		sc.nextLine();
+		while (true) {
+			try {
+				System.out.println("Choose your allocated space (KB):");
+				allocatedSpace = sc.nextLong();
+				sc.nextLine();
+				break;
+			} catch (InputMismatchException e) {
+				System.out.println("Invalid Input!");
+			}
+		}
 		return allocatedSpace;
 	}
 
@@ -152,8 +162,17 @@ public class CLIMonitor {
 			System.out.println("Enter the path to the file:");
 			String path = sc.nextLine();
 			System.out.println("Enter desired Replication degree:");
-			int repdeg = sc.nextInt();
-			sc.nextLine();
+			int repdeg;
+			while (true) {
+				try {
+					repdeg = sc.nextInt();
+					sc.nextLine();
+					break;
+				} catch (InputMismatchException e) {
+					System.out.println("Invalid Input!");
+					sc.nextLine();
+				}
+			}
 			try {
 				ApplicationInterface.getInstance().backupFile(path, repdeg);
 				return true;
@@ -170,7 +189,16 @@ public class CLIMonitor {
 			}
 		case 4:
 			System.out.println("Enter new allocated space:");
-			int space = sc.nextInt();
+			int space;
+			while (true) {
+				try {
+					space = sc.nextInt();
+					break;
+				} catch (InputMismatchException e) {
+					System.out.println("Invalid Input!");
+					sc.nextLine();
+				}
+			}
 			sc.nextLine();
 			ApplicationInterface.getInstance().setNewSpace(space);
 			return true;
@@ -200,10 +228,24 @@ public class CLIMonitor {
 				System.out.println("There is no backed up files to delete");
 				return true;
 			}
+			int i;
 			printFilesOrderedInfo(deletableFiles);
-			System.out.println("Choose file to delete:");
-			int i = sc.nextInt();
-			sc.nextLine();
+			while (true) {
+				try {
+					System.out.println("Choose file to delete:");
+					i = sc.nextInt();
+					sc.nextLine();
+					if (i > deletableFiles.size() || i < 0) {
+						System.out.println("Invalid Input!");
+					} else {
+						break;
+					}
+				} catch (InputMismatchException e) {
+					System.out.println("Invalid Input!");
+					sc.nextLine();
+				}
+			}
+
 			try {
 				ApplicationInterface.getInstance().deleteFile(
 						deletableFiles.get(i - 1));
