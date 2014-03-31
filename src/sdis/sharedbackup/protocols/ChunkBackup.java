@@ -35,6 +35,7 @@ public class ChunkBackup {
 
 		header += PUT_COMMAND + " " + version + " " + chunk.getFileId() + " "
 				+ chunk.getChunkNo() + " " + chunk.getDesiredReplicationDeg()
+				+ MulticastComunicator.CRLF + chunk.getCurrentReplicationDeg()
 				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
 
 		byte[] data = chunk.getData();

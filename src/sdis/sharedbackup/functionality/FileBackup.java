@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import sdis.sharedbackup.backend.FileChunk;
 import sdis.sharedbackup.backend.SharedFile;
 import sdis.sharedbackup.protocols.ChunkBackup;
+import sdis.sharedbackup.protocols.FileDeletion;
 
 public class FileBackup {
 	private static FileBackup mInstance = null;
@@ -23,7 +24,9 @@ public class FileBackup {
 		for (int i = 0; i < list.size(); i++) {
 			
 			final FileChunk chunk = list.get(i);
-			ChunkBackup.getInstance().putChunk(chunk);
+			if (!ChunkBackup.getInstance().putChunk(chunk)) {
+				FileDeletion.getInstance().deleteFile(file.getFileId());
+			}
 		}
 		return true;
 	}

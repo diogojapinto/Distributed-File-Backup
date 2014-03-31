@@ -1,6 +1,5 @@
 package sdis.sharedbackup.frontend;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import sdis.sharedbackup.backend.ConfigsManager;

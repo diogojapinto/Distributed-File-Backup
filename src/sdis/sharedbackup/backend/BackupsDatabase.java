@@ -194,7 +194,8 @@ public class BackupsDatabase implements Serializable {
 			for (SharedFile file : mSharedFiles.values()) {
 				if (file.getFileId().equals(fileId)) {
 					// I have the chunk in my own file
-					return file.getChunkList().get(chunkNo);
+					retChunk = file.getChunkList().get(chunkNo);
+					break;
 				}
 			}
 		}

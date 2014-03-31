@@ -188,4 +188,8 @@ public class FileChunk implements Serializable {
 	public synchronized int decCurrentReplication() {
 		return --mCurrentReplicationDegree;
 	}
+	
+	public void setCurrReplication(int rep) {
+		mCurrentReplicationDegree = rep;
+	}
 }

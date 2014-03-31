@@ -55,6 +55,9 @@ public class MulticastDataBackupHandler implements Runnable {
 			int desiredReplication = Integer.parseInt(header_components[4]
 					.trim());
 
+			// ENHANCEMENT
+			int currReplication = Integer.parseInt(header_components[5].trim());
+
 			FileChunk savedChunk = ConfigsManager.getInstance().getSavedChunk(
 					fileId, chunkNo);
 
@@ -62,6 +65,9 @@ public class MulticastDataBackupHandler implements Runnable {
 			if (savedChunk == null) {
 				FileChunk pendingChunk = new FileChunk(fileId, chunkNo,
 						desiredReplication);
+
+				// ENHANCEMENT
+				pendingChunk.setCurrReplication(currReplication);
 
 				synchronized (MulticastControlListener.getInstance().mPendingChunks) {
 					MulticastControlListener.getInstance().mPendingChunks
@@ -90,8 +96,6 @@ public class MulticastDataBackupHandler implements Runnable {
 
 						@Override
 						public void run() {
-							FileChunk chunk = ConfigsManager.getInstance()
-									.getSavedChunk(fileId, chunkNo);
 							while (true) {
 
 								try {
@@ -100,6 +104,13 @@ public class MulticastDataBackupHandler implements Runnable {
 									e.printStackTrace();
 								}
 
+								FileChunk chunk = ConfigsManager.getInstance()
+										.getSavedChunk(fileId, chunkNo);
+								
+								if (chunk == null) {
+									return;
+								}
+								
 								if (chunk.getCurrentReplicationDeg() < chunk
 										.getDesiredReplicationDeg()) {
 									ChunkBackup.getInstance().putChunk(chunk);
