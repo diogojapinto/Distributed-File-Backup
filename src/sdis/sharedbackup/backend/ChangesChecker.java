@@ -19,10 +19,10 @@ public class ChangesChecker implements Runnable {
 	}
 	
 	public void checkDeletions() {
-		// TODO
+		// TODO: if I want to
 	}
 	
 	public void checkDiskSpace() {
-		// TODO
+		// TODO: if I want to
 	}
 }

@@ -189,8 +189,8 @@ public class BackupsDatabase implements Serializable {
 				}
 			}
 		}
-		
-		if(retChunk == null) {
+
+		if (retChunk == null) {
 			for (SharedFile file : mSharedFiles.values()) {
 				if (file.getFileId().equals(fileId)) {
 					// I have the chunk in my own file
@@ -252,12 +252,15 @@ public class BackupsDatabase implements Serializable {
 	}
 
 	public synchronized void decDeletedFileCount(String fileId) {
-		int newReplication = mDeletedFiles.get(fileId).intValue() - 1;
-		if (newReplication <= 0) {
-			mDeletedFiles.remove(fileId);
-		} else {
-			synchronized (mDeletedFiles) {
-				mDeletedFiles.put(fileId, newReplication);
+		Integer currReplication = mDeletedFiles.get(fileId);
+		if (currReplication != null) {
+			int newReplication = mDeletedFiles.get(fileId) - 1;
+			if (newReplication <= 0) {
+				mDeletedFiles.remove(fileId);
+			} else {
+				synchronized (mDeletedFiles) {
+					mDeletedFiles.put(fileId, newReplication);
+				}
 			}
 		}
 	}
@@ -315,7 +318,7 @@ public class BackupsDatabase implements Serializable {
 			for (FileChunk chunk : mSavedChunks) {
 				if (chunk.getFileId().equals(fileId)) {
 					chunk.removeData();
-					//mSavedChunks.remove(chunk);
+					// mSavedChunks.remove(chunk);
 					foundChunk = true;
 				}
 			}

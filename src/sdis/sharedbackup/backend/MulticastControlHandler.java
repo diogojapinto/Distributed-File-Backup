@@ -32,6 +32,7 @@ public class MulticastControlHandler implements Runnable {
 		String[] header_components = mMessage.getHeader().split(" ");
 
 		if (!header_components[0].equals(FileDeletion.DELETE_COMMAND)
+				&& !header_components[0].equals(FileDeletion.RESPONSE_COMMAND)
 				&& !header_components[1].equals(ConfigsManager.getInstance()
 						.getVersion())
 				&& !header_components[1].equals(ConfigsManager.getInstance()
