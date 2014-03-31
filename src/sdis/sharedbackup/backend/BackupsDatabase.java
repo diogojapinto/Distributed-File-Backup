@@ -170,9 +170,10 @@ public class BackupsDatabase implements Serializable {
 			out.writeObject(this);
 			out.close();
 			fileOut.close();
-			System.out.println("Database Saved");
+			
+			Log.log("Database Saved");
 		} catch (IOException i) {
-			System.out.println("Could not save database");
+			Log.log("Could not save database");
 		}
 	}
 

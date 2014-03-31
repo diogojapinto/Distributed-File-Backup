@@ -37,7 +37,7 @@ public class MulticastDataBackupHandler implements Runnable {
 
 		switch (messageType) {
 		case ChunkBackup.PUT_COMMAND:
-			System.out.println("REceived a PUT");
+			Log.log("REceived a PUT");
 			if (ConfigsManager.getInstance().getBackupDirActualSize()
 					+ FileChunk.MAX_CHUNK_SIZE >= ConfigsManager.getInstance()
 					.getMaxBackupSize()) {
@@ -86,7 +86,7 @@ public class MulticastDataBackupHandler implements Runnable {
 				if (pendingChunk.getCurrentReplicationDeg() < pendingChunk
 						.getDesiredReplicationDeg()) {
 
-					System.out.println("I tried a store ");
+					Log.log("I tried a store ");
 					ChunkBackup.getInstance().storeChunk(pendingChunk,
 							mMessage.getBody());
 
@@ -131,12 +131,12 @@ public class MulticastDataBackupHandler implements Runnable {
 							.remove(pendingChunk);
 				}
 			} else {
-				System.out.println("Received CHUNK IS ALREADY SAVED");
+				Log.log("Received CHUNK IS ALREADY SAVED");
 			}
 
 			break;
 		default:
-			System.out.println("MDB received non recognized command");
+			Log.log("MDB received non recognized command");
 			System.out.println(mMessage);
 		}
 	};

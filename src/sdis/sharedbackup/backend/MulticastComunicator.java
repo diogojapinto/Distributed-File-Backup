@@ -6,6 +6,8 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 
+import sdis.sharedbackup.utils.Log;
+
 public class MulticastComunicator {
 	private static int TTL = 1;
 
@@ -29,7 +31,7 @@ public class MulticastComunicator {
 			mMSocket = new MulticastSocket(mPort);
 			mMSocket.setTimeToLive(TTL);
 		} catch (IOException e) {
-			System.out.println("Could not create MulticastSocket.");
+			Log.log("Could not create MulticastSocket.");
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -37,7 +39,7 @@ public class MulticastComunicator {
 		try {
 			mMSocket.joinGroup(mAddr);
 		} catch (IOException e) {
-			System.out.println("Could not join multicast group.");
+			Log.log("Could not join multicast group.");
 			e.printStackTrace();
 			System.exit(1);
 		}

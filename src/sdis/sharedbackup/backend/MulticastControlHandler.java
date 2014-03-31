@@ -82,14 +82,12 @@ public class MulticastControlHandler implements Runnable {
 
 			FileChunk chunk = ConfigsManager.getInstance().getSavedChunk(
 					fileId, chunkNo);
-			System.out.println("Line 81");
 			if (chunk != null) {
 				try {
 					Thread.sleep(random.nextInt(MAX_WAIT_TIME));
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				System.out.println("88");
 				if (!record.isNotified) {
 					// if no one else
 					// sent it:
@@ -170,7 +168,7 @@ public class MulticastControlHandler implements Runnable {
 			} // else I don't have it
 			break;
 		default:
-			System.out.println("MC received non recognized command:");
+			Log.log("MC received non recognized command:");
 			System.out.println(mMessage);
 		}
 	};
@@ -186,8 +184,7 @@ public class MulticastControlHandler implements Runnable {
 					restoreEnhSocket = new DatagramSocket(
 							ChunkRestore.ENHANCEMENT_SEND_PORT);
 				} catch (SocketException e) {
-					System.out
-							.println("Could not open the desired port for restore");
+					Log.log("Could not open the desired port for restore");
 					e.printStackTrace();
 					System.exit(-1);
 				}
@@ -235,7 +232,7 @@ public class MulticastControlHandler implements Runnable {
 
 				break;
 			default:
-				System.out.println("Received non recognized command");
+				Log.log("Received non recognized command");
 			}
 		}
 	}

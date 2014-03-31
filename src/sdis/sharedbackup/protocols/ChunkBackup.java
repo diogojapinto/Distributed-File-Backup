@@ -61,7 +61,7 @@ public class ChunkBackup {
 		Log.log("Sending chunk " + chunk.getChunkNo() + " of file "
 				+ chunk.getFileId() + "with " + chunk.getData().length
 				+ " bytes");
-		System.out.println("Sending: " + message);
+		Log.log("Sending: " + message);
 
 		do {
 			try {
@@ -70,14 +70,14 @@ public class ChunkBackup {
 				e1.printStackTrace();
 			}
 			try {
-				System.out.println("WAITING : " + PUT_TIME_INTERVAL
+				Log.log("WAITING : " + PUT_TIME_INTERVAL
 						* (int) Math.pow(2, counter));
 				Thread.sleep(PUT_TIME_INTERVAL * (int) Math.pow(2, counter));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			counter++;
-			System.out.println("REP DEG: " + chunk.getChunkNo() + " "
+			Log.log("REP DEG: " + chunk.getChunkNo() + " "
 					+ chunk.getCurrentReplicationDeg());
 		} while (chunk.getDesiredReplicationDeg() > chunk
 				.getCurrentReplicationDeg() && counter < MAX_RETRIES);

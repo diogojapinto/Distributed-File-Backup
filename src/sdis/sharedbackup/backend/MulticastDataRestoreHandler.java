@@ -65,7 +65,7 @@ public class MulticastDataRestoreHandler implements Runnable {
 
 			break;
 		default:
-			System.out.println("MDR received non recognized command");
+			Log.log("MDR received non recognized command");
 			System.out.println(new String(mMessage.getHeader()));
 		}
 	}

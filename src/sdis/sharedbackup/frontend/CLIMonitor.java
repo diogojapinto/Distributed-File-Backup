@@ -1,5 +1,6 @@
 package sdis.sharedbackup.frontend;
 
+import java.net.BindException;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -17,17 +18,16 @@ public class CLIMonitor {
 	private static boolean exit = false;
 
 	public static void main(String[] args) {
-		// TODO: verify every input
-		// TODO: apanhar exceptions de address already in use
-
 		try {
+			// TODO: verify every input
+			// TODO: apanhar exceptions de address already in use
+
 			parseArgs(args);
 		} catch (ArgsException e) {
 			e.error();
 		}
 
-		// clearConsole();
-		printHead();
+		clearConsole();
 
 		setupService();
 
@@ -48,30 +48,25 @@ public class CLIMonitor {
 		ApplicationInterface.getInstance().terminate();
 
 		System.exit(0);
-		;
+
 	}
 
 	/*
 	 * initiates the configuration of the Multicast addresses and ports
 	 */
 	private static void parseArgs(String[] args) throws ArgsException {
-/*
-		if (args.length != 6) {
-			throw new ArgsException();
-		}
+		/*
+		 * if (args.length != 6) { throw new ArgsException(); }
+		 * 
+		 * if (!ConfigsManager.getInstance().setMulticastAddrs(args[0],
+		 * Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]),
+		 * args[4], Integer.parseInt(args[5]))) { throw new ArgsException(); }
+		 */
 
-		if (!ConfigsManager.getInstance().setMulticastAddrs(args[0],
-				Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]),
-				args[4], Integer.parseInt(args[5]))) {
-			throw new ArgsException();
-		}*/
-
-		
-		 ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
-		 Integer.parseInt("50001"), "239.254.254.253",
-		 Integer.parseInt("50002"), "239.254.254.254",
-		 Integer.parseInt("50003"));
-		
+		ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
+				Integer.parseInt("50001"), "239.254.254.253",
+				Integer.parseInt("50002"), "239.254.254.254",
+				Integer.parseInt("50003"));
 
 		/*
 		 * ConfigsManager.getInstance() .setMulticastAddrs("239.0.0.1",
@@ -114,7 +109,7 @@ public class CLIMonitor {
 	}
 
 	private static long promptAvailableSpace() throws InputMismatchException {
-		// clearConsole();
+		clearConsole();
 		long allocatedSpace = 0;
 		while (true) {
 			try {
@@ -130,13 +125,13 @@ public class CLIMonitor {
 	}
 
 	private static String promptDestinationDir() {
-		// clearConsole();
+		clearConsole();
 		System.out.println("Choose the folder to save the files to:");
 		return sc.nextLine();
 	}
 
 	private static void promptMenuOption() {
-		// clearConsole();
+		clearConsole();
 		do {
 			System.out.println("Choose an option:");
 			System.out.println("1-Backup file");
@@ -288,19 +283,21 @@ public class CLIMonitor {
 		System.out.println(" ");
 	}
 
-	@SuppressWarnings("unused")
 	private static void clearConsole() {
-		try {
-			String os = System.getProperty("os.name");
+		if (!ApplicationInterface.DEBUGG) {
+			try {
+				String os = System.getProperty("os.name");
 
-			if (os.contains("Windows")) {
-				Runtime.getRuntime().exec("cls");
-			} else {
-				Runtime.getRuntime().exec("clear");
+				if (os.contains("Windows")) {
+					Runtime.getRuntime().exec("cls");
+				} else {
+					Runtime.getRuntime().exec("clear");
+				}
+			} catch (Exception exception) {
+				System.out.println("Could not clear console");
 			}
-		} catch (Exception exception) {
-			System.out.println("Could not clear console");
 		}
+		printHead();
 	}
 
 	private static void printHead() {
