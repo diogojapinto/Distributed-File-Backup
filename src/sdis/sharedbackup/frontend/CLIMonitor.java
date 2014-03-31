@@ -5,6 +5,7 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import sdis.sharedbackup.backend.ConfigsManager;
+import sdis.sharedbackup.backend.ConfigsManager.FileAlreadySaved;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
@@ -16,9 +17,10 @@ public class CLIMonitor {
 	private static boolean exit = false;
 
 	public static void main(String[] args) {
-		//TODO: fix chunk body
-		//TODO: fix receive chunk multithreading
+		// TODO: fix chunk body
+		// TODO: fix receive chunk multithreading
 		// TODO: verify every input
+		// TODO: verify if file is already backed up
 
 		try {
 			parseArgs(args);
@@ -44,31 +46,40 @@ public class CLIMonitor {
 		}
 
 		sc.close();
-		
+
 		ApplicationInterface.getInstance().terminate();
-		
-		System.exit(0);;
+
+		System.exit(0);
+		;
 	}
 
 	/*
 	 * initiates the configuration of the Multicast addresses and ports
 	 */
 	private static void parseArgs(String[] args) throws ArgsException {
+
+		if (args.length != 6) {
+			throw new ArgsException();
+		}
+
 		/*
-		 * if (args.length != 6) { throw new ArgsException(); }
-		 * 
 		 * if (!ConfigsManager.getInstance().setMulticastAddrs(args[0],
 		 * Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]),
 		 * args[4], Integer.parseInt(args[5]))) { throw new ArgsException(); }
 		 */
-		/*ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
-				Integer.parseInt("50001"), "239.254.254.253",
-				Integer.parseInt("50002"), "239.254.254.254",
-				Integer.parseInt("50003"));*/
-		ConfigsManager.getInstance().setMulticastAddrs("239.0.0.1",
-				Integer.parseInt("8765"), "239.0.0.1",
-				Integer.parseInt("8766"), "239.0.0.1",
-				Integer.parseInt("8767"));
+
+		/*
+		 * ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
+		 * Integer.parseInt("50001"), "239.254.254.253",
+		 * Integer.parseInt("50002"), "239.254.254.254",
+		 * Integer.parseInt("50003"));
+		 */
+
+		ConfigsManager.getInstance()
+				.setMulticastAddrs("239.0.0.1", Integer.parseInt("8765"),
+						"239.0.0.1", Integer.parseInt("8766"), "239.0.0.1",
+						Integer.parseInt("8767"));
+
 	}
 
 	private static void setupService() {
@@ -154,6 +165,9 @@ public class CLIMonitor {
 			} catch (FileDoesNotExistsExeption e) {
 				System.out.println("The selected file does not exists");
 				return false;
+			} catch (FileAlreadySaved e) {
+				System.out
+						.println("The selected file is already in the database");
 			}
 		case 4:
 			System.out.println("Enter new allocated space:");
@@ -168,17 +182,21 @@ public class CLIMonitor {
 			System.out.println("Choose file to restore:");
 			int file_i = sc.nextInt();
 			sc.nextLine();
-			files.get(file_i - 1);
 
 			ApplicationInterface.getInstance().restoreFileByPath(
-					files.get(file_i-1));
+					files.get(file_i - 1));
 
 			return false;
 		case 3:
+			ArrayList<String> deletableFiles = ApplicationInterface
+					.getInstance().getDeletableFiles();
+			printFilesOrderedInfo(deletableFiles);
 			System.out.println("Choose file to delete:");
-			String deletepath = sc.next();
+			int i = sc.nextInt();
+			sc.nextLine();
 			try {
-				ApplicationInterface.getInstance().deleteFile(deletepath);
+				ApplicationInterface.getInstance().deleteFile(
+						deletableFiles.get(i - 1));
 			} catch (FileDoesNotExistsExeption e) {
 				System.out.println("The selected file does not exists");
 			}
@@ -209,7 +227,7 @@ public class CLIMonitor {
 	}
 
 	private static void printFilesOrderedInfo(ArrayList<String> files) {
-		
+
 		int i = 1;
 		System.out.println("Op. | Old file path");
 		for (String path : files) {

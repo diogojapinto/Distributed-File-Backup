@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
+import sdis.sharedbackup.backend.ConfigsManager.FileAlreadySaved;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.FileChunk;
@@ -17,7 +18,7 @@ import sdis.sharedbackup.protocols.SpaceReclaiming;
 import sdis.sharedbackup.protocols.FileDeletion;
 
 public class ApplicationInterface {
-	
+
 	public static boolean DEBUGG = true;
 
 	private static ApplicationInterface instance = null;
@@ -56,7 +57,8 @@ public class ApplicationInterface {
 	 * Provides the service of backup. Returns the backed-up file id.
 	 */
 	public boolean backupFile(String filePath, int replication)
-			throws FileTooLargeException, FileDoesNotExistsExeption {
+			throws FileTooLargeException, FileDoesNotExistsExeption,
+			FileAlreadySaved {
 		SharedFile file = ConfigsManager.getInstance()
 				.getNewSharedFileInstance(filePath, replication);
 
@@ -66,28 +68,23 @@ public class ApplicationInterface {
 	}
 
 	public boolean restoreFileByPath(String oldFilePath) {
-		SharedFile file = ConfigsManager.getInstance().getFileByPath(oldFilePath);
+		SharedFile file = ConfigsManager.getInstance().getFileByPath(
+				oldFilePath);
 		return restoreFileById(file.getFileId());
 	}
 
 	public boolean restoreFileById(String fileId) {
 		SharedFile file = ConfigsManager.getInstance().getFileById(fileId);
-		
+
 		return FileRestore.getInstance().restoreFile(file);
 	}
 
 	public boolean deleteFile(String filepath) throws FileDoesNotExistsExeption {
-		File f = new File(filepath);
-		String deletedFileID = sdis.sharedbackup.utils.Encoder
-				.generateBitString(f);
-		if (ConfigsManager.getInstance().fileIsTracked(deletedFileID)) {
-			FileDeletion.getInstance().deleteFile(deletedFileID);
-			ConfigsManager.getInstance().removeSharedFile(deletedFileID);
-			return true;
-		} else {
-			System.out.println("File is not tracked");
-			return false;
-		}
+
+		String deletedFileID = ConfigsManager.getInstance().getFileIdByPath(filepath);
+		FileDeletion.getInstance().deleteFile(deletedFileID);
+		ConfigsManager.getInstance().removeSharedFile(deletedFileID);
+		return true;
 	}
 
 	public boolean setNewSpace(int newSpace) {
@@ -121,7 +118,11 @@ public class ApplicationInterface {
 	public ArrayList<String> getRestorableFiles() {
 		return ConfigsManager.getInstance().getRestorableFiles();
 	}
-	
+
+	public ArrayList<String> getDeletableFiles() {
+		return ConfigsManager.getInstance().getDeletableFiles();
+	}
+
 	public void terminate() {
 		ConfigsManager.getInstance().saveDatabase();
 		ConfigsManager.getInstance().terminate();

@@ -37,6 +37,8 @@ public class MulticastDataRestoreHandler implements Runnable {
 					+ chunkNo);
 			Log.log("Size: " + mMessage.getBody().length);
 			
+			MulticastControlListener.getInstance().notifyChunk(fileId, chunkNo);
+			
 
 			// verify if I'm interested in this chunk
 			boolean myRequest = false;

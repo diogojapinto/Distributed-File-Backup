@@ -82,15 +82,6 @@ public class MulticastDataBackupHandler implements Runnable {
 					System.out.println("I tried a store ");
 					ChunkBackup.getInstance().storeChunk(pendingChunk,
 							mMessage.getBody());
-					/*
-					 * try { System.out.println("I tried a store " );
-					 * ChunkBackup .getInstance() .storeChunk( pendingChunk,
-					 * components[1] .getBytes(MulticastComunicator
-					 * .ASCII_CODE));
-					 * 
-					 * } catch (UnsupportedEncodingException e) {
-					 * e.printStackTrace(); }
-					 */
 
 				}
 

@@ -6,14 +6,17 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import sdis.sharedbackup.backend.ConfigsManager.FileAlreadySaved;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidChunkException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
+import sdis.sharedbackup.utils.Log;
 
 public class BackupsDatabase implements Serializable {
 
@@ -102,6 +105,7 @@ public class BackupsDatabase implements Serializable {
 	private void checkInitialization() {
 		if (!mBackupFolder.equals("") && maxBackupSize != 0) {
 			mIsInitialized = true;
+			saveDatabase();
 		}
 	}
 
@@ -143,14 +147,19 @@ public class BackupsDatabase implements Serializable {
 	public FileChunk getNewChunkForSavingInstance(String fileId, int chunkNo,
 			int desiredReplication) {
 		FileChunk chunk = new FileChunk(fileId, chunkNo, desiredReplication);
-		mSavedChunks.add(chunk);
+		synchronized (mSavedChunks) {
+			mSavedChunks.add(chunk);
+		}
 		return chunk;
 	}
 
 	public SharedFile getNewSharedFileInstance(String filePath,
 			int replicationDegree) throws FileTooLargeException,
-			FileDoesNotExistsExeption {
+			FileDoesNotExistsExeption, FileAlreadySaved {
 		SharedFile file = new SharedFile(filePath, replicationDegree);
+		if (mSharedFiles.containsKey(file.getFileId())) {
+			throw new ConfigsManager.FileAlreadySaved();
+		}
 		mSharedFiles.put(file.getFileId(), file);
 		return file;
 	}
@@ -169,45 +178,37 @@ public class BackupsDatabase implements Serializable {
 	}
 
 	public FileChunk getSavedChunk(String fileId, int chunkNo) {
+
 		FileChunk retChunk = null;
 
-		for (FileChunk chunk : mSavedChunks) {
-			if (chunk.getFileId().equals(fileId)
-					&& chunk.getChunkNo() == chunkNo) {
-				retChunk = chunk;
-				break;
+		synchronized (mSavedChunks) {
+			for (FileChunk chunk : mSavedChunks) {
+				if (chunk.getFileId().equals(fileId)
+						&& chunk.getChunkNo() == chunkNo) {
+					retChunk = chunk;
+					break;
+				}
 			}
 		}
 
 		return retChunk;
 	}
 
-	public boolean removeByFileId(String fileId) {
-
-		for (FileChunk chunk : mSavedChunks) {
-			if (chunk.getFileId().equals(fileId)) {
-				mSavedChunks.remove(chunk);
-				if (!chunk.removeData()) {
-					return false;
-				}
-			}
-		}
-
-		return true;
-	}
-
 	public boolean removeSingleChunk(ChunkRecord record) {
-		for (FileChunk chunk : mSavedChunks) {
-			if (chunk.getFileId().equals(record.fileId)
-					&& chunk.getChunkNo() == record.chunkNo) {
-				mSavedChunks.remove(chunk);
-				if (!chunk.removeData()) {
-					return false;
-				} else {
-					return true;
+		synchronized (mSavedChunks) {
+			for (FileChunk chunk : mSavedChunks) {
+				if (chunk.getFileId().equals(record.fileId)
+						&& chunk.getChunkNo() == record.chunkNo) {
+					mSavedChunks.remove(chunk);
+					if (!chunk.removeData()) {
+						return false;
+					} else {
+						return true;
+					}
 				}
 			}
 		}
+
 		return false;
 	}
 
@@ -216,6 +217,7 @@ public class BackupsDatabase implements Serializable {
 	}
 
 	public boolean fileIsTracked(String fileId) {
+
 		return mSharedFiles.containsKey(fileId);
 	}
 
@@ -264,7 +266,10 @@ public class BackupsDatabase implements Serializable {
 	}
 
 	public void addSavedChunk(FileChunk chunk) {
-		mSavedChunks.add(chunk);
+		synchronized (mSavedChunks) {
+			mSavedChunks.add(chunk);
+		}
+		Log.log("Saved a CHUNK " + chunk.getFileId() + " " + chunk.getChunkNo());
 	}
 
 	public boolean isMyFile(String fileId) {
@@ -273,6 +278,40 @@ public class BackupsDatabase implements Serializable {
 		} else {
 			return false;
 		}
+	}
+
+	public ArrayList<String> getDeletableFiles() {
+		ArrayList<String> retFiles = new ArrayList<String>();
+
+		for (SharedFile file : mSharedFiles.values()) {
+			retFiles.add(file.getFilePath());
+		}
+
+		return retFiles;
+	}
+
+	public String getFileIdByPath(String path) {
+		for (SharedFile file : mSharedFiles.values()) {
+			if (path.equals(file.getFilePath())) {
+				return file.getFileId();
+			}
+		}
+		return null;
+	}
+
+	public boolean deleteChunksOfFile(String fileId) {
+		boolean foundChunk = false;
+		synchronized (mSavedChunks) {
+			for (FileChunk chunk : mSavedChunks) {
+				if (chunk.getFileId().equals(fileId)) {
+					chunk.removeData();
+					//mSavedChunks.remove(chunk);
+					foundChunk = true;
+				}
+			}
+		}
+
+		return foundChunk;
 	}
 
 }

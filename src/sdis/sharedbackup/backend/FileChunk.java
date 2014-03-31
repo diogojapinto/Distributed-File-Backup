@@ -155,7 +155,8 @@ public class FileChunk implements Serializable {
 			try {
 				in = new FileInputStream(chunk);
 				byte[] buffer = new byte[(int) chunk.length()];
-				in.read(buffer);
+				int i = in.read(buffer);
+				Log.log("Chunk has " + i + " size");
 				in.close();
 				return buffer;
 			} catch (FileNotFoundException e) {

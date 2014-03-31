@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -223,14 +224,10 @@ public class ConfigsManager {
 	}
 
 	public SharedFile getNewSharedFileInstance(String filePath, int replication)
-			throws FileTooLargeException, FileDoesNotExistsExeption {
+			throws FileTooLargeException, FileDoesNotExistsExeption,
+			FileAlreadySaved {
 
 		return mDatabase.getNewSharedFileInstance(filePath, replication);
-	}
-
-	public void removeByFileId(String fileId) {
-		mDatabase.removeByFileId(fileId);
-		mDatabase.saveDatabase();
 	}
 
 	public void removeSharedFile(String deletedFileID) {
@@ -301,6 +298,21 @@ public class ConfigsManager {
 
 	public void addSavedChunk(FileChunk chunk) {
 		mDatabase.addSavedChunk(chunk);
+		saveDatabase();
+	}
+
+	public ArrayList<String> getDeletableFiles() {
+		return mDatabase.getDeletableFiles();
+	}
+
+	public String getFileIdByPath(String path) {
+		return mDatabase.getFileIdByPath(path);
+	}
+
+	public boolean removeChunksOfFile(String fileId) {
+		boolean ret = mDatabase.deleteChunksOfFile(fileId);
+		saveDatabase();
+		return ret;
 	}
 
 	/*
@@ -331,6 +343,14 @@ public class ConfigsManager {
 	}
 
 	public static class InvalidChunkException extends Exception {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+	}
+
+	public static class FileAlreadySaved extends Exception {
 
 		/**
 		 * 

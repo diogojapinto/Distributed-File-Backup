@@ -11,6 +11,7 @@ import sdis.sharedbackup.protocols.ChunkBackup;
 import sdis.sharedbackup.protocols.ChunkRestore;
 import sdis.sharedbackup.protocols.FileDeletion;
 import sdis.sharedbackup.protocols.SpaceReclaiming;
+import sdis.sharedbackup.utils.Log;
 import sdis.sharedbackup.utils.SplittedMessage;
 
 public class MulticastControlHandler implements Runnable {
@@ -19,8 +20,6 @@ public class MulticastControlHandler implements Runnable {
 	private SenderRecord mSender;
 	private static final int MAX_WAIT_TIME = 400;
 	private static final int BUFFER_SIZE = 128;
-
-	private DatagramSocket restoreEnhSocket = null;
 
 	public MulticastControlHandler(SplittedMessage message, SenderRecord sender) {
 		mSender = sender;
@@ -32,8 +31,9 @@ public class MulticastControlHandler implements Runnable {
 
 		String[] header_components = mMessage.getHeader().split(" ");
 
-		if (!header_components[1].equals(ConfigsManager.getInstance()
-				.getVersion())
+		if (!header_components[0].equals(FileDeletion.DELETE_COMMAND)
+				&& !header_components[1].equals(ConfigsManager.getInstance()
+						.getVersion())
 				&& !header_components[1].equals(ConfigsManager.getInstance()
 						.getEnhancementsVersion())) {
 			System.err
@@ -44,7 +44,7 @@ public class MulticastControlHandler implements Runnable {
 		String messageType = header_components[0].trim();
 		final String fileId;
 		final int chunkNo;
-		System.out.println("MC RECEIVED A MESSAGE!!:" + mMessage.getHeader());
+		Log.log("MC RECEIVED A MESSAGE!!:" + mMessage.getHeader());
 		switch (messageType) {
 		case ChunkBackup.STORED_COMMAND:
 			fileId = header_components[2].trim();
@@ -74,8 +74,9 @@ public class MulticastControlHandler implements Runnable {
 			chunkNo = Integer.parseInt(header_components[3].trim());
 
 			ChunkRecord record = new ChunkRecord(fileId, chunkNo);
-			synchronized (MulticastControlListener.interestingChunks) {
-				MulticastControlListener.interestingChunks.add(record);
+			synchronized (MulticastControlListener.getInstance().interestingChunks) {
+				MulticastControlListener.getInstance().interestingChunks
+						.add(record);
 			}
 
 			FileChunk chunk = ConfigsManager.getInstance().getSavedChunk(
@@ -95,12 +96,14 @@ public class MulticastControlHandler implements Runnable {
 					synchronized (MulticastControlListener.getInstance().mSentChunks) {
 						MulticastControlListener.getInstance().mSentChunks
 								.add(record);
+
 						ConfigsManager.getInstance().getExecutor()
 								.execute(new restoreSenderIPListener());
+
 					}
 
 					ChunkRestore.getInstance().sendChunk(chunk,
-							mSender.getAddr(), mSender.getPort());
+							mSender.getAddr(), ChunkRestore.ENHANCEMENT_SEND_PORT);
 
 					try {
 						Thread.sleep(MAX_WAIT_TIME);
@@ -121,16 +124,21 @@ public class MulticastControlHandler implements Runnable {
 						}
 					}
 
-					MulticastControlListener.interestingChunks.remove(record);
+					synchronized (MulticastControlListener.getInstance().interestingChunks) {
+						MulticastControlListener.getInstance().interestingChunks
+								.remove(record);
+					}
 				}
 			}// else I don't have it
 			break;
 
 		case FileDeletion.DELETE_COMMAND:
+			String fileIde = header_components[1];
 
-			fileId = header_components[1].trim();
+			if (ConfigsManager.getInstance().removeChunksOfFile(fileIde)) {
+				FileDeletion.getInstance().reply(fileIde);
+			}
 
-			ConfigsManager.getInstance().removeByFileId(fileId);
 			break;
 		case FileDeletion.RESPONSE_COMMAND:
 
@@ -166,11 +174,13 @@ public class MulticastControlHandler implements Runnable {
 		}
 	};
 
-	private class restoreSenderIPListener implements Runnable {
+	private static class restoreSenderIPListener implements Runnable {
+
+		private static DatagramSocket restoreEnhSocket = null;
 
 		@Override
 		public void run() {
-			if (restoreEnhSocket != null) {
+			if (restoreEnhSocket == null) {
 				try {
 					restoreEnhSocket = new DatagramSocket(
 							ChunkRestore.ENHANCEMENT_SEND_PORT);

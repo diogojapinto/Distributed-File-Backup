@@ -16,7 +16,7 @@ public class MulticastControlListener implements Runnable {
 	public ArrayList<FileChunk> mPendingChunks;
 	public ArrayList<ChunkRecord> mSentChunks;
 
-	public static ArrayList<ChunkRecord> interestingChunks;
+	public ArrayList<ChunkRecord> interestingChunks;
 
 	private static MulticastControlListener mInstance = null;
 
@@ -69,7 +69,6 @@ public class MulticastControlListener implements Runnable {
 		}
 	}
 
-	// TODO Para que e isto?
 	public synchronized void notifyChunk(String fileId, int chunkNo) {
 		for (ChunkRecord record : interestingChunks) {
 			if (record.fileId.equals(fileId) && record.chunkNo == chunkNo) {

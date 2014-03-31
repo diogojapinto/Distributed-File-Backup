@@ -79,7 +79,7 @@ public class MulticastDataRestoreListener implements Runnable {
 			DatagramSocket restoreSocket = null;
 			try {
 				restoreSocket = new DatagramSocket(
-						ChunkRestore.ENHANCEMENT_SEND_PORT);
+						ChunkRestore.ENHANCEMENT_RESPONSE_PORT);
 			} catch (SocketException e) {
 				System.out
 						.println("Could not open the desired port for restore");
@@ -143,7 +143,7 @@ public class MulticastDataRestoreListener implements Runnable {
 														.getInstance()
 														.answerToChunkMessage(
 																sender.getAddr(),
-																sender.getPort());
+																ChunkRestore.ENHANCEMENT_RESPONSE_PORT);
 
 												mSubscribedChunks
 														.remove(record);
