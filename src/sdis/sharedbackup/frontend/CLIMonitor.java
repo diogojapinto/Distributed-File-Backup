@@ -17,12 +17,8 @@ public class CLIMonitor {
 	private static boolean exit = false;
 
 	public static void main(String[] args) {
-		// TODO: fix chunk body
-		// TODO: fix receive chunk multithreading
 		// TODO: verify every input
-		// TODO: verify if file is already backed up
-		// TODO: verify rep degree everywhere
-		// TODO: accept long backup size
+		// TODO: apanhar exceptions de address already in use
 
 		try {
 			parseArgs(args);
@@ -71,16 +67,16 @@ public class CLIMonitor {
 		 */
 
 		
-		  /*ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
+		  ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
 		  Integer.parseInt("50001"), "239.254.254.253",
 		  Integer.parseInt("50002"), "239.254.254.254",
-		  Integer.parseInt("50003"));*/
+		  Integer.parseInt("50003"));
 		 
 
-		ConfigsManager.getInstance()
+		/*ConfigsManager.getInstance()
 				.setMulticastAddrs("239.0.0.1", Integer.parseInt("8765"),
 						"239.0.0.1", Integer.parseInt("8766"), "239.0.0.1",
-						Integer.parseInt("8767"));
+						Integer.parseInt("8767"));*/
 
 	}
 
@@ -170,13 +166,14 @@ public class CLIMonitor {
 			} catch (FileAlreadySaved e) {
 				System.out
 						.println("The selected file is already in the database");
+				return false;
 			}
 		case 4:
 			System.out.println("Enter new allocated space:");
 			int space = sc.nextInt();
 			sc.nextLine();
 			ApplicationInterface.getInstance().setNewSpace(space);
-			return false;
+			return true;
 		case 2:
 			ArrayList<String> files = ApplicationInterface.getInstance()
 					.getRestorableFiles();
@@ -184,7 +181,7 @@ public class CLIMonitor {
 			if (files.size() == 0) {
 				System.out
 						.println("The files you've backed up have are still saved in the file system");
-				return false;
+				return true;
 			}
 
 			printFilesOrderedInfo(files);
@@ -195,13 +192,13 @@ public class CLIMonitor {
 			ApplicationInterface.getInstance().restoreFileByPath(
 					files.get(file_i - 1));
 
-			return false;
+			return true;
 		case 3:
 			ArrayList<String> deletableFiles = ApplicationInterface
 					.getInstance().getDeletableFiles();
 			if (deletableFiles.size() == 0) {
 				System.out.println("There is no backed up files to delete");
-				return false;
+				return true;
 			}
 			printFilesOrderedInfo(deletableFiles);
 			System.out.println("Choose file to delete:");
@@ -214,7 +211,7 @@ public class CLIMonitor {
 				System.out.println("The selected file does not exists");
 			}
 
-			return false;
+			return true;
 		case 5:
 			exit = true;
 			System.out.println("Program will exit now");

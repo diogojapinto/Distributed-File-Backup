@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -190,6 +189,15 @@ public class BackupsDatabase implements Serializable {
 				}
 			}
 		}
+		
+		if(retChunk == null) {
+			for (SharedFile file : mSharedFiles.values()) {
+				if (file.getFileId().equals(fileId)) {
+					// I have the chunk in my own file
+					return file.getChunkList().get(chunkNo);
+				}
+			}
+		}
 
 		return retChunk;
 	}
@@ -248,7 +256,9 @@ public class BackupsDatabase implements Serializable {
 		if (newReplication <= 0) {
 			mDeletedFiles.remove(fileId);
 		} else {
-			mDeletedFiles.put(fileId, newReplication);
+			synchronized (mDeletedFiles) {
+				mDeletedFiles.put(fileId, newReplication);
+			}
 		}
 	}
 

@@ -10,6 +10,7 @@ public class MulticastDataBackupHandler implements Runnable {
 	private SplittedMessage mMessage;
 
 	private static final int MAX_WAIT_TIME = 401;
+	private static final int PUT_WAIT_TIME = 60000;
 	private Random mRand;
 
 	public MulticastDataBackupHandler(SplittedMessage message) {
@@ -43,14 +44,14 @@ public class MulticastDataBackupHandler implements Runnable {
 				return;
 			}
 
-			String fileId = header_components[2].trim();
+			final String fileId = header_components[2].trim();
 
 			if (ConfigsManager.getInstance().isMyFile(fileId)) {
 				Log.log("Received PUTCHUNK for a file of mine");
 				return;
 			}
 
-			int chunkNo = Integer.parseInt(header_components[3].trim());
+			final int chunkNo = Integer.parseInt(header_components[3].trim());
 			int desiredReplication = Integer.parseInt(header_components[4]
 					.trim());
 
@@ -82,6 +83,31 @@ public class MulticastDataBackupHandler implements Runnable {
 					System.out.println("I tried a store ");
 					ChunkBackup.getInstance().storeChunk(pendingChunk,
 							mMessage.getBody());
+
+					// verify after some time if the chunk has the replication
+					// degree desired
+					new Thread(new Runnable() {
+
+						@Override
+						public void run() {
+							FileChunk chunk = ConfigsManager.getInstance()
+									.getSavedChunk(fileId, chunkNo);
+							while (true) {
+
+								try {
+									Thread.sleep(PUT_WAIT_TIME);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+
+								if (chunk.getCurrentReplicationDeg() < chunk
+										.getDesiredReplicationDeg()) {
+									ChunkBackup.getInstance().putChunk(chunk);
+								}
+
+							}
+						}
+					}).start();
 
 				}
 

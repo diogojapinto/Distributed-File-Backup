@@ -17,6 +17,7 @@ public class FileDeletionChecker implements Runnable {
 
 		try {
 			while (ConfigsManager.getInstance().isAppRunning()) {
+				
 				ArrayList<String> deletedFiles = ConfigsManager.getInstance()
 						.getDeletedFiles();
 
