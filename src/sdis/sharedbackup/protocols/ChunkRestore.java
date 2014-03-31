@@ -94,8 +94,8 @@ public class ChunkRestore {
 
 	public boolean sendChunk(FileChunk chunk) {
 
-		InetAddress multDBAddr = ConfigsManager.getInstance().getMDBAddr();
-		int multDBPort = ConfigsManager.getInstance().getMDBPort();
+		InetAddress multDRAddr = ConfigsManager.getInstance().getMDRAddr();
+		int multDRPort = ConfigsManager.getInstance().getMDRPort();
 
 		String version = ConfigsManager.getInstance().getVersion();
 
@@ -118,8 +118,8 @@ public class ChunkRestore {
 		
 		System.arraycopy(data, 0, message, header.length(), data.length);
 
-		MulticastComunicator sender = new MulticastComunicator(multDBAddr,
-				multDBPort);
+		MulticastComunicator sender = new MulticastComunicator(multDRAddr,
+				multDRPort);
 
 		try {
 			sender.sendMessage(message);

@@ -21,6 +21,8 @@ public class CLIMonitor {
 		// TODO: fix receive chunk multithreading
 		// TODO: verify every input
 		// TODO: verify if file is already backed up
+		// TODO: verify rep degree everywhere
+		// TODO: accept long backup size
 
 		try {
 			parseArgs(args);
@@ -58,9 +60,9 @@ public class CLIMonitor {
 	 */
 	private static void parseArgs(String[] args) throws ArgsException {
 
-		if (args.length != 6) {
-			throw new ArgsException();
-		}
+		/*
+		 * if (args.length != 6) { throw new ArgsException(); }
+		 */
 
 		/*
 		 * if (!ConfigsManager.getInstance().setMulticastAddrs(args[0],
@@ -68,12 +70,12 @@ public class CLIMonitor {
 		 * args[4], Integer.parseInt(args[5]))) { throw new ArgsException(); }
 		 */
 
-		/*
-		 * ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
-		 * Integer.parseInt("50001"), "239.254.254.253",
-		 * Integer.parseInt("50002"), "239.254.254.254",
-		 * Integer.parseInt("50003"));
-		 */
+		
+		  /*ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
+		  Integer.parseInt("50001"), "239.254.254.253",
+		  Integer.parseInt("50002"), "239.254.254.254",
+		  Integer.parseInt("50003"));*/
+		 
 
 		ConfigsManager.getInstance()
 				.setMulticastAddrs("239.0.0.1", Integer.parseInt("8765"),
@@ -112,11 +114,11 @@ public class CLIMonitor {
 		}
 	}
 
-	private static int promptAvailableSpace() throws InputMismatchException {
+	private static long promptAvailableSpace() throws InputMismatchException {
 		// clearConsole();
-		int allocatedSpace = 0;
+		long allocatedSpace = 0;
 		System.out.println("Choose your allocated space (KB):");
-		allocatedSpace = sc.nextInt();
+		allocatedSpace = sc.nextLong();
 		sc.nextLine();
 		return allocatedSpace;
 	}
@@ -178,6 +180,13 @@ public class CLIMonitor {
 		case 2:
 			ArrayList<String> files = ApplicationInterface.getInstance()
 					.getRestorableFiles();
+
+			if (files.size() == 0) {
+				System.out
+						.println("The files you've backed up have are still saved in the file system");
+				return false;
+			}
+
 			printFilesOrderedInfo(files);
 			System.out.println("Choose file to restore:");
 			int file_i = sc.nextInt();
@@ -190,6 +199,10 @@ public class CLIMonitor {
 		case 3:
 			ArrayList<String> deletableFiles = ApplicationInterface
 					.getInstance().getDeletableFiles();
+			if (deletableFiles.size() == 0) {
+				System.out.println("There is no backed up files to delete");
+				return false;
+			}
 			printFilesOrderedInfo(deletableFiles);
 			System.out.println("Choose file to delete:");
 			int i = sc.nextInt();

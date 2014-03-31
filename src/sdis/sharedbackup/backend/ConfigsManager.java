@@ -7,7 +7,6 @@ import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -235,7 +234,7 @@ public class ConfigsManager {
 		mDatabase.saveDatabase();
 	}
 
-	public int getMaxBackupSize() {
+	public long getMaxBackupSize() {
 		return mDatabase.getMaxBackupSize();
 	}
 
@@ -247,7 +246,7 @@ public class ConfigsManager {
 		return mDatabase.getFileByPath(filePath);
 	}
 
-	public void setAvailSpace(int newSpace) throws InvalidBackupSizeException {
+	public void setAvailSpace(long newSpace) throws InvalidBackupSizeException {
 		mDatabase.setAvailSpace(newSpace);
 	}
 

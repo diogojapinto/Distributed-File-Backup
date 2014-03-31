@@ -36,7 +36,7 @@ public class ApplicationInterface {
 	/*
 	 * Functions responsible for initialising the service
 	 */
-	public void setAvailableDiskSpace(int space)
+	public void setAvailableDiskSpace(long space)
 			throws InvalidBackupSizeException {
 		ConfigsManager.getInstance().setAvailSpace(space * 10000);
 	}
@@ -81,21 +81,21 @@ public class ApplicationInterface {
 
 	public boolean deleteFile(String filepath) throws FileDoesNotExistsExeption {
 
-		String deletedFileID = ConfigsManager.getInstance().getFileIdByPath(filepath);
+		String deletedFileID = ConfigsManager.getInstance().getFileIdByPath(
+				filepath);
 		FileDeletion.getInstance().deleteFile(deletedFileID);
 		ConfigsManager.getInstance().removeSharedFile(deletedFileID);
 		return true;
 	}
 
 	public boolean setNewSpace(int newSpace) {
-		if (newSpace >= ConfigsManager.getInstance().getMaxBackupSize()) {
-			try {
-				ConfigsManager.getInstance().setAvailSpace(newSpace);
-			} catch (InvalidBackupSizeException e) {
-				System.out.println("The selected size is invalid");
-			}
-		} else {
-
+		try {
+			ConfigsManager.getInstance().setAvailSpace(newSpace * 1000);
+		} catch (InvalidBackupSizeException e) {
+			System.out.println("The selected size is invalid");
+		}
+		if (ConfigsManager.getInstance().getMaxBackupSize() < ConfigsManager
+				.getInstance().getBackupDirActualSize()) {
 			do {
 				FileChunk chunk = ConfigsManager.getInstance()
 						.getNextDispensableChunk();

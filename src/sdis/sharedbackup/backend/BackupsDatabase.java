@@ -28,7 +28,7 @@ public class BackupsDatabase implements Serializable {
 	private static final long serialVersionUID = 1;
 
 	private String mBackupFolder;
-	private int maxBackupSize; // stored in B
+	private long maxBackupSize; // stored in B
 	private Map<String, SharedFile> mSharedFiles; // my shared files
 	private ArrayList<FileChunk> mSavedChunks; // chunks from other users
 	private boolean mIsInitialized;
@@ -43,7 +43,7 @@ public class BackupsDatabase implements Serializable {
 		mDeletedFiles = new HashMap<String, Integer>();
 	}
 
-	public int getMaxBackupSize() {
+	public long getMaxBackupSize() {
 		return maxBackupSize;
 	}
 
@@ -53,7 +53,7 @@ public class BackupsDatabase implements Serializable {
 		mSharedFiles.remove(fileID);
 	}
 
-	public synchronized void setAvailSpace(int space)
+	public synchronized void setAvailSpace(long space)
 			throws InvalidBackupSizeException {
 		if (space <= 0) {
 			throw new InvalidBackupSizeException();

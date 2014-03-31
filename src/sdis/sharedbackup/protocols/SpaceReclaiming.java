@@ -47,18 +47,22 @@ public class SpaceReclaiming {
 		MulticastComunicator sender = new MulticastComunicator(multCAddr,
 				multCPort);
 
+		ConfigsManager.getInstance().deleteChunk(
+				new ChunkRecord(chunk.getFileId(), (int) chunk.getChunkNo()));
+
 		try {
-			sender.sendMessage(message.getBytes(MulticastComunicator.ASCII_CODE));
+			sender.sendMessage(message
+					.getBytes(MulticastComunicator.ASCII_CODE));
 		} catch (HasToJoinException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-		
-		Log.log("Sent REMOVED cmd of " + chunk.getFileId() + ":" + chunk.getChunkNo());
+
+		Log.log("Sent REMOVED cmd of " + chunk.getFileId() + ":"
+				+ chunk.getChunkNo());
 
 		return true;
 
 	}
-
 }
