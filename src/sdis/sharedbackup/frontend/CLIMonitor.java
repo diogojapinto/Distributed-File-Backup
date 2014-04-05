@@ -1,6 +1,5 @@
 package sdis.sharedbackup.frontend;
 
-import java.net.BindException;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -19,9 +18,6 @@ public class CLIMonitor {
 
 	public static void main(String[] args) {
 		try {
-			// TODO: verify every input
-			// TODO: apanhar exceptions de address already in use
-
 			parseArgs(args);
 		} catch (ArgsException e) {
 			e.error();
@@ -55,24 +51,16 @@ public class CLIMonitor {
 	 * initiates the configuration of the Multicast addresses and ports
 	 */
 	private static void parseArgs(String[] args) throws ArgsException {
-		/*
-		 * if (args.length != 6) { throw new ArgsException(); }
-		 * 
-		 * if (!ConfigsManager.getInstance().setMulticastAddrs(args[0],
-		 * Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]),
-		 * args[4], Integer.parseInt(args[5]))) { throw new ArgsException(); }
-		 */
 
-		ConfigsManager.getInstance().setMulticastAddrs("239.254.254.252",
-				Integer.parseInt("50001"), "239.254.254.253",
-				Integer.parseInt("50002"), "239.254.254.254",
-				Integer.parseInt("50003"));
+		if (args.length != 6) {
+			throw new ArgsException();
+		}
 
-		/*
-		 * ConfigsManager.getInstance() .setMulticastAddrs("239.0.0.1",
-		 * Integer.parseInt("8765"), "239.0.0.1", Integer.parseInt("8766"),
-		 * "239.0.0.1", Integer.parseInt("8767"));
-		 */
+		if (!ConfigsManager.getInstance().setMulticastAddrs(args[0],
+				Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]),
+				args[4], Integer.parseInt(args[5]))) {
+			throw new ArgsException();
+		}
 
 	}
 

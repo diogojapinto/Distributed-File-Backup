@@ -22,7 +22,10 @@ public class MulticastDataBackupHandler implements Runnable {
 	public void run() {
 		Log.log("MDB:Received message");
 
-		String[] header_components = mMessage.getHeader().split(" ");
+		String[] headers = mMessage.getHeader()
+				.split(MulticastComunicator.CRLF);
+
+		String[] header_components = headers[0].split(" ");
 
 		if (!header_components[1].equals(ConfigsManager.getInstance()
 				.getVersion())
@@ -56,7 +59,7 @@ public class MulticastDataBackupHandler implements Runnable {
 					.trim());
 
 			// ENHANCEMENT
-			int currReplication = Integer.parseInt(header_components[5].trim());
+			int currReplication = Integer.parseInt(headers[1].trim());
 
 			FileChunk savedChunk = ConfigsManager.getInstance().getSavedChunk(
 					fileId, chunkNo);
@@ -106,11 +109,11 @@ public class MulticastDataBackupHandler implements Runnable {
 
 								FileChunk chunk = ConfigsManager.getInstance()
 										.getSavedChunk(fileId, chunkNo);
-								
+
 								if (chunk == null) {
 									return;
 								}
-								
+
 								if (chunk.getCurrentReplicationDeg() < chunk
 										.getDesiredReplicationDeg()) {
 									ChunkBackup.getInstance().putChunk(chunk);

@@ -29,7 +29,10 @@ public class MulticastControlHandler implements Runnable {
 
 	public void run() {
 
-		String[] header_components = mMessage.getHeader().split(" ");
+		String[] headers = mMessage.getHeader()
+				.split(MulticastComunicator.CRLF);
+
+		String[] header_components = headers[0].split(" ");
 
 		if (!header_components[0].equals(FileDeletion.DELETE_COMMAND)
 				&& !header_components[0].equals(FileDeletion.RESPONSE_COMMAND)
@@ -73,6 +76,10 @@ public class MulticastControlHandler implements Runnable {
 
 			fileId = header_components[2].trim();
 			chunkNo = Integer.parseInt(header_components[3].trim());
+
+            if (null != ConfigsManager.getInstance().getFileById(fileId)) {
+                return;
+            }
 
 			ChunkRecord record = new ChunkRecord(fileId, chunkNo);
 			synchronized (MulticastControlListener.getInstance().interestingChunks) {

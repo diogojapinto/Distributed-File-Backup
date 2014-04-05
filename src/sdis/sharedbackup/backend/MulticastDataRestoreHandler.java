@@ -14,7 +14,10 @@ public class MulticastDataRestoreHandler implements Runnable {
 	@Override
 	public void run() {
 
-		String[] header_components = mMessage.getHeader().split(" ");
+		String[] headers = mMessage.getHeader()
+				.split(MulticastComunicator.CRLF);
+
+		String[] header_components = headers[0].split(" ");
 
 		if (!header_components[1].equals(ConfigsManager.getInstance()
 				.getVersion())) {
