@@ -1,7 +1,6 @@
 package sdis.sharedbackup.backend;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -13,6 +12,7 @@ import sdis.sharedbackup.protocols.FileDeletion;
 import sdis.sharedbackup.protocols.SpaceReclaiming;
 import sdis.sharedbackup.utils.Log;
 import sdis.sharedbackup.utils.SplittedMessage;
+import sdis.sharedbackup.utils.Splitter;
 
 public class MulticastControlHandler implements Runnable {
 	private SplittedMessage mMessage;
@@ -98,13 +98,14 @@ public class MulticastControlHandler implements Runnable {
 				if (!record.isNotified) {
 					// if no one else
 					// sent it:
+					
+					Thread restoreByIp = new Thread(new restoreSenderIPListener());
 
 					synchronized (MulticastControlListener.getInstance().mSentChunks) {
 						MulticastControlListener.getInstance().mSentChunks
 								.add(record);
-
-						ConfigsManager.getInstance().getExecutor()
-								.execute(new restoreSenderIPListener());
+						
+						restoreByIp.start();
 
 					}
 
@@ -124,6 +125,7 @@ public class MulticastControlHandler implements Runnable {
 							// if no one
 							// else sent
 							// it:
+							restoreByIp.interrupt();
 							MulticastControlListener.getInstance().mSentChunks
 									.remove(record);
 							ChunkRestore.getInstance().sendChunk(chunk);
@@ -189,7 +191,7 @@ public class MulticastControlHandler implements Runnable {
 			if (restoreEnhSocket == null) {
 				try {
 					restoreEnhSocket = new DatagramSocket(
-							ChunkRestore.ENHANCEMENT_SEND_PORT);
+							ChunkRestore.ENHANCEMENT_RESPONSE_PORT);
 				} catch (SocketException e) {
 					Log.log("Could not open the desired port for restore");
 					e.printStackTrace();
@@ -206,24 +208,17 @@ public class MulticastControlHandler implements Runnable {
 				e.printStackTrace();
 			}
 
-			String message = null;
+			SplittedMessage message = Splitter.split(packet.getData());
+			
+			String[] headers = message.getHeader()
+					.split(MulticastComunicator.CRLF);
 
-			try {
-				message = new String(packet.getData(),
-						MulticastComunicator.ASCII_CODE).trim();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
+			String[] header_components = headers[0].split(" ");
 
-			String[] components = message.trim().split(
-					MulticastComunicator.CRLF + MulticastComunicator.CRLF);
-
-			String[] headerComponents = components[0].trim().split(" ");
-
-			switch (headerComponents[0]) {
+			switch (header_components[0]) {
 			case ChunkRestore.CHUNK_CONFIRMATION:
-				String fileId = headerComponents[2];
-				int chunkNo = Integer.parseInt(headerComponents[3]);
+				String fileId = header_components[2];
+				int chunkNo = Integer.parseInt(header_components[3]);
 
 				synchronized (MulticastControlListener.getInstance().mSentChunks) {
 					for (ChunkRecord record : MulticastControlListener

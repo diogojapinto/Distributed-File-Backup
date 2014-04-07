@@ -22,7 +22,7 @@ public class ConfigsManager {
 	// constants
 	private static final String VERSION = "1.0";
 	private static final String ENHANCEMENTS_VERSION = "1.24";
-	private static final int NR_CONCURRENT_THREADS = 50;
+	private static final int NR_CONCURRENT_THREADS = 12;
 
 	// static members
 	private static ConfigsManager sInstance = null;

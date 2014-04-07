@@ -115,7 +115,7 @@ public class ChunkRestore {
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		System.arraycopy(data, 0, message, header.length(), data.length);
 
 		MulticastComunicator sender = new MulticastComunicator(multDRAddr,
@@ -146,7 +146,6 @@ public class ChunkRestore {
 
 		byte[] data = chunk.getData();
 
-
 		byte[] message = new byte[header.length() + data.length];
 
 		try {
@@ -175,7 +174,7 @@ public class ChunkRestore {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		socket.close();
 
 		Log.log("Sent CHUNK command to IP in response to request of "
@@ -184,13 +183,14 @@ public class ChunkRestore {
 		return true;
 	}
 
-	public void answerToChunkMessage(InetAddress addr, int port) {
+	public void answerToChunkMessage(InetAddress addr, int port, FileChunk chunk) {
 		String version = ConfigsManager.getInstance().getVersion();
 
 		String message = "";
 
-		message += CHUNK_CONFIRMATION + " " + version
-				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
+		message += CHUNK_CONFIRMATION + " " + version + " " + chunk.getFileId() + " "
+				+ chunk.getChunkNo() + MulticastComunicator.CRLF
+				+ MulticastComunicator.CRLF;
 
 		DatagramSocket socket = null;
 
@@ -209,6 +209,8 @@ public class ChunkRestore {
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		}
+		
+		Log.log("Sent message to IP: " + message);
 
 		try {
 			socket.send(packet);

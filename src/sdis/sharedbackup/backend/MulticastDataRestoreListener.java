@@ -1,7 +1,6 @@
 package sdis.sharedbackup.backend;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -55,7 +54,8 @@ public class MulticastDataRestoreListener implements Runnable {
 			try {
 				message = receiver.receiveMessage();
 				final SplittedMessage splittedMessage = Splitter.split(message);
-				Log.log("Received a msg on MDR: " + splittedMessage.getHeader() + " " + splittedMessage.getBody().length);
+				Log.log("Received a msg on MDR: " + splittedMessage.getHeader()
+						+ " " + splittedMessage.getBody().length);
 				ConfigsManager
 						.getInstance()
 						.getExecutor()
@@ -79,7 +79,7 @@ public class MulticastDataRestoreListener implements Runnable {
 			DatagramSocket restoreSocket = null;
 			try {
 				restoreSocket = new DatagramSocket(
-						ChunkRestore.ENHANCEMENT_RESPONSE_PORT);
+						ChunkRestore.ENHANCEMENT_SEND_PORT);
 			} catch (SocketException e) {
 				System.out
 						.println("Could not open the desired port for restore");
@@ -95,29 +95,26 @@ public class MulticastDataRestoreListener implements Runnable {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				
+				byte[] message = new byte[packet.getLength()];
+				System.arraycopy(buffer, 0, message, 0, packet.getLength());
 
 				final SenderRecord sender = new SenderRecord();
 				sender.setAddr(packet.getAddress());
 				sender.setPort(packet.getPort());
 
-				String message = null;
+				final SplittedMessage splittedMessage = Splitter
+						.split(message);
 
-				try {
-					message = new String(packet.getData(),
-							MulticastComunicator.ASCII_CODE).trim();
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
+				String[] headers = splittedMessage.getHeader().split(
+						MulticastComunicator.CRLF);
 
-				final String[] components = message.trim().split(
-						MulticastComunicator.CRLF + MulticastComunicator.CRLF);
+				String[] header_components = headers[0].split(" ");
 
-				String[] headerComponents = components[0].trim().split(" ");
-
-				switch (headerComponents[0]) {
+				switch (header_components[0]) {
 				case ChunkRestore.CHUNK_COMMAND:
-					final String fileId = headerComponents[2];
-					final int chunkNo = Integer.parseInt(headerComponents[3]);
+					final String fileId = header_components[2];
+					final int chunkNo = Integer.parseInt(header_components[3]);
 
 					ConfigsManager.getInstance().getExecutor()
 							.execute(new Runnable() {
@@ -128,29 +125,24 @@ public class MulticastDataRestoreListener implements Runnable {
 										if (record.fileId.equals(fileId)
 												&& record.chunkNo == chunkNo) {
 											byte[] data;
-											try {
-												data = components[1]
-														.getBytes(MulticastComunicator.ASCII_CODE);
+											data = splittedMessage.getBody();
 
-												FileChunkWithData requestedChunk = new FileChunkWithData(
-														fileId, chunkNo, data);
+											FileChunkWithData requestedChunk = new FileChunkWithData(
+													fileId, chunkNo, data);
 
-												ChunkRestore.getInstance()
-														.addRequestedChunk(
-																requestedChunk);
+											ChunkRestore.getInstance()
+													.addRequestedChunk(
+															requestedChunk);
 
-												ChunkRestore
-														.getInstance()
-														.answerToChunkMessage(
-																sender.getAddr(),
-																ChunkRestore.ENHANCEMENT_RESPONSE_PORT);
+											ChunkRestore
+													.getInstance()
+													.answerToChunkMessage(
+															sender.getAddr(),
+															ChunkRestore.ENHANCEMENT_RESPONSE_PORT,
+															requestedChunk);
 
-												mSubscribedChunks
-														.remove(record);
-												break;
-											} catch (UnsupportedEncodingException e) {
-												e.printStackTrace();
-											}
+											mSubscribedChunks.remove(record);
+											break;
 										}
 									}
 								}
