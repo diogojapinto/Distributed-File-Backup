@@ -5,6 +5,7 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{indentfirst}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 
 \title{My First Cloud Sharing Service}
 
@@ -17,22 +18,65 @@
 
 \section{Purpose of the Application}
 
-
-This application implements a distributed system for backing up a company's files and projects. This system respects the company's hierarchy (in a bubble-like disposition), where the managers and administrators have higher permissions to the company's files. 
+This application implements a distributed system for backing up a company's files, respecting the company's hierarchy. 
+It enables also to access some functionality in the outside of the organization, 
 
 \section{Main Features}
 
 \begin{itemize}
-\item Authentication through password/certificates
+
+\item File backup (and respective enhancement)
+
+\item File restore (and respective enhancement)
+
+\item Deletion of file from the service (and respective enhancement)
+
+The enhancement to this service is slightly modified, as the election of an master-peer and the implementation of the \textit{WAKEDUP} command enables us to only send one \textit{DELETE} command when peers "wake-up".
+
+\item Changing the amount of space available for peer's chunks (and respective enhancement)
+
+\item Synchronization between peers
+
+\item Election of master peer
+
+This peer is considered to own the valid database at any moment. Is also responsible for initializations of other peers. Is elected automatically after some idle time.
+
 \item Access levels
-\item Write ahead
-\item Election of master peer (which owns the valid database at any moment)
-\item On wake up database update through RMI to the master peer
-\item Synchronization
+
+This introduces hierarchy to the database, in a bubble-like 
+
+\item Authentication through password
+
+This enables a user to login as a user with a given access level. In sequence to this, the master peer assigns a certificate to the logged-in peer, which he uses to encrypt his messages.
+
+\item Encryption (when desired)
+
+\item Write ahead (of action)
+
+On start-up, the application checks the database for actions not finished, and acts accordingly to finish them.
+
+\item On wake up database update
+
+(through calling a function on the master peer through RMI, which returns the database)
+
 \item Name resolution in order to the access level
+
 \end{itemize}
 
-\section{TargetPlatforms}
+\section{Web Services}
+\subsection{Provided Services}
+\begin{itemize}
+\item Backup file (If Time Permits)
+
+This enables an authenticated user to backup a file outside the company's LAN. 
+
+\item Restore file (If Time Permits)
+
+This enables an authenticated user to restore a file outside the company's LAN.
+
+\end{itemize}
+
+\section{Target Platforms}
 \begin{itemize}
 \item Java standalone application for PC/UNIX
 \item Java standalone application for Android (if time permits)
@@ -43,5 +87,8 @@ This application implements a distributed system for backing up a company's file
 \item Server for access outside of Company through TCP API (just a bridge)
 \item Mobile application to get and backup files through Android
 \end{itemize}
+
+\section{Project's Perspective}
+Given that the group is only formed by three elements, and having in mind the amount of work needed to accomplish the above objectives, we aim to achieve the grade of 20 values.
 
 \end{document}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/TeX Live for SUSE Linux) (format=pdflatex 2014.1.30)  22 APR 2014 13:21
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/TeX Live for SUSE Linux) (format=pdflatex 2014.1.30)  22 APR 2014 17:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -347,35 +347,62 @@ Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
 )
 (/usr/share/texmf/tex/latex/tools/indentfirst.sty
 Package: indentfirst 1995/11/23 v1.03 Indent first paragraph (DPC)
+)
+(/usr/share/texmf/tex/latex/geometry/geometry.sty
+Package: geometry 2010/09/12 v5.6 Page Geometry
+
+(/usr/share/texmf/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
+Package ifpdf Info: pdfTeX in PDF mode is detected.
+)
+(/usr/share/texmf/tex/generic/oberdiek/ifvtex.sty
+Package: ifvtex 2010/03/01 v1.5 Detect VTeX and its facilities (HO)
+Package ifvtex Info: VTeX not detected.
+)
+(/usr/share/texmf/tex/generic/ifxetex/ifxetex.sty
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
+)
+\Gm@cnth=\count101
+\Gm@cntv=\count102
+\c@Gm@tempcnt=\count103
+\Gm@bindingoffset=\dimen115
+\Gm@wd@mp=\dimen116
+\Gm@odd@mp=\dimen117
+\Gm@even@mp=\dimen118
+\Gm@layoutwidth=\dimen119
+\Gm@layoutheight=\dimen120
+\Gm@layouthoffset=\dimen121
+\Gm@layoutvoffset=\dimen122
+\Gm@dimlist=\toks22
 ) (./initial_report.aux)
 \openout1 = `initial_report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 15.
-LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 16.
+LaTeX Font Info:    ... okay on input line 16.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 16.
+LaTeX Font Info:    ... okay on input line 16.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 16.
+LaTeX Font Info:    ... okay on input line 16.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 16.
+LaTeX Font Info:    ... okay on input line 16.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 16.
+LaTeX Font Info:    ... okay on input line 16.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 16.
+LaTeX Font Info:    ... okay on input line 16.
 
 (/usr/share/texmf/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count101
-\scratchdimen=\dimen115
+\scratchcounter=\count104
+\scratchdimen=\dimen123
 \scratchbox=\box28
-\nofMPsegments=\count102
-\nofMParguments=\count103
-\everyMPshowfont=\toks22
-\MPscratchCnt=\count104
-\MPscratchDim=\dimen116
-\MPnumerator=\count105
-\makeMPintoPDFobject=\count106
-\everyMPtoPDFconversion=\toks23
+\nofMPsegments=\count105
+\nofMParguments=\count106
+\everyMPshowfont=\toks23
+\MPscratchCnt=\count107
+\MPscratchDim=\dimen124
+\MPnumerator=\count108
+\makeMPintoPDFobject=\count109
+\everyMPtoPDFconversion=\toks24
 ) (/usr/share/texmf/tex/generic/oberdiek/pdftexcmds.sty
 Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
 )
@@ -383,10 +410,6 @@ Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
 (/usr/share/texmf/tex/generic/oberdiek/ifluatex.sty
 Package: ifluatex 2010/03/01 v1.3 Provides the ifluatex switch (HO)
 Package ifluatex Info: LuaTeX not detected.
-)
-(/usr/share/texmf/tex/generic/oberdiek/ifpdf.sty
-Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
-Package ifpdf Info: pdfTeX in PDF mode is detected.
 )
 Package pdftexcmds Info: LuaTeX not detected.
 Package pdftexcmds Info: \pdf@primitive is available.
@@ -424,38 +447,67 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 26.
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(56.9055pt, 483.69687pt, 56.9055pt)
+* v-part:(T,H,B)=(56.9055pt, 731.23584pt, 56.9055pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=483.69687pt
+* \textheight=731.23584pt
+* \oddsidemargin=-15.36449pt
+* \evensidemargin=-15.36449pt
+* \topmargin=-52.36449pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=10.0pt
+* \footskip=30.0pt
+* \marginparwidth=57.0pt
+* \marginparsep=11.0pt
+* \columnsep=10.0pt
+* \skip\footins=9.0pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 28.
 (/usr/share/texmf/tex/latex/base/omscmr.fd
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 26.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 28.
+ [1
 
-Overfull \hbox (3.08794pt too wide) in paragraph at lines 41--41
-[]\OT1/cmr/bx/n/14.4 Additional Ser-vices and Im-prove-ments (if time
- []
-
-[1
-
-{/usr/share/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./initial_report.aux) )
- 
+{/usr/share/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] (./initial_report.au
+x) ) 
 Here is how much of TeX's memory you used:
- 2688 strings out of 493315
- 34008 string characters out of 6145893
- 101606 words of memory out of 5000000
- 6100 multiletter control sequences out of 15000+600000
- 7954 words of font info for 29 fonts, out of 8000000 for 9000
+ 3168 strings out of 493315
+ 40947 string characters out of 6145893
+ 118247 words of memory out of 5000000
+ 6569 multiletter control sequences out of 15000+600000
+ 8607 words of font info for 31 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
- 37i,7n,23p,280b,203s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texmf/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf/f
-onts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf/fonts/type1/public/am
-sfonts/cm/cmr12.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmr17.pfb>
-</usr/share/texmf/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on initial_report.pdf (1 page, 62472 bytes).
+ 38i,7n,23p,253b,203s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/share/texmf/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/tex
+mf/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf/fonts/type1/publi
+c/amsfonts/cm/cmr12.pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmr17.
+pfb></usr/share/texmf/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/tex
+mf/fonts/type1/public/amsfonts/cm/cmti10.pfb>
+Output written on initial_report.pdf (2 pages, 76290 bytes).
 PDF statistics:
- 28 PDF objects out of 1000 (max. 8388607)
- 19 compressed objects within 1 object stream
+ 35 PDF objects out of 1000 (max. 8388607)
+ 24 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
