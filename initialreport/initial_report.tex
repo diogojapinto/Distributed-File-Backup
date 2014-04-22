@@ -1,0 +1,47 @@
+\documentclass[a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+
+\title{My First Cloud Sharing Service}
+
+\author{Diogo Pinto \\ Duarte Brandão \\ Nuno Cruz}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Purpose of the Application}
+
+
+This application implements a distributed system for backing up a company's files and projects. This system respects the company's hierarchy (in a bubble-like disposition), where the managers and administrators have higher permissions to the company's files. 
+
+\section{Main Features}
+
+\begin{itemize}
+\item Authentication through password/certificates
+\item Access levels
+\item Write ahead
+\item Election of master peer (which owns the valid database at any moment)
+\item On wake up database update through RMI to the master peer
+\item Synchronization
+\item Name resolution in order to the access level
+\end{itemize}
+
+\section{TargetPlatforms}
+\begin{itemize}
+\item Java standalone application for PC/UNIX
+\item Java standalone application for Android (if time permits)
+\end{itemize}
+ 
+\section{Additional Services and Improvements (if time permits)}
+\begin{itemize}
+\item Server for access outside of Company through TCP API (just a bridge)
+\item Mobile application to get and backup files through Android
+\end{itemize}
+
+\end{document}
