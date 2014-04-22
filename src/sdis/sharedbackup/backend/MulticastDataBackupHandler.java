@@ -59,8 +59,10 @@ public class MulticastDataBackupHandler implements Runnable {
 					.trim());
 
 			// ENHANCEMENT
-			int currReplication = Integer.parseInt(headers[1].trim());
-
+			int currReplication = 0;
+			if (headers.length == 2) {
+				currReplication = Integer.parseInt(headers[1].trim());
+			}
 			FileChunk savedChunk = ConfigsManager.getInstance().getSavedChunk(
 					fileId, chunkNo);
 
