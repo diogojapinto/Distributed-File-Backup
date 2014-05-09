@@ -1,5 +1,10 @@
 package sdis.sharedbackup.frontend;
+import sdis.sharedbackup.backend.ConfigsManager;
+import sdis.sharedbackup.backend.ConfigsManager.FileAlreadySaved;
+import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
+import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -11,6 +16,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -19,93 +25,152 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
 public class GUI extends Application {
 
-	public static void main(String[] args) 
+	private File file;
+	public static boolean backupSuccess = false;
+
+	public static void main(String[] args)
 	{
+		ConfigsManager.getInstance().setMulticastAddrs("239.0.0.1",
+				Integer.parseInt("8765"), "239.0.0.1", Integer.parseInt("8766"),
+				"239.0.0.1", Integer.parseInt("8767"));
 		launch(args);
 	}
-
-	/*@Override
-	public void start(Stage primaryStage) throws Exception 
-	{
-		primaryStage.setTitle("Hello World!");
-		Button btn = new Button();
-		btn.setText("Say 'Hello World'");
-		btn.setOnAction(new EventHandler<ActionEvent>() 
-			{
-				@Override
-				public void handle(ActionEvent event) 
-				{
-					System.out.println("Hello World!");	
-				}
-			});
-
-		StackPane root = new StackPane();
-        root.getChildren().add(btn);
-        primaryStage.setScene(new Scene(root, 300, 250));
-        primaryStage.show();
-	}*/
-
-	/*@Override
-	public void start(Stage primaryStage) throws Exception 
-	{
-		primaryStage.setTitle("Welcome");
-
-		GridPane grid = new GridPane();
-		grid.setAlignment(Pos.CENTER);
-		grid.setHgap(10);
-		grid.setVgap(10);
-		grid.setPadding(new Insets(25, 25, 25, 25));
-
-		Scene scene = new Scene(grid, 300, 275);
-		primaryStage.setScene(scene);
-		scene.getStylesheets().add
-		 (teste.class.getResource("Login.css").toExternalForm());
-
-		Text scenetitle = new Text("Welcome");
-		scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-		grid.add(scenetitle, 1, 0, 2, 1);
-
-		Label userName = new Label("User Name:");
-		grid.add(userName, 0, 2);
-
-		TextField userTextField = new TextField();
-		grid.add(userTextField, 1, 2);
-
-		Label pw = new Label("Password:");
-		grid.add(pw, 0, 3);
-
-		PasswordField pwBox = new PasswordField();
-		grid.add(pwBox, 1, 3);		
-
-		Button btn = new Button("Sign in");
-		HBox hbBtn = new HBox(10);
-		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
-		hbBtn.getChildren().add(btn);
-		grid.add(hbBtn, 1, 5);
-
-		final Text actiontarget = new Text();
-        grid.add(actiontarget, 1, 7);
-    	btn.setOnAction(new EventHandler<ActionEvent>() {
-
-		    @Override
-		    public void handle(ActionEvent e) {
-		        actiontarget.setFill(Color.FIREBRICK);
-		        actiontarget.setText("Sign in button pressed");
-		    }
-		});
-
-    	//grid.setGridLinesVisible(true);
-		primaryStage.show();		
-	}*/
-
 
 	@Override
 	public void start(final Stage primaryStage) throws Exception 
 	{
 		//primaryStage.setTitle("Welcome");
 
+		menu(primaryStage);
+	}
+
+	//TO DO
+	private void setupService(final Stage primaryStage)
+	{
+		GridPane grid = new GridPane();
+		grid.setAlignment(Pos.CENTER);
+		grid.setHgap(10);
+		grid.setVgap(5);
+		grid.setPadding(new Insets(25, 25, 25, 25));
+
+		Scene scene = new Scene(grid, 300, 280);
+		primaryStage.setScene(scene);
+		scene.getStylesheets().add(GUI.class.getResource("Login.css").toExternalForm());
+
+		//Elementos da cena
+	}
+
+	private void setArgs(final Stage primaryStage)
+	{
+		GridPane grid = new GridPane();
+		grid.setAlignment(Pos.CENTER);
+		grid.setHgap(10);
+		grid.setVgap(5);
+		grid.setPadding(new Insets(25, 25, 25, 25));
+
+		Scene scene = new Scene(grid, 300, 280);
+		primaryStage.setScene(scene);
+		scene.getStylesheets().add(GUI.class.getResource("Login.css").toExternalForm());
+
+		//Elementos da cena
+		Text defineArgs = new Text("Network Settings");
+		defineArgs.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+
+		Label mcAdress = new Label("Control Channel Adress:");
+		Label mdbAdress = new Label("Backup Channel Adress:");
+		Label mdrAdress = new Label("Recovery Channel Adress:");
+
+		final TextField mcAdressTextField = new TextField();
+		final TextField mdbAdressTextField = new TextField();
+		final TextField mdrAdressTextField = new TextField();
+
+		final Text errorMsg = new Text();
+		errorMsg.setFill(Color.FIREBRICK);
+		
+		Button change = new Button("Change");
+		Button cancel = new Button(" Cancel ");
+		//cancel.setMinWidth(60);
+
+		HBox hbErrorMsg = new HBox(10);
+		hbErrorMsg.setAlignment(Pos.BASELINE_CENTER);
+		hbErrorMsg.getChildren().add(errorMsg);
+		
+		HBox hbButtons = new HBox(10);
+		hbButtons.setAlignment(Pos.BASELINE_CENTER);
+		hbButtons.getChildren().add(change);
+		hbButtons.getChildren().add(cancel);
+
+		grid.add(defineArgs, 0, 0);
+		grid.add(mcAdress, 0, 2);
+		grid.add(mcAdressTextField, 0, 3);
+		grid.add(mdbAdress, 0, 4);
+		grid.add(mdbAdressTextField, 0, 5);
+		grid.add(mdrAdress, 0, 6);		
+		grid.add(mdrAdressTextField, 0, 7);
+		grid.add(hbErrorMsg, 0, 8);
+		grid.add(hbButtons, 0, 9);
+
+		change.setOnAction(new EventHandler<ActionEvent>() {			 
+			@Override
+			public void handle(ActionEvent e) {
+				
+				if (mcAdressTextField.getText().equals("") || mdbAdressTextField.getText().equals("") || mdrAdressTextField.getText().equals(""))
+				{
+					errorMsg.setText("Please fill all fields");
+				}
+				else
+				{
+					String splitmc[] = mcAdressTextField.getText().split(":"), splitmdb[] = mdbAdressTextField.getText().split(":"), splitmdr[] = mdrAdressTextField.getText().split(":");
+					String mcAdr = splitmc[0], mdbAdr = splitmdb[0], mdrAdr = splitmdr[0];
+					
+					if (!splitmc[1].matches("\\d+") || !splitmdb[1].matches("\\d+") || !splitmdr[1].matches("\\d+")) //port not an integer
+					{
+						errorMsg.setText("Invalid port(s)");
+					}
+					else
+					{
+						int mcPort = Integer.parseInt(splitmc[1]), mdbPort = Integer.parseInt(splitmdb[1]), mdrPort = Integer.parseInt(splitmdr[1]);
+						
+						ConfigsManager.getInstance().setMulticastAddrs(mcAdr, mcPort, mdbAdr, mdbPort, mdrAdr, mdrPort);
+							
+					}
+				}	
+			}
+		});
+
+		cancel.setOnAction(new EventHandler<ActionEvent>() {			 
+			@Override
+			public void handle(ActionEvent e) {
+				menu(primaryStage);
+			}
+		});
+
+		primaryStage.show();
+	}
+
+	private void menu(final Stage primaryStage)
+	{
 		GridPane grid = new GridPane();
 		grid.setAlignment(Pos.CENTER);
 		grid.setHgap(10);
@@ -127,6 +192,7 @@ public class GUI extends Application {
 		Button restore = new Button("Restore File");
 		Button delete = new Button(" Delete a replicated File");
 		Button space = new Button("Change allocated space");
+		Button settings = new Button("Change network settings");
 
 		delete.setMinWidth(165);
 		space.setMinWidth(165);
@@ -152,11 +218,16 @@ public class GUI extends Application {
 		hbDelete.setAlignment(Pos.BASELINE_CENTER);
 		hbDelete.getChildren().add(space);
 
+		HBox hbSettings = new HBox(10);
+		hbSettings.setAlignment(Pos.BASELINE_CENTER);
+		hbSettings.getChildren().add(settings);
+
 		grid.add(hbWelcome, 0, 0);
 		grid.add(hbOption, 0, 2);
 		grid.add(hbBackupRestore, 0, 3);
 		grid.add(hbRestore, 0, 4);
 		grid.add(hbDelete, 0, 5);
+		grid.add(hbSettings, 0, 7);
 
 		backup.setOnAction(new EventHandler<ActionEvent>() {			 
 			@Override
@@ -186,6 +257,13 @@ public class GUI extends Application {
 			}
 		});
 
+		settings.setOnAction(new EventHandler<ActionEvent>() {			 
+			@Override
+			public void handle(ActionEvent e) {
+				setArgs(primaryStage);
+			}
+		});
+
 		//grid.setGridLinesVisible(true);
 		primaryStage.show();		
 	}
@@ -193,47 +271,71 @@ public class GUI extends Application {
 	private void backupFile(final Stage primaryStage)
 	{
 		GridPane grid = new GridPane();
-		grid.setAlignment(Pos.TOP_CENTER);
+		grid.setAlignment(Pos.CENTER);
 		grid.setHgap(10);
 		grid.setVgap(10);
 		grid.setPadding(new Insets(25, 25, 25, 25));
-
+		
 		Scene scene = new Scene(grid, 300, 280);
 		primaryStage.setScene(scene);
 		scene.getStylesheets().add(GUI.class.getResource("Login.css").toExternalForm());
 
 		//Elementos da cena
 
-		Text fileBackup = new Text("File Backup");
-		fileBackup.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+		Text fileBackup = new Text("File Backup");		
 
-		Label userName = new Label("File Path:"); 
 		Label repDegree = new Label("Replication degree:");
 
-		TextField userTextField = new TextField();
-		TextField repTextField = new TextField();
-
+		final TextField repTextField = new TextField();
+		
 		Button backup = new Button("Backup");
 		Button cancel = new Button(" Cancel ");
+		Button chooseFile = new Button("Choose a file");
 
-		final Text actiontarget = new Text();
-		grid.add(actiontarget, 0, 5);
+		final FileChooser fileChooser = new FileChooser();   
 
+		final Text chosenFile = new Text();		
+		final Text errorMsg = new Text();		
+
+		fileBackup.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+		errorMsg.setFill(Color.FIREBRICK);
+		repTextField.setMaxWidth(110);
+		chosenFile.setWrappingWidth(215);
+		errorMsg.setTextAlignment(TextAlignment.CENTER);
+		
 		HBox fB = new HBox(10);
 		fB.setAlignment(Pos.CENTER);
 		fB.getChildren().add(fileBackup);
-
+		
+		/*HBox hbRepTextField = new HBox(10);
+		hbRepTextField.setAlignment(Pos.CENTER);
+		hbRepTextField.getChildren().add(repTextField);*/
+		
+		HBox hbChooseFile = new HBox(10);
+		hbChooseFile.setAlignment(Pos.BASELINE_LEFT);
+		hbChooseFile.getChildren().add(chooseFile);
+		
+		HBox hbChosenFile = new HBox(10);
+		hbChosenFile.setAlignment(Pos.BASELINE_LEFT);		
+		hbChosenFile.setMaxWidth(50);
+		hbChosenFile.getChildren().add(chosenFile);
+		
+		HBox hbErrorMsg = new HBox(10);
+		hbErrorMsg.setAlignment(Pos.BASELINE_CENTER);
+		hbErrorMsg.getChildren().add(errorMsg);
+		
 		HBox hbButtons = new HBox(10);
 		hbButtons.setAlignment(Pos.BASELINE_CENTER);
 		hbButtons.getChildren().add(backup);
 		hbButtons.getChildren().add(cancel);
 
-		grid.add(fB, 0, 0);				
-		grid.add(userName, 0, 1);		
-		grid.add(userTextField, 0, 2);		
-		grid.add(repDegree, 0, 3);		
-		grid.add(repTextField, 0, 4);
-		grid.add(hbButtons, 0, 6);
+		grid.add(fB, 0, 0);							
+		grid.add(repDegree, 0, 2);		
+		grid.add(repTextField, 0, 3);
+		grid.add(hbChooseFile, 0, 4);
+		grid.add(hbChosenFile, 0, 5);
+		grid.add(hbErrorMsg, 0, 6);
+		grid.add(hbButtons, 0, 7);
 
 		cancel.setOnAction(new EventHandler<ActionEvent>() {			 
 			@Override
@@ -244,6 +346,68 @@ public class GUI extends Application {
 					e1.printStackTrace();
 				}
 			}
+		});
+
+		chooseFile.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(final ActionEvent e) {
+
+				File file_temp = fileChooser.showOpenDialog(primaryStage);
+
+				if (file_temp != null)
+				{
+					file = file_temp;
+					chosenFile.setText(file.getAbsolutePath());
+				}
+			}
+		});
+
+		backup.setOnAction(new EventHandler<ActionEvent>() {			 
+			@Override
+			public void handle(ActionEvent e) {
+
+				final String repDegree = repTextField.getText();
+
+				if (file == null || repDegree.equals(""))
+				{									
+					errorMsg.setText("Please fill all fields");
+				}
+				else if (!repDegree.matches("\\d+")) //not an integer
+				{
+					errorMsg.setText("Replication degree not valid");
+				}
+				else
+				{
+					errorMsg.setText("Backing up file");
+					
+					Thread t = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							try {						
+								ApplicationInterface.getInstance().backupFile(file.getAbsolutePath(), Integer.parseInt(repDegree));
+							} catch (FileTooLargeException e1) {
+								System.out.println("The selected file is too large");
+							} catch (FileDoesNotExistsExeption e1) {
+								System.out.println("The selected file does not exists");
+							} catch (FileAlreadySaved e1) {
+								System.out.println("The selected file is already in the database");
+							}							
+							
+							Platform.runLater(new Runnable() {								
+								@Override
+								public void run() {
+									if (!backupSuccess)
+										errorMsg.setText("Not enough peers to meet\n necessary replication");
+									else
+										errorMsg.setText("File backed up");							
+								}
+							});
+						}
+					});					
+
+					t.start();					
+				}
+			}	
 		});
 		//grid.setGridLinesVisible(true);
 	}
@@ -344,7 +508,7 @@ public class GUI extends Application {
 			}
 		});
 	}
-	
+
 	private void spaceReclaim(final Stage primaryStage)
 	{
 		GridPane grid = new GridPane();
@@ -356,37 +520,33 @@ public class GUI extends Application {
 		Scene scene = new Scene(grid, 300, 280);
 		primaryStage.setScene(scene);
 		scene.getStylesheets().add(GUI.class.getResource("Login.css").toExternalForm());
-		
+
 		//Elementos da cena
-		
+
 		Text spaceReclaim = new Text("Space Reclaiming");
 		spaceReclaim.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-		
+
 		Label reclaim = new Label("Enter new allocated space:");
-		
+
 		TextField allocatedSpace = new TextField();
-		
+
 		Button set = new Button("Set space");
 		Button cancel = new Button("Cancel");
-		
+
 		HBox sR = new HBox(10);
 		sR.setAlignment(Pos.BASELINE_CENTER);
 		sR.getChildren().add(spaceReclaim);
-		
-		HBox hbCancel = new HBox(10);
-		hbCancel.setAlignment(Pos.CENTER);
-		hbCancel.getChildren().add(cancel);
-		
-		HBox hbSet = new HBox(10);
-		hbSet.setAlignment(Pos.CENTER);
-		hbSet.getChildren().add(set);
-		
+
+		HBox hbButtons = new HBox(10);
+		hbButtons.setAlignment(Pos.CENTER);
+		hbButtons.getChildren().add(set);
+		hbButtons.getChildren().add(cancel);
+
 		grid.add(sR, 0, 0);
 		grid.add(reclaim, 0, 1);
 		grid.add(allocatedSpace, 0, 2);
-		grid.add(hbSet, 0, 3);
-		grid.add(hbCancel, 0, 4);
-		
+		grid.add(hbButtons, 0, 3);
+
 		cancel.setOnAction(new EventHandler<ActionEvent>() {			 
 			@Override
 			public void handle(ActionEvent e) {
@@ -397,6 +557,6 @@ public class GUI extends Application {
 				}
 			}
 		});
-		
+
 	}
 }

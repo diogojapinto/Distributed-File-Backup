@@ -85,12 +85,12 @@ public class ChunkBackup {
 		if (counter == MAX_RETRIES) {
 
 			Log.log("Did not reach necessary replication");
-
+			
 			return false;
 		} else {
 
 			Log.log("Sent successfully");
-
+			sdis.sharedbackup.frontend.GUI.backupSuccess = true;
 			return true;
 		}
 

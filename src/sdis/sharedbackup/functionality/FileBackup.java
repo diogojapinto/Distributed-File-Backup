@@ -28,6 +28,7 @@ public class FileBackup {
 				FileDeletion.getInstance().deleteFile(file.getFileId());
 			}
 		}
+		
 		return true;
 	}
 }
