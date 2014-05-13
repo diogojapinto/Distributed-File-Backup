@@ -1,6 +1,7 @@
 package sdis.sharedbackup.utils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -16,10 +17,11 @@ public class Log {
 				public void run() {
 					java.util.Date date = new java.util.Date();
 					try {
+						String logMssg = new Timestamp(date.getTime()).toString() + "=>" + messg;
 						FileWriter fw = new FileWriter("log.log", true);
-						fw.write(new Timestamp(date.getTime()) + "=>" + messg);
-						System.out.println(new Timestamp(date.getTime()) + "=>"
-								+ messg);
+						fw.write(logMssg + "\n");
+						fw.close();
+						System.out.println(logMssg);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

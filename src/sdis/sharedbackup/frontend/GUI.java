@@ -38,6 +38,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
+import javafx.stage.PopupWindow;
 
 public class GUI extends Application {
 
@@ -62,7 +63,6 @@ public class GUI extends Application {
 
 	}
 
-	// TODO
 	private void setupService(final Stage primaryStage) {
 		GridPane grid = new GridPane();
 		grid.setAlignment(Pos.CENTER);
@@ -93,6 +93,7 @@ public class GUI extends Application {
 		chosenFile.setWrappingWidth(215);
 
 		final Text errorMsg = new Text();
+		errorMsg.setFill(Color.FIREBRICK);
 
 		HBox hbSetup = new HBox(10);
 		hbSetup.setAlignment(Pos.TOP_CENTER);
@@ -131,13 +132,13 @@ public class GUI extends Application {
 			public void handle(ActionEvent arg0) {
 
 				if (file == null || spaceTextField.getText().equals("")) {
-					errorMsg.setFill(Color.FIREBRICK);
 					errorMsg.setText("Please fill all fields");
 				} else if (!spaceTextField.getText().matches("\\d+")) // not an
 																		// integer
 				{
-					errorMsg.setFill(Color.FIREBRICK);
 					errorMsg.setText("Space not valid");
+				} else if (file.length() != 0) {
+					errorMsg.setText("Please select an empty folder");
 				} else {
 					int space = Integer.parseInt(spaceTextField.getText());
 					String path = file.getAbsolutePath();
@@ -184,11 +185,17 @@ public class GUI extends Application {
 		final TextField mcAdressTextField = new TextField();
 		final TextField mdbAdressTextField = new TextField();
 		final TextField mdrAdressTextField = new TextField();
-		
+
 		// set fields to default addresses
-		mcAdressTextField.setText(ConfigsManager.getInstance().getMCAddr().getHostAddress() + ":" + ConfigsManager.getInstance().getMCPort());
-		mcAdressTextField.setText(ConfigsManager.getInstance().getMDBAddr().getHostAddress() + ":" + ConfigsManager.getInstance().getMDBPort());
-		mcAdressTextField.setText(ConfigsManager.getInstance().getMDRAddr().getHostAddress() + ":" + ConfigsManager.getInstance().getMDRPort());
+		mcAdressTextField.setText(ConfigsManager.getInstance().getMCAddr()
+				.getHostAddress()
+				+ ":" + ConfigsManager.getInstance().getMCPort());
+		mcAdressTextField.setText(ConfigsManager.getInstance().getMDBAddr()
+				.getHostAddress()
+				+ ":" + ConfigsManager.getInstance().getMDBPort());
+		mcAdressTextField.setText(ConfigsManager.getInstance().getMDRAddr()
+				.getHostAddress()
+				+ ":" + ConfigsManager.getInstance().getMDRPort());
 
 		final Text errorMsg = new Text();
 		errorMsg.setFill(Color.FIREBRICK);
@@ -233,7 +240,7 @@ public class GUI extends Application {
 					if (!splitmc[1].matches("\\d+")
 							|| !splitmdb[1].matches("\\d+")
 							|| !splitmdr[1].matches("\\d+")) // port not an
-																// integer
+					// integer
 					{
 						errorMsg.setText("Invalid port(s)");
 					} else {
@@ -243,7 +250,7 @@ public class GUI extends Application {
 
 						ConfigsManager.getInstance().setMulticastAddrs(mcAdr,
 								mcPort, mdbAdr, mdbPort, mdrAdr, mdrPort);
-						
+
 						try {
 							ConfigsManager.getInstance().init();
 						} catch (ConfigurationsNotInitializedException e1) {
@@ -606,7 +613,7 @@ public class GUI extends Application {
 						errorMsg.setFill(Color.FIREBRICK);
 						errorMsg.setText("Error restoring file");
 					} else {
-						errorMsg.setFill(Color.OLIVEDRAB);
+						errorMsg.setFill(Color.GREENYELLOW);
 						errorMsg.setText("Restore successfull");
 					}
 				}
@@ -617,7 +624,7 @@ public class GUI extends Application {
 			@Override
 			public void handle(ActionEvent e) {
 				try {
-					start(primaryStage);
+					menu(primaryStage);
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -766,19 +773,26 @@ public class GUI extends Application {
 
 		// Elementos da cena
 
-		Text spaceReclaim = new Text("Space Reclaiming");
-		spaceReclaim.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+		Text allocatedSpace = new Text("Allocated Space");
+		allocatedSpace.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 
-		Label reclaim = new Label("Enter new allocated space:");
+		Label reclaim = new Label("Enter new allocated space (KB):");
 
-		TextField allocatedSpace = new TextField();
+		final TextField allocatedSpaceTextField = new TextField();
+
+		final Text errorMsg = new Text();
+		errorMsg.setFill(Color.FIREBRICK);
 
 		Button set = new Button("Set space");
 		Button cancel = new Button("Cancel");
 
 		HBox sR = new HBox(10);
 		sR.setAlignment(Pos.BASELINE_CENTER);
-		sR.getChildren().add(spaceReclaim);
+		sR.getChildren().add(allocatedSpace);
+
+		HBox hbErrorMsg = new HBox(10);
+		hbErrorMsg.setAlignment(Pos.BASELINE_CENTER);
+		hbErrorMsg.getChildren().add(errorMsg);
 
 		HBox hbButtons = new HBox(10);
 		hbButtons.setAlignment(Pos.CENTER);
@@ -787,8 +801,9 @@ public class GUI extends Application {
 
 		grid.add(sR, 0, 0);
 		grid.add(reclaim, 0, 1);
-		grid.add(allocatedSpace, 0, 2);
-		grid.add(hbButtons, 0, 3);
+		grid.add(allocatedSpaceTextField, 0, 2);
+		grid.add(hbErrorMsg, 0, 3);
+		grid.add(hbButtons, 0, 5);
 
 		cancel.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -797,6 +812,26 @@ public class GUI extends Application {
 					start(primaryStage);
 				} catch (Exception e1) {
 					e1.printStackTrace();
+				}
+			}
+		});
+
+		set.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				
+				String allocatedSpaceString = allocatedSpaceTextField.getText();
+
+				if (allocatedSpaceString.equals("")) {
+					errorMsg.setText("Please fill all fields");
+				} else if (!allocatedSpaceString.matches("\\d+")) // not an integer
+				{
+					errorMsg.setText("Space not valid");
+				} else {					
+					ApplicationInterface.getInstance().setNewSpace(Integer.parseInt(allocatedSpaceString));
+					
+					errorMsg.setFill(Color.GREENYELLOW);
+					errorMsg.setText("New space set");
 				}
 			}
 		});
