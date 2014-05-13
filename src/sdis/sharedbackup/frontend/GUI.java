@@ -1,6 +1,9 @@
+// TODO: verify if folder is valid
+
 package sdis.sharedbackup.frontend;
 
 import sdis.sharedbackup.backend.ConfigsManager;
+import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
 import sdis.sharedbackup.backend.ConfigsManager.FileAlreadySaved;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
@@ -16,12 +19,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -29,35 +29,15 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
-import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Observable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.PopupFactory;
-
-import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
-import javafx.stage.PopupWindow;
-
-import javafx.stage.Stage;
 
 public class GUI extends Application {
 
@@ -167,11 +147,13 @@ public class GUI extends Application {
 								.setAvailableDiskSpace(space);
 						ApplicationInterface.getInstance()
 								.setDestinationDirectory(path);
-					} catch (InvalidBackupSizeException
-							| InvalidFolderException e) {
-						e.printStackTrace();
+					} catch (InvalidBackupSizeException e) {
+						errorMsg.setFill(Color.FIREBRICK);
+						errorMsg.setText("Invalid folder. Please select a empty folder");
+					} catch (InvalidFolderException e) {
+						errorMsg.setFill(Color.FIREBRICK);
+						errorMsg.setText("Invalid size. Please input a positive integer");
 					}
-
 					menu(primaryStage);
 				}
 			}
@@ -202,6 +184,11 @@ public class GUI extends Application {
 		final TextField mcAdressTextField = new TextField();
 		final TextField mdbAdressTextField = new TextField();
 		final TextField mdrAdressTextField = new TextField();
+		
+		// set fields to default addresses
+		mcAdressTextField.setText(ConfigsManager.getInstance().getMCAddr().getHostAddress() + ":" + ConfigsManager.getInstance().getMCPort());
+		mcAdressTextField.setText(ConfigsManager.getInstance().getMDBAddr().getHostAddress() + ":" + ConfigsManager.getInstance().getMDBPort());
+		mcAdressTextField.setText(ConfigsManager.getInstance().getMDRAddr().getHostAddress() + ":" + ConfigsManager.getInstance().getMDRPort());
 
 		final Text errorMsg = new Text();
 		errorMsg.setFill(Color.FIREBRICK);
@@ -256,6 +243,12 @@ public class GUI extends Application {
 
 						ConfigsManager.getInstance().setMulticastAddrs(mcAdr,
 								mcPort, mdbAdr, mdbPort, mdrAdr, mdrPort);
+						
+						try {
+							ConfigsManager.getInstance().init();
+						} catch (ConfigurationsNotInitializedException e1) {
+							e1.printStackTrace();
+						}
 
 					}
 				}
@@ -634,6 +627,45 @@ public class GUI extends Application {
 	}
 
 	private void deleteFile(final Stage primaryStage) {
+		ArrayList<String> deletableFiles = ApplicationInterface.getInstance()
+				.getDeletableFiles();
+
+		if (deletableFiles.size() == 0) {
+			try {
+				final Popup alertMessg = new Popup();
+				alertMessg.setAutoFix(false);
+				alertMessg.setHideOnEscape(true);
+
+				Button btnGoBack = new Button("Ok");
+				Label lblAlert = new Label(
+						"You do not have any backed up files");
+
+				btnGoBack.setOnAction(new EventHandler<ActionEvent>() {
+
+					@Override
+					public void handle(ActionEvent arg0) {
+						primaryStage.setOpacity(1);
+						alertMessg.hide();
+					}
+				});
+
+				VBox popUpBox = new VBox(10);
+				popUpBox.setPadding(new Insets(15));
+
+				popUpBox.getChildren().add(lblAlert);
+				popUpBox.getChildren().add(btnGoBack);
+				popUpBox.setAlignment(Pos.CENTER);
+
+				alertMessg.getContent().add(popUpBox);
+
+				primaryStage.setOpacity(0.5);
+				alertMessg.show(primaryStage);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			return;
+		}
+
 		GridPane grid = new GridPane();
 		grid.setAlignment(Pos.TOP_CENTER);
 		grid.setHgap(10);
@@ -647,29 +679,67 @@ public class GUI extends Application {
 
 		// Elementos da cena
 
-		Text fileDelete = new Text("File Delete");
-		fileDelete.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+		Text fileDeletion = new Text("File Deletion");
+		fileDeletion.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 
-		Label delete = new Label("Chose file to delete:");
+		Label restore = new Label("Chose file to restore:");
 
-		Button cancel = new Button(" Cancel ");
+		ObservableList<String> filesAvailable = FXCollections
+				.observableArrayList(deletableFiles);
 
-		final Text actiontarget = new Text();
-		grid.add(actiontarget, 0, 5);
+		final ComboBox<String> selectableFiles = new ComboBox<String>(
+				filesAvailable);
+		selectableFiles.setMinWidth(200);
 
-		HBox fD = new HBox(10);
-		fD.setAlignment(Pos.CENTER);
-		fD.getChildren().add(fileDelete);
+		Button btnDelete = new Button("Delete");
+		Button btnCancel = new Button("Cancel");
 
-		HBox hbCancel = new HBox(10);
-		hbCancel.setAlignment(Pos.CENTER);
-		hbCancel.getChildren().add(cancel);
+		final Text errorMsg = new Text();
 
-		grid.add(fD, 0, 0);
-		grid.add(delete, 0, 1);
-		grid.add(hbCancel, 0, 3); // pos vai depender do numero de ficheiros
+		HBox hbDF = new HBox(10);
+		hbDF.setAlignment(Pos.CENTER);
+		hbDF.getChildren().add(fileDeletion);
 
-		cancel.setOnAction(new EventHandler<ActionEvent>() {
+		HBox hbBtns = new HBox(10);
+		hbBtns.setAlignment(Pos.CENTER);
+		hbBtns.getChildren().add(btnDelete);
+		hbBtns.getChildren().add(btnCancel);
+
+		grid.add(hbDF, 0, 0);
+		grid.add(restore, 0, 1);
+		grid.add(selectableFiles, 0, 2);
+		grid.add(hbBtns, 0, 3); // pos vai depender do numero de ficheiros
+		grid.add(errorMsg, 0, 5);
+
+		btnDelete.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent arg0) {
+				String selectedFile = selectableFiles.getSelectionModel()
+						.getSelectedItem();
+				if (selectedFile == null) {
+					errorMsg.setFill(Color.FIREBRICK);
+					errorMsg.setText("Please select a valid file from the list above");
+				} else {
+					errorMsg.setFill(Color.GOLD);
+					errorMsg.setText("Deleting file from service");
+					try {
+						if (!ApplicationInterface.getInstance().deleteFile(
+								selectedFile)) {
+							errorMsg.setFill(Color.FIREBRICK);
+							errorMsg.setText("Error restoring file");
+						} else {
+							errorMsg.setFill(Color.OLIVEDRAB);
+							errorMsg.setText("Restore successfull");
+						}
+					} catch (FileDoesNotExistsExeption e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+
+		btnCancel.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
 				try {
@@ -679,6 +749,7 @@ public class GUI extends Application {
 				}
 			}
 		});
+		// grid.setGridLinesVisible(true);
 	}
 
 	private void spaceReclaim(final Stage primaryStage) {

@@ -9,12 +9,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.omg.CORBA.Environment;
+
+import com.sun.xml.internal.messaging.saaj.soap.Envelope;
+
 import sdis.sharedbackup.backend.ConfigsManager.FileAlreadySaved;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidChunkException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
+import sdis.sharedbackup.utils.EnvironmentVerifier;
 import sdis.sharedbackup.utils.Log;
 
 public class BackupsDatabase implements Serializable {
@@ -87,6 +92,9 @@ public class BackupsDatabase implements Serializable {
 
 		} else if (destination.isDirectory()) {
 			mBackupFolder = destination.getAbsolutePath();
+			if (EnvironmentVerifier.getFolderSize(mBackupFolder) > 0) {
+				throw new InvalidFolderException();
+			}
 			String os = System.getProperty("os.name");
 
 			if (os.contains("Windows")) {

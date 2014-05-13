@@ -199,6 +199,7 @@ public class ConfigsManager {
 
 	public void init() throws ConfigurationsNotInitializedException {
 		if (mDatabase.isInitialized()) {
+			mExecutor.shutdownNow();
 			startupListeners();
 			mExecutor.execute(new FileDeletionChecker());
 		} else {
