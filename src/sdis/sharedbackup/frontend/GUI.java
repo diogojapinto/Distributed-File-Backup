@@ -1,6 +1,8 @@
 package sdis.sharedbackup.frontend;
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.ConfigsManager.FileAlreadySaved;
+import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
+import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 import javafx.application.Application;
@@ -41,7 +43,9 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.PopupWindow;
 import javafx.stage.Stage;
 
 public class GUI extends Application {
@@ -61,11 +65,13 @@ public class GUI extends Application {
 	public void start(final Stage primaryStage) throws Exception 
 	{
 		//primaryStage.setTitle("Welcome");
-
-		menu(primaryStage);
+		
+		if (!ApplicationInterface.getInstance().getDatabaseStatus())
+			setupService(primaryStage);
+		else
+			menu(primaryStage);
 	}
 
-	//TO DO
 	private void setupService(final Stage primaryStage)
 	{
 		GridPane grid = new GridPane();
@@ -79,6 +85,88 @@ public class GUI extends Application {
 		scene.getStylesheets().add(GUI.class.getResource("Login.css").toExternalForm());
 
 		//Elementos da cena
+
+		Text setup = new Text("Setup");
+		setup.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));		
+		
+		Label labelSpace = new Label("Choose your allocated space (KB):");
+
+		final TextField spaceTextField = new TextField();
+		
+		Button btnDirChooser = new Button("Choose folder to save files");
+		final DirectoryChooser dirChooser = new DirectoryChooser();
+		
+		Button btnContinue = new Button("Continue");
+		
+		final Text chosenFile = new Text();
+		chosenFile.setWrappingWidth(215);
+		
+		final Text errorMsg = new Text();
+		
+		HBox hbSetup = new HBox(10);
+		hbSetup.setAlignment(Pos.TOP_CENTER);
+		hbSetup.getChildren().add(setup);
+		
+		HBox hbBtnContinue = new HBox(10);
+		hbBtnContinue.setAlignment(Pos.CENTER);
+		hbBtnContinue.getChildren().add(btnContinue);
+		
+		HBox hbErrorMsg = new HBox(10);
+		hbErrorMsg.setAlignment(Pos.BASELINE_CENTER);
+		hbErrorMsg.getChildren().add(errorMsg);
+		
+		grid.add(hbSetup, 0, 1);
+		grid.add(labelSpace, 0, 3);
+		grid.add(spaceTextField, 0, 4);
+		grid.add(btnDirChooser, 0, 5);
+		grid.add(chosenFile, 0, 6);	
+		grid.add(hbErrorMsg, 0, 8);
+		grid.add(hbBtnContinue, 0, 9);
+		
+		btnDirChooser.setOnAction(new EventHandler<ActionEvent>()
+		{			 
+			@Override
+			public void handle(ActionEvent e) {
+				File file_temp = dirChooser.showDialog(primaryStage);
+				
+				if (file_temp != null)
+				{
+					file = file_temp;
+					chosenFile.setText(file.getAbsolutePath());
+				}
+			}
+		});	
+		
+		btnContinue.setOnAction(new EventHandler<ActionEvent>() 
+		{
+			@Override
+			public void handle(ActionEvent arg0) {
+				
+				if (file == null || spaceTextField.getText().equals(""))
+				{									
+					errorMsg.setText("Please fill all fields");
+				}
+				else if (!spaceTextField.getText().matches("\\d+")) //not an integer
+				{
+					errorMsg.setText("Space not valid");
+				}
+				else
+				{
+					int space = Integer.parseInt(spaceTextField.getText());
+					String path = file.getAbsolutePath();
+					
+					try {
+						ApplicationInterface.getInstance().setAvailableDiskSpace(space);
+						ApplicationInterface.getInstance().setDestinationDirectory(path);
+					} catch (InvalidBackupSizeException | InvalidFolderException e) {
+						e.printStackTrace();
+					}
+					
+					menu(primaryStage);
+				}
+			}
+		});
+		primaryStage.show();
 	}
 
 	private void setArgs(final Stage primaryStage)
@@ -107,7 +195,7 @@ public class GUI extends Application {
 
 		final Text errorMsg = new Text();
 		errorMsg.setFill(Color.FIREBRICK);
-		
+
 		Button change = new Button("Change");
 		Button cancel = new Button(" Cancel ");
 		//cancel.setMinWidth(60);
@@ -115,7 +203,7 @@ public class GUI extends Application {
 		HBox hbErrorMsg = new HBox(10);
 		hbErrorMsg.setAlignment(Pos.BASELINE_CENTER);
 		hbErrorMsg.getChildren().add(errorMsg);
-		
+
 		HBox hbButtons = new HBox(10);
 		hbButtons.setAlignment(Pos.BASELINE_CENTER);
 		hbButtons.getChildren().add(change);
@@ -134,7 +222,7 @@ public class GUI extends Application {
 		change.setOnAction(new EventHandler<ActionEvent>() {			 
 			@Override
 			public void handle(ActionEvent e) {
-				
+
 				if (mcAdressTextField.getText().equals("") || mdbAdressTextField.getText().equals("") || mdrAdressTextField.getText().equals(""))
 				{
 					errorMsg.setText("Please fill all fields");
@@ -143,7 +231,7 @@ public class GUI extends Application {
 				{
 					String splitmc[] = mcAdressTextField.getText().split(":"), splitmdb[] = mdbAdressTextField.getText().split(":"), splitmdr[] = mdrAdressTextField.getText().split(":");
 					String mcAdr = splitmc[0], mdbAdr = splitmdb[0], mdrAdr = splitmdr[0];
-					
+
 					if (!splitmc[1].matches("\\d+") || !splitmdb[1].matches("\\d+") || !splitmdr[1].matches("\\d+")) //port not an integer
 					{
 						errorMsg.setText("Invalid port(s)");
@@ -151,9 +239,9 @@ public class GUI extends Application {
 					else
 					{
 						int mcPort = Integer.parseInt(splitmc[1]), mdbPort = Integer.parseInt(splitmdb[1]), mdrPort = Integer.parseInt(splitmdr[1]);
-						
+
 						ConfigsManager.getInstance().setMulticastAddrs(mcAdr, mcPort, mdbAdr, mdbPort, mdrAdr, mdrPort);
-							
+
 					}
 				}	
 			}
@@ -275,7 +363,7 @@ public class GUI extends Application {
 		grid.setHgap(10);
 		grid.setVgap(10);
 		grid.setPadding(new Insets(25, 25, 25, 25));
-		
+
 		Scene scene = new Scene(grid, 300, 280);
 		primaryStage.setScene(scene);
 		scene.getStylesheets().add(GUI.class.getResource("Login.css").toExternalForm());
@@ -287,7 +375,7 @@ public class GUI extends Application {
 		Label repDegree = new Label("Replication degree:");
 
 		final TextField repTextField = new TextField();
-		
+
 		Button backup = new Button("Backup");
 		Button cancel = new Button(" Cancel ");
 		Button chooseFile = new Button("Choose a file");
@@ -302,28 +390,28 @@ public class GUI extends Application {
 		repTextField.setMaxWidth(110);
 		chosenFile.setWrappingWidth(215);
 		errorMsg.setTextAlignment(TextAlignment.CENTER);
-		
+
 		HBox fB = new HBox(10);
 		fB.setAlignment(Pos.CENTER);
 		fB.getChildren().add(fileBackup);
-		
+
 		/*HBox hbRepTextField = new HBox(10);
 		hbRepTextField.setAlignment(Pos.CENTER);
 		hbRepTextField.getChildren().add(repTextField);*/
-		
+
 		HBox hbChooseFile = new HBox(10);
 		hbChooseFile.setAlignment(Pos.BASELINE_LEFT);
 		hbChooseFile.getChildren().add(chooseFile);
-		
+
 		HBox hbChosenFile = new HBox(10);
 		hbChosenFile.setAlignment(Pos.BASELINE_LEFT);		
 		hbChosenFile.setMaxWidth(50);
 		hbChosenFile.getChildren().add(chosenFile);
-		
+
 		HBox hbErrorMsg = new HBox(10);
 		hbErrorMsg.setAlignment(Pos.BASELINE_CENTER);
 		hbErrorMsg.getChildren().add(errorMsg);
-		
+
 		HBox hbButtons = new HBox(10);
 		hbButtons.setAlignment(Pos.BASELINE_CENTER);
 		hbButtons.getChildren().add(backup);
@@ -379,7 +467,7 @@ public class GUI extends Application {
 				else
 				{
 					errorMsg.setText("Backing up file");
-					
+
 					Thread t = new Thread(new Runnable() {
 						@Override
 						public void run() {
@@ -392,7 +480,7 @@ public class GUI extends Application {
 							} catch (FileAlreadySaved e1) {
 								System.out.println("The selected file is already in the database");
 							}							
-							
+
 							Platform.runLater(new Runnable() {								
 								@Override
 								public void run() {
