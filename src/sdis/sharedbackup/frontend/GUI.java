@@ -1,5 +1,3 @@
-// TODO: verify if folder is valid
-
 package sdis.sharedbackup.frontend;
 
 import sdis.sharedbackup.backend.ConfigsManager;
@@ -43,7 +41,6 @@ import javafx.stage.PopupWindow;
 public class GUI extends Application {
 
 	private File file;
-	public static boolean backupSuccess = false;
 
 	public static void main(String[] args) {
 		ConfigsManager.getInstance()
@@ -58,8 +55,14 @@ public class GUI extends Application {
 		primaryStage.setTitle("MFCSS");
 		if (!ApplicationInterface.getInstance().getDatabaseStatus())
 			setupService(primaryStage);
-		else
+		else {
+			try {
+				ApplicationInterface.getInstance().startupService();
+			} catch (ConfigurationsNotInitializedException e1) {
+				e1.printStackTrace();
+			}
 			menu(primaryStage);
+		}
 
 	}
 
@@ -190,10 +193,10 @@ public class GUI extends Application {
 		mcAdressTextField.setText(ConfigsManager.getInstance().getMCAddr()
 				.getHostAddress()
 				+ ":" + ConfigsManager.getInstance().getMCPort());
-		mcAdressTextField.setText(ConfigsManager.getInstance().getMDBAddr()
+		mdbAdressTextField.setText(ConfigsManager.getInstance().getMDBAddr()
 				.getHostAddress()
 				+ ":" + ConfigsManager.getInstance().getMDBPort());
-		mcAdressTextField.setText(ConfigsManager.getInstance().getMDRAddr()
+		mdrAdressTextField.setText(ConfigsManager.getInstance().getMDRAddr()
 				.getHostAddress()
 				+ ":" + ConfigsManager.getInstance().getMDRPort());
 
@@ -252,7 +255,7 @@ public class GUI extends Application {
 								mcPort, mdbAdr, mdbPort, mdrAdr, mdrPort);
 
 						try {
-							ConfigsManager.getInstance().init();
+							ApplicationInterface.getInstance().startupService();
 						} catch (ConfigurationsNotInitializedException e1) {
 							e1.printStackTrace();
 						}
@@ -440,7 +443,7 @@ public class GUI extends Application {
 			@Override
 			public void handle(ActionEvent e) {
 				try {
-					start(primaryStage);
+					menu(primaryStage);
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -472,39 +475,35 @@ public class GUI extends Application {
 				{
 					errorMsg.setText("Replication degree not valid");
 				} else {
+					errorMsg.setFill(Color.GOLD);
 					errorMsg.setText("Backing up file");
-
-					Thread t = new Thread(new Runnable() {
+					
+					new Thread(new Runnable() {
+						
 						@Override
 						public void run() {
 							try {
-								ApplicationInterface.getInstance().backupFile(
-										file.getAbsolutePath(),
-										Integer.parseInt(repDegree));
+								boolean backupSuccess = ApplicationInterface
+										.getInstance().backupFile(
+												file.getAbsolutePath(),
+												Integer.parseInt(repDegree));
+								if (!backupSuccess)
+									setText(errorMsg, "Not enough peers to meet\n necessary replication");
+								else
+									errorMsg.setFill(Color.YELLOWGREEN);
+									setText(errorMsg, "File backed up");
 							} catch (FileTooLargeException e1) {
-								System.out
-										.println("The selected file is too large");
+								errorMsg.setFill(Color.FIREBRICK);
+								setText(errorMsg, "The selected file is too large");
 							} catch (FileDoesNotExistsExeption e1) {
-								System.out
-										.println("The selected file does not exists");
+								errorMsg.setFill(Color.FIREBRICK);
+								setText(errorMsg, "The selected file does not exists");
 							} catch (FileAlreadySaved e1) {
-								System.out
-										.println("The selected file is already in the database");
+								errorMsg.setFill(Color.FIREBRICK);
+								setText(errorMsg, "The selected file is already in the database");
 							}
-
-							Platform.runLater(new Runnable() {
-								@Override
-								public void run() {
-									if (!backupSuccess)
-										errorMsg.setText("Not enough peers to meet\n necessary replication");
-									else
-										errorMsg.setText("File backed up");
-								}
-							});
 						}
-					});
-
-					t.start();
+					}).start();
 				}
 			}
 		});
@@ -523,7 +522,7 @@ public class GUI extends Application {
 
 				Button btnGoBack = new Button("Ok");
 				Label lblAlert = new Label(
-						"You do not have any backed up files");
+						"The files you've backed up have are still saved in the file system");
 
 				btnGoBack.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -585,6 +584,10 @@ public class GUI extends Application {
 		fR.setAlignment(Pos.CENTER);
 		fR.getChildren().add(fileRestore);
 
+		HBox hbErrorMsg = new HBox(10);
+		hbErrorMsg.setAlignment(Pos.BASELINE_CENTER);
+		hbErrorMsg.getChildren().add(errorMsg);
+
 		HBox hbBtns = new HBox(10);
 		hbBtns.setAlignment(Pos.CENTER);
 		hbBtns.getChildren().add(btnRestore);
@@ -593,8 +596,8 @@ public class GUI extends Application {
 		grid.add(fR, 0, 0);
 		grid.add(restore, 0, 1);
 		grid.add(selectableFiles, 0, 2);
-		grid.add(hbBtns, 0, 3); // pos vai depender do numero de ficheiros
-		grid.add(errorMsg, 0, 5);
+		grid.add(hbErrorMsg, 0, 3);
+		grid.add(hbBtns, 0, 5); // pos vai depender do numero de ficheiros
 
 		btnRestore.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -750,7 +753,7 @@ public class GUI extends Application {
 			@Override
 			public void handle(ActionEvent e) {
 				try {
-					start(primaryStage);
+					menu(primaryStage);
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -809,7 +812,7 @@ public class GUI extends Application {
 			@Override
 			public void handle(ActionEvent e) {
 				try {
-					start(primaryStage);
+					menu(primaryStage);
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -819,20 +822,40 @@ public class GUI extends Application {
 		set.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				
+
 				String allocatedSpaceString = allocatedSpaceTextField.getText();
 
 				if (allocatedSpaceString.equals("")) {
 					errorMsg.setText("Please fill all fields");
-				} else if (!allocatedSpaceString.matches("\\d+")) // not an integer
+				} else if (!allocatedSpaceString.matches("\\d+")) // not an
+																	// integer
 				{
 					errorMsg.setText("Space not valid");
-				} else {					
-					ApplicationInterface.getInstance().setNewSpace(Integer.parseInt(allocatedSpaceString));
-					
+				} else {
+					ApplicationInterface.getInstance().setNewSpace(
+							Integer.parseInt(allocatedSpaceString));
+
 					errorMsg.setFill(Color.GREENYELLOW);
 					errorMsg.setText("New space set");
 				}
+			}
+		});
+	}
+
+	@Override
+	public void stop() throws Exception {
+		// close operation
+		ApplicationInterface.getInstance().terminate();
+		super.stop();
+		System.exit(0);
+	}
+	
+	private void setText(final Text txt, final String msg) {
+		Platform.runLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				txt.setText(msg);
 			}
 		});
 	}

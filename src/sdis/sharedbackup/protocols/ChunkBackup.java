@@ -90,7 +90,6 @@ public class ChunkBackup {
 		} else {
 
 			Log.log("Sent successfully");
-			sdis.sharedbackup.frontend.GUI.backupSuccess = true;
 			return true;
 		}
 

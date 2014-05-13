@@ -29,7 +29,8 @@ public class FileDeletionChecker implements Runnable {
 				Thread.sleep(ONE_MINUTE);
 			}
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			Thread.currentThread().interrupt();
+			return;
 		}
 	}
 }
