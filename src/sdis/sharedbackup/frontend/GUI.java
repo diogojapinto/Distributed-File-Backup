@@ -2,6 +2,8 @@ package sdis.sharedbackup.frontend;
 
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.ConfigsManager.FileAlreadySaved;
+import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
+import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 import javafx.application.Application;
@@ -50,8 +52,11 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
+import javafx.stage.PopupWindow;
+
 import javafx.stage.Stage;
 
 public class GUI extends Application {
@@ -70,10 +75,14 @@ public class GUI extends Application {
 	@Override
 	public void start(final Stage primaryStage) throws Exception {
 		primaryStage.setTitle("MFCSS");
-		menu(primaryStage);
+		if (!ApplicationInterface.getInstance().getDatabaseStatus())
+			setupService(primaryStage);
+		else
+			menu(primaryStage);
+
 	}
 
-	// TO DO
+	// TODO
 	private void setupService(final Stage primaryStage) {
 		GridPane grid = new GridPane();
 		grid.setAlignment(Pos.CENTER);
@@ -87,6 +96,87 @@ public class GUI extends Application {
 				GUI.class.getResource("Login.css").toExternalForm());
 
 		// Elementos da cena
+
+		Text setup = new Text("Setup");
+		setup.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+
+		Label labelSpace = new Label("Choose your allocated space (KB):");
+
+		final TextField spaceTextField = new TextField();
+
+		Button btnDirChooser = new Button("Choose folder to save files");
+		final DirectoryChooser dirChooser = new DirectoryChooser();
+
+		Button btnContinue = new Button("Continue");
+
+		final Text chosenFile = new Text();
+		chosenFile.setWrappingWidth(215);
+
+		final Text errorMsg = new Text();
+
+		HBox hbSetup = new HBox(10);
+		hbSetup.setAlignment(Pos.TOP_CENTER);
+		hbSetup.getChildren().add(setup);
+
+		HBox hbBtnContinue = new HBox(10);
+		hbBtnContinue.setAlignment(Pos.CENTER);
+		hbBtnContinue.getChildren().add(btnContinue);
+
+		HBox hbErrorMsg = new HBox(10);
+		hbErrorMsg.setAlignment(Pos.BASELINE_CENTER);
+		hbErrorMsg.getChildren().add(errorMsg);
+
+		grid.add(hbSetup, 0, 1);
+		grid.add(labelSpace, 0, 3);
+		grid.add(spaceTextField, 0, 4);
+		grid.add(btnDirChooser, 0, 5);
+		grid.add(chosenFile, 0, 6);
+		grid.add(hbErrorMsg, 0, 8);
+		grid.add(hbBtnContinue, 0, 9);
+
+		btnDirChooser.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				File file_temp = dirChooser.showDialog(primaryStage);
+
+				if (file_temp != null) {
+					file = file_temp;
+					chosenFile.setText(file.getAbsolutePath());
+				}
+			}
+		});
+
+		btnContinue.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+
+				if (file == null || spaceTextField.getText().equals("")) {
+					errorMsg.setFill(Color.FIREBRICK);
+					errorMsg.setText("Please fill all fields");
+				} else if (!spaceTextField.getText().matches("\\d+")) // not an
+																		// integer
+				{
+					errorMsg.setFill(Color.FIREBRICK);
+					errorMsg.setText("Space not valid");
+				} else {
+					int space = Integer.parseInt(spaceTextField.getText());
+					String path = file.getAbsolutePath();
+
+					try {
+						ApplicationInterface.getInstance()
+								.setAvailableDiskSpace(space);
+						ApplicationInterface.getInstance()
+								.setDestinationDirectory(path);
+					} catch (InvalidBackupSizeException
+							| InvalidFolderException e) {
+						e.printStackTrace();
+					}
+
+					menu(primaryStage);
+				}
+			}
+		});
+		primaryStage.show();
 	}
 
 	private void setArgs(final Stage primaryStage) {
@@ -320,12 +410,6 @@ public class GUI extends Application {
 		fB.setAlignment(Pos.CENTER);
 		fB.getChildren().add(fileBackup);
 
-		/*
-		 * HBox hbRepTextField = new HBox(10);
-		 * hbRepTextField.setAlignment(Pos.CENTER);
-		 * hbRepTextField.getChildren().add(repTextField);
-		 */
-
 		HBox hbChooseFile = new HBox(10);
 		hbChooseFile.setAlignment(Pos.BASELINE_LEFT);
 		hbChooseFile.getChildren().add(chooseFile);
@@ -488,7 +572,8 @@ public class GUI extends Application {
 		ObservableList<String> filesAvailable = FXCollections
 				.observableArrayList(restorableFiles);
 
-		final ComboBox<String> selectableFiles = new ComboBox<String>(filesAvailable);
+		final ComboBox<String> selectableFiles = new ComboBox<String>(
+				filesAvailable);
 		selectableFiles.setMinWidth(200);
 
 		Button btnRestore = new Button("Restore");
@@ -510,19 +595,21 @@ public class GUI extends Application {
 		grid.add(selectableFiles, 0, 2);
 		grid.add(hbBtns, 0, 3); // pos vai depender do numero de ficheiros
 		grid.add(errorMsg, 0, 5);
-		
+
 		btnRestore.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent arg0) {
-				String selectedFile = selectableFiles.getSelectionModel().getSelectedItem();	
+				String selectedFile = selectableFiles.getSelectionModel()
+						.getSelectedItem();
 				if (selectedFile == null) {
 					errorMsg.setFill(Color.FIREBRICK);
 					errorMsg.setText("Please select a valid file from the list above");
 				} else {
 					errorMsg.setFill(Color.GOLD);
 					errorMsg.setText("Restoring file to selected path");
-					if (!ApplicationInterface.getInstance().restoreFileByPath(selectedFile)) {
+					if (!ApplicationInterface.getInstance().restoreFileByPath(
+							selectedFile)) {
 						errorMsg.setFill(Color.FIREBRICK);
 						errorMsg.setText("Error restoring file");
 					} else {
