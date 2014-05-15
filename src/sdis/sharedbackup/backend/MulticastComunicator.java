@@ -12,6 +12,7 @@ public class MulticastComunicator {
 	private static int TTL = 1;
 
 	private MulticastSocket mMSocket;
+	private InetAddress mInterface;
 	private InetAddress mAddr;
 	private int mPort;
 
@@ -19,8 +20,16 @@ public class MulticastComunicator {
 	public static final String ASCII_CODE = "US-ASCII";
 
 	public static final String CRLF = new String("\r\n");
-
+	
 	public MulticastComunicator(InetAddress addr, int port) {
+		this.mInterface = null;
+		this.mAddr = addr;
+		this.mPort = port;
+		this.mMSocket = null;
+	}
+
+	public MulticastComunicator(InetAddress intrfc, InetAddress addr, int port) {
+		this.mInterface = intrfc;
 		this.mAddr = addr;
 		this.mPort = port;
 		this.mMSocket = null;
@@ -29,6 +38,7 @@ public class MulticastComunicator {
 	public void join() {
 		try {
 			mMSocket = new MulticastSocket(mPort);
+			mMSocket.setInterface(mInterface);
 			mMSocket.setTimeToLive(TTL);
 		} catch (IOException e) {
 			Log.log("Could not create MulticastSocket.");

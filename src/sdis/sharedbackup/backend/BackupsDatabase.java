@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +33,8 @@ public class BackupsDatabase implements Serializable {
 	 */
 	private static final long serialVersionUID = 1;
 
+	private InetAddress mMCaddr = null, mMDBaddr = null, mMDRaddr = null;
+	private int mMCport = 0, mMDBport = 0, mMDRport = 0;
 	private String mBackupFolder;
 	private long maxBackupSize; // stored in B
 	private Map<String, SharedFile> mSharedFiles; // my shared files
@@ -337,4 +341,45 @@ public class BackupsDatabase implements Serializable {
 		return foundChunk;
 	}
 
+	public boolean setMulticastAddrs(String mcAddr, int mcPort, String mdbAddr,
+			int mdbPort, String mdrAddr, int mdrPort) {
+		try {
+			mMCaddr = InetAddress.getByName(mcAddr);
+			mMDBaddr = InetAddress.getByName(mdbAddr);
+			mMDRaddr = InetAddress.getByName(mdrAddr);
+
+			mMCport = mcPort;
+			mMDBport = mdbPort;
+			mMDRport = mdrPort;
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	public InetAddress getMCAddr() {
+		return mMCaddr;
+	}
+
+	public int getMCPort() {
+		return mMCport;
+	}
+
+	public InetAddress getMDBAddr() {
+		return mMDBaddr;
+	}
+
+	public int getMDBPort() {
+		return mMDBport;
+	}
+
+	public InetAddress getMDRAddr() {
+		return mMDRaddr;
+	}
+
+	public int getMDRPort() {
+		return mMDRport;
+	}
+	
 }

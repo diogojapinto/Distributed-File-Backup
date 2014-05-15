@@ -30,8 +30,6 @@ public class ConfigsManager {
 	// private members
 
 	private boolean mCheckState;
-	private InetAddress mMCaddr = null, mMDBaddr = null, mMDRaddr = null;
-	private int mMCport = 0, mMDBport = 0, mMDRport = 0;
 	private MulticastControlListener mMCListener;
 	private MulticastDataBackupListener mMDBListener;
 	private MulticastDataRestoreListener mMDRListener;
@@ -107,43 +105,31 @@ public class ConfigsManager {
 
 	public boolean setMulticastAddrs(String mcAddr, int mcPort, String mdbAddr,
 			int mdbPort, String mdrAddr, int mdrPort) {
-		try {
-			mMCaddr = InetAddress.getByName(mcAddr);
-			mMDBaddr = InetAddress.getByName(mdbAddr);
-			mMDRaddr = InetAddress.getByName(mdrAddr);
-
-			mMCport = mcPort;
-			mMDBport = mdbPort;
-			mMDRport = mdrPort;
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true;
+		return mDatabase.setMulticastAddrs(mcAddr, mcPort, mdbAddr, mdbPort, mdrAddr, mdrPort);
 	}
 
 	public InetAddress getMCAddr() {
-		return mMCaddr;
+		return mDatabase.getMCAddr();
 	}
 
 	public int getMCPort() {
-		return mMCport;
+		return mDatabase.getMCPort();
 	}
 
 	public InetAddress getMDBAddr() {
-		return mMDBaddr;
+		return mDatabase.getMDBAddr();
 	}
 
 	public int getMDBPort() {
-		return mMDBport;
+		return mDatabase.getMDBPort();
 	}
 
 	public InetAddress getMDRAddr() {
-		return mMDRaddr;
+		return mDatabase.getMDRAddr();
 	}
 
 	public int getMDRPort() {
-		return mMDRport;
+		return mDatabase.getMDRPort();
 	}
 
 	public String getChunksDestination() {

@@ -7,6 +7,8 @@ import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
+import sdis.sharedbackup.utils.EnvironmentVerifier;
+import sun.nio.ch.Net;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -28,7 +30,12 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+
+import com.sun.jmx.snmp.Enumerated;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -39,14 +46,12 @@ import javafx.stage.Popup;
 import javafx.stage.PopupWindow;
 
 public class GUI extends Application {
+	
+	private static final String addressPlaceholder = "239.0.0.1:6666";
 
 	private File file;
 
 	public static void main(String[] args) {
-		ConfigsManager.getInstance()
-				.setMulticastAddrs("239.0.0.1", Integer.parseInt("8765"),
-						"239.0.0.1", Integer.parseInt("8766"), "239.0.0.1",
-						Integer.parseInt("8767"));
 		launch(args);
 	}
 
@@ -139,8 +144,8 @@ public class GUI extends Application {
 				} else if (!spaceTextField.getText().matches("\\d+")) // not an
 																		// integer
 				{
-					errorMsg.setText("Space not valid");
-				} else if (file.length() != 0) {
+					errorMsg.setText("Space input not valid");
+				} else if (EnvironmentVerifier.getFolderSize(file.getAbsolutePath()) != 0) {
 					errorMsg.setText("Please select an empty folder");
 				} else {
 					int space = Integer.parseInt(spaceTextField.getText());
@@ -158,14 +163,14 @@ public class GUI extends Application {
 						errorMsg.setFill(Color.FIREBRICK);
 						errorMsg.setText("Invalid size. Please input a positive integer");
 					}
-					menu(primaryStage);
+					setArgs(primaryStage, true);
 				}
 			}
 		});
 		primaryStage.show();
 	}
 
-	private void setArgs(final Stage primaryStage) {
+	private void setArgs(final Stage primaryStage, boolean isSetup) {
 		GridPane grid = new GridPane();
 		grid.setAlignment(Pos.CENTER);
 		grid.setHgap(10);
@@ -180,7 +185,8 @@ public class GUI extends Application {
 		// Elementos da cena
 		Text defineArgs = new Text("Network Settings");
 		defineArgs.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-
+		
+		Label lblInterface = new Label("Interface:");
 		Label mcAdress = new Label("Control Channel Adress:");
 		Label mdbAdress = new Label("Backup Channel Adress:");
 		Label mdrAdress = new Label("Recovery Channel Adress:");
@@ -189,6 +195,7 @@ public class GUI extends Application {
 		final TextField mdbAdressTextField = new TextField();
 		final TextField mdrAdressTextField = new TextField();
 
+		if (!isSetup) {
 		// set fields to default addresses
 		mcAdressTextField.setText(ConfigsManager.getInstance().getMCAddr()
 				.getHostAddress()
@@ -199,11 +206,25 @@ public class GUI extends Application {
 		mdrAdressTextField.setText(ConfigsManager.getInstance().getMDRAddr()
 				.getHostAddress()
 				+ ":" + ConfigsManager.getInstance().getMDRPort());
+		} else {
+			mcAdressTextField.setText(addressPlaceholder);
+			mdbAdressTextField.setText(addressPlaceholder);
+			mdrAdressTextField.setText(addressPlaceholder);
+		}
+		
+		
+		ObservableList<String> interfacesAvail = FXCollections
+				.observableArrayList(EnvironmentVerifier.getNetworkInterfaces());
+
+		final ComboBox<String> selectableInterface = new ComboBox<String>(
+				interfacesAvail);
+
+		selectableInterface.setMinWidth(200);
 
 		final Text errorMsg = new Text();
 		errorMsg.setFill(Color.FIREBRICK);
 
-		Button change = new Button("Change");
+		Button confirm = new Button("Ok");
 		Button cancel = new Button(" Cancel ");
 		// cancel.setMinWidth(60);
 
@@ -213,20 +234,23 @@ public class GUI extends Application {
 
 		HBox hbButtons = new HBox(10);
 		hbButtons.setAlignment(Pos.BASELINE_CENTER);
-		hbButtons.getChildren().add(change);
-		hbButtons.getChildren().add(cancel);
+		hbButtons.getChildren().add(confirm);
+		if (!isSetup) {
+			hbButtons.getChildren().add(cancel);
+		}
 
 		grid.add(defineArgs, 0, 0);
-		grid.add(mcAdress, 0, 2);
-		grid.add(mcAdressTextField, 0, 3);
-		grid.add(mdbAdress, 0, 4);
-		grid.add(mdbAdressTextField, 0, 5);
-		grid.add(mdrAdress, 0, 6);
-		grid.add(mdrAdressTextField, 0, 7);
-		grid.add(hbErrorMsg, 0, 8);
-		grid.add(hbButtons, 0, 9);
+		grid.add(selectableInterface, 0, 2);
+		grid.add(mcAdress, 0, 3);
+		grid.add(mcAdressTextField, 0, 4);
+		grid.add(mdbAdress, 0, 5);
+		grid.add(mdbAdressTextField, 0, 6);
+		grid.add(mdrAdress, 0, 7);
+		grid.add(mdrAdressTextField, 0, 8);
+		grid.add(hbErrorMsg, 0, 9);
+		grid.add(hbButtons, 0, 10);
 
-		change.setOnAction(new EventHandler<ActionEvent>() {
+		confirm.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
 
@@ -259,6 +283,8 @@ public class GUI extends Application {
 						} catch (ConfigurationsNotInitializedException e1) {
 							e1.printStackTrace();
 						}
+						
+						menu(primaryStage);
 
 					}
 				}
@@ -366,7 +392,7 @@ public class GUI extends Application {
 		settings.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				setArgs(primaryStage);
+				setArgs(primaryStage, false);
 			}
 		});
 
