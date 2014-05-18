@@ -20,7 +20,7 @@ public class MulticastComunicator {
 	public static final String ASCII_CODE = "US-ASCII";
 
 	public static final String CRLF = new String("\r\n");
-	
+
 	public MulticastComunicator(InetAddress addr, int port) {
 		this.mInterface = null;
 		this.mAddr = addr;
@@ -38,7 +38,9 @@ public class MulticastComunicator {
 	public void join() {
 		try {
 			mMSocket = new MulticastSocket(mPort);
-			mMSocket.setInterface(mInterface);
+			if (mInterface != null) {
+				mMSocket.setInterface(mInterface);
+			}
 			mMSocket.setTimeToLive(TTL);
 		} catch (IOException e) {
 			Log.log("Could not create MulticastSocket.");
@@ -63,10 +65,10 @@ public class MulticastComunicator {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		
-		DatagramPacket packet = new DatagramPacket(messg, messg.length,
-				mAddr, mPort);
-		
+
+		DatagramPacket packet = new DatagramPacket(messg, messg.length, mAddr,
+				mPort);
+
 		try {
 			mMSocket.setLoopbackMode(true);
 		} catch (SocketException e1) {
@@ -101,10 +103,9 @@ public class MulticastComunicator {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		byte[] message = new byte[packet.getLength()];
 		System.arraycopy(buffer, 0, message, 0, packet.getLength());
-		
 
 		return message;
 	}

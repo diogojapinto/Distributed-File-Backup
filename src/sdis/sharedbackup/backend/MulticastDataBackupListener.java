@@ -28,7 +28,6 @@ public class MulticastDataBackupListener implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println("MDB listener started");
 		InetAddress addr = ConfigsManager.getInstance().getMDBAddr();
 		int port = ConfigsManager.getInstance().getMDBPort();
 

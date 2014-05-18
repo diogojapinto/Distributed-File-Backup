@@ -35,8 +35,6 @@ public class MulticastControlListener implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println("MC Listener started");
-
 		InetAddress addr = ConfigsManager.getInstance().getMCAddr();
 		int port = ConfigsManager.getInstance().getMCPort();
 
