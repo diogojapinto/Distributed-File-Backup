@@ -38,7 +38,7 @@ public class MulticastDataRestoreHandler implements Runnable {
 
 			Log.log("Received CHUNK command for file " + fileId + " chunk "
 					+ chunkNo);
-			Log.log("Size: " + mMessage.getBody().length);
+			//Log.log("Size: " + mMessage.getBody().length);
 			
 			MulticastControlListener.getInstance().notifyChunk(fileId, chunkNo);
 			

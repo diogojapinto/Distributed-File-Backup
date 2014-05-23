@@ -296,7 +296,7 @@ public class BackupsDatabase implements Serializable {
 		synchronized (mSavedChunks) {
 			mSavedChunks.add(chunk);
 		}
-		Log.log("Saved a CHUNK " + chunk.getFileId() + " " + chunk.getChunkNo());
+		Log.log("Saved a CHUNK " + chunk.getFileId() + " " + chunk.getChunkNo() + "A:" + chunk.getCurrentReplicationDeg() + "D:" + chunk.getDesiredReplicationDeg());
 	}
 
 	public boolean isMyFile(String fileId) {

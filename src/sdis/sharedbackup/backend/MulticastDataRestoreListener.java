@@ -52,10 +52,11 @@ public class MulticastDataRestoreListener implements Runnable {
 		while (ConfigsManager.getInstance().isAppRunning()) {
 			final byte[] message;
 			try {
-				message = receiver.receiveMessage();
+				final SenderRecord sender = new SenderRecord();
+				message = receiver.receiveMessage(sender);
 				final SplittedMessage splittedMessage = Splitter.split(message);
-				Log.log("Received a msg on MDR: " + splittedMessage.getHeader()
-						+ " " + splittedMessage.getBody().length);
+				Log.log("Received a msg on MDR from " + sender.getAddr() + " "
+						+ splittedMessage.getHeader());
 				ConfigsManager
 						.getInstance()
 						.getExecutor()
@@ -95,7 +96,7 @@ public class MulticastDataRestoreListener implements Runnable {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				
+
 				byte[] message = new byte[packet.getLength()];
 				System.arraycopy(buffer, 0, message, 0, packet.getLength());
 
@@ -103,8 +104,7 @@ public class MulticastDataRestoreListener implements Runnable {
 				sender.setAddr(packet.getAddress());
 				sender.setPort(packet.getPort());
 
-				final SplittedMessage splittedMessage = Splitter
-						.split(message);
+				final SplittedMessage splittedMessage = Splitter.split(message);
 
 				String[] headers = splittedMessage.getHeader().split(
 						MulticastComunicator.CRLF);
