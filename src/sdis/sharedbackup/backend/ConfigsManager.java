@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Random;
@@ -301,6 +302,10 @@ public class ConfigsManager {
 		saveDatabase();
 		return ret;
 	}
+
+    public void setInterface(String selectedInterface) throws SocketException {
+        mDatabase.setInterface(selectedInterface);
+    }
 
 	/*
 	 * Exceptions

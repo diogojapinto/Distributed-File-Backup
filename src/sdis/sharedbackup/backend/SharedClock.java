@@ -1,5 +1,7 @@
 package sdis.sharedbackup.backend;
 
+import sdis.sharedbackup.utils.Log;
+
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -50,6 +52,8 @@ public class SharedClock {
 
         mEndSyncTime = mDate.getTime();
         mSharedTime = receivedTime + mEndSyncTime - startSyncTime;
+
+        Log.log("Clock synchronized");
     }
 
 

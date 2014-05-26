@@ -1,10 +1,7 @@
 package sdis.sharedbackup.backend;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.util.ArrayList;
 
 import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
@@ -12,6 +9,8 @@ import sdis.sharedbackup.protocols.ChunkRestore;
 import sdis.sharedbackup.utils.Log;
 import sdis.sharedbackup.utils.SplittedMessage;
 import sdis.sharedbackup.utils.Splitter;
+
+import javax.net.ssl.SSLSocket;
 
 /*
  * Class that receives and dispatches messages from the multicast data restore channel
