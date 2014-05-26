@@ -91,7 +91,7 @@ public class MulticastDataBackupHandler implements Runnable {
 				if (pendingChunk.getCurrentReplicationDeg() < pendingChunk
 						.getDesiredReplicationDeg()) {
 
-					Log.log("I tried a store ");
+				//	Log.log("I tried a store ");
 					ChunkBackup.getInstance().storeChunk(pendingChunk,
 							mMessage.getBody());
 

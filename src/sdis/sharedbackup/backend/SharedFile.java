@@ -100,9 +100,9 @@ public class SharedFile implements Serializable {
 	private void generateChunks() {
 		
 		long fileSize = getFileSize();
-		Log.log("Tamanho ficheiro: " + fileSize);
+		//Log.log("Tamanho ficheiro: " + fileSize);
 		for (int i = 0; i < fileSize; i += CHUNK_SIZE) {
-			Log.log("Tamanho I: " + i);
+			//Log.log("Tamanho I: " + i);
 			mChunkList.add(new FileChunk(this, mChunkCounter++));
 		}
 		

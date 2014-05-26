@@ -48,7 +48,8 @@ public class MulticastControlHandler implements Runnable {
 		String messageType = header_components[0].trim();
 		final String fileId;
 		final int chunkNo;
-		Log.log("MC RECEIVED A MESSAGE!!:" + mMessage.getHeader());
+		
+		Log.log("MC RECEIVED A MESSAGE from "+ mSender.getAddr() + ": " + mMessage.getHeader());
 		switch (messageType) {
 		case ChunkBackup.STORED_COMMAND:
 			fileId = header_components[2].trim();

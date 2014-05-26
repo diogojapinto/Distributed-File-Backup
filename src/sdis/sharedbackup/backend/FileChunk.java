@@ -134,7 +134,7 @@ public class FileChunk implements Serializable {
 					
 					in.read(chunk, 0, chunkSize);
 
-					Log.log("Lenght chunk" + chunkSize);
+					//Log.log("Lenght chunk" + chunkSize);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -156,7 +156,7 @@ public class FileChunk implements Serializable {
 				in = new FileInputStream(chunk);
 				byte[] buffer = new byte[(int) chunk.length()];
 				int i = in.read(buffer);
-				Log.log("Chunk has " + i + " size");
+				//Log.log("Chunk has " + i + " size");
 				in.close();
 				return buffer;
 			} catch (FileNotFoundException e) {
