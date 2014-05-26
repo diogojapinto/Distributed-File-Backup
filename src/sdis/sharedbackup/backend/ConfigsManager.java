@@ -33,8 +33,9 @@ public class ConfigsManager {
 	private MulticastControlListener mMCListener;
 	private MulticastDataBackupListener mMDBListener;
 	private MulticastDataRestoreListener mMDRListener;
-	private boolean mDatabaseLoaded = false;
+	private boolean mDatabaseLoaded = false, sDatabaseLoaded = false;
 	private BackupsDatabase mDatabase = null;
+    private SharedDatabase sDatabase = null;
 	private ExecutorService mExecutor = null;
 	private Random mRandom;
 	private boolean mIsRunning;
@@ -47,6 +48,7 @@ public class ConfigsManager {
 		mRandom = new Random();
 		mIsRunning = true;
 		mDatabaseLoaded = loadDatabase();
+        sDatabaseLoaded = loadSharedDatabase();
 	}
 
 	public static ConfigsManager getInstance() {
@@ -91,7 +93,40 @@ public class ConfigsManager {
 		return true;
 	}
 
-	public String getVersion() {
+    private boolean loadSharedDatabase() {
+        try {
+            FileInputStream fileIn = new FileInputStream(SharedDatabase.FILE);
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+
+            try {
+                sDatabase = (SharedDatabase) in.readObject();
+            } catch (ClassNotFoundException e) {
+
+                Log.log("Error while reading from saved shared database. Starting fresh");
+
+                sDatabase = new SharedDatabase();
+            }
+
+            Log.log("Loaded shared database");
+
+            in.close();
+            fileIn.close();
+
+        } catch (FileNotFoundException e) {
+
+            Log.log("Fresh shared database");
+
+            sDatabase = new SharedDatabase();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public SharedDatabase getSDatabase() { return sDatabase; }
+
+    public String getVersion() {
 		return VERSION;
 	}
 
@@ -193,6 +228,7 @@ public class ConfigsManager {
 			throw new ConfigurationsNotInitializedException();
 		}
 		mDatabase.saveDatabase();
+
 	}
 
 	private void startupListeners() {

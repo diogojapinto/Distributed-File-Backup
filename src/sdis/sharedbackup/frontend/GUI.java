@@ -1,5 +1,27 @@
 package sdis.sharedbackup.frontend;
 
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.Popup;
+import javafx.stage.Stage;
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
 import sdis.sharedbackup.backend.ConfigsManager.FileAlreadySaved;
@@ -7,47 +29,15 @@ import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
+import sdis.sharedbackup.backend.User;
 import sdis.sharedbackup.utils.EnvironmentVerifier;
-import sun.nio.ch.Net;
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
-import javafx.stage.Stage;
 
 import java.io.File;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Enumeration;
-
-import com.sun.jmx.snmp.Enumerated;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.layout.VBox;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
-import javafx.stage.Popup;
-import javafx.stage.PopupWindow;
 
 public class GUI extends Application {
 	
-	private static final String addressPlaceholder = "239.0.0.1:6666";
+	private static final String addressPlaceholder1 = "239.0.0.1:6666", addressPlaceholder2 = "239.0.0.1:6667", addressPlaceholder3 = "239.0.0.1:6668";
 
 	private File file;
 
@@ -66,9 +56,9 @@ public class GUI extends Application {
 			} catch (ConfigurationsNotInitializedException e1) {
 				e1.printStackTrace();
 			}
-			menu(primaryStage);
-		}
 
+            login(primaryStage);
+		}
 	}
 
 	private void setupService(final Stage primaryStage) {
@@ -157,10 +147,8 @@ public class GUI extends Application {
 						ApplicationInterface.getInstance()
 								.setDestinationDirectory(path);
 					} catch (InvalidBackupSizeException e) {
-						errorMsg.setFill(Color.FIREBRICK);
 						errorMsg.setText("Invalid folder. Please select a empty folder");
 					} catch (InvalidFolderException e) {
-						errorMsg.setFill(Color.FIREBRICK);
 						errorMsg.setText("Invalid size. Please input a positive integer");
 					}
 					setArgs(primaryStage, true);
@@ -170,7 +158,7 @@ public class GUI extends Application {
 		primaryStage.show();
 	}
 
-	private void setArgs(final Stage primaryStage, boolean isSetup) {
+	private void setArgs(final Stage primaryStage, final boolean isSetup) {
 		GridPane grid = new GridPane();
 		grid.setAlignment(Pos.CENTER);
 		grid.setHgap(10);
@@ -207,9 +195,9 @@ public class GUI extends Application {
 				.getHostAddress()
 				+ ":" + ConfigsManager.getInstance().getMDRPort());
 		} else {
-			mcAdressTextField.setText(addressPlaceholder);
-			mdbAdressTextField.setText(addressPlaceholder);
-			mdrAdressTextField.setText(addressPlaceholder);
+			mcAdressTextField.setText(addressPlaceholder1);
+			mdbAdressTextField.setText(addressPlaceholder2);
+			mdrAdressTextField.setText(addressPlaceholder3);
 		}
 		
 		
@@ -283,8 +271,11 @@ public class GUI extends Application {
 						} catch (ConfigurationsNotInitializedException e1) {
 							e1.printStackTrace();
 						}
-						
-						menu(primaryStage);
+
+                        if (isSetup)
+                            login(primaryStage);
+                        else
+                            menu(primaryStage);
 
 					}
 				}
@@ -300,6 +291,83 @@ public class GUI extends Application {
 
 		primaryStage.show();
 	}
+
+    private void login(final Stage primaryStage)
+    {
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.TOP_CENTER);
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(25, 25, 25, 25));
+
+        Scene scene = new Scene(grid, 300, 275);
+        primaryStage.setScene(scene);
+        scene.getStylesheets().add
+                (GUI.class.getResource("Login.css").toExternalForm());
+
+        Text scenetitle = new Text("Welcome to MFCSS!");
+        scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+
+        Label userName = new Label("User Name:");
+        Label pw = new Label("Password:");
+
+        final TextField userTextField = new TextField();
+
+        final PasswordField pwBox = new PasswordField();
+
+        Button btnSignIn = new Button("Sign in");
+        Button btnRegister = new Button("Register");
+
+        HBox hbButtons = new HBox(10);
+        hbButtons.setAlignment(Pos.BOTTOM_RIGHT);
+        hbButtons.getChildren().add(btnRegister);
+        hbButtons.getChildren().add(btnSignIn);
+
+        final Text errorMsg = new Text();
+        errorMsg.setFill(Color.FIREBRICK);
+
+        HBox hbErrorMsg = new HBox(10);
+        hbErrorMsg.setAlignment(Pos.BASELINE_CENTER);
+        hbErrorMsg.getChildren().add(errorMsg);
+
+        grid.add(scenetitle, 0, 1);
+        grid.add(userName, 0, 3);
+        grid.add(userTextField, 0, 4);
+        grid.add(pw, 0, 5);
+        grid.add(pwBox, 0, 6);
+        grid.add(hbErrorMsg, 0, 7);
+        grid.add(hbButtons, 0, 8);
+
+        btnSignIn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+
+                //TODO
+                menu(primaryStage);
+            }
+        });
+
+        btnRegister.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+
+                String userName = userTextField.getText();
+                String password = pwBox.getText();
+
+                if (userName.equals("") || password.equals("")) {
+                    errorMsg.setText("Please fill all fields");
+                } else if (!ConfigsManager.getInstance().getSDatabase().addUser(new User(userName, password, 3)))
+                {
+                    errorMsg.setText("Username already exists!");
+                }
+                else
+                    menu(primaryStage);
+            }
+        });
+
+        //grid.setGridLinesVisible(true);
+        primaryStage.show();
+    }
 
 	private void menu(final Stage primaryStage) {
 		GridPane grid = new GridPane();

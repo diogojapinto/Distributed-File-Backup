@@ -114,6 +114,10 @@ public class ApplicationInterface {
 		return ConfigsManager.getInstance().getDatabaseStatus();
 	}
 
+    public boolean getSharedDatabaseStatus() {
+        return ConfigsManager.getInstance().getDatabaseStatus();
+    }
+
 	public ArrayList<String> getRestorableFiles() {
 		return ConfigsManager.getInstance().getRestorableFiles();
 	}
