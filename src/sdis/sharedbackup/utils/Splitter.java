@@ -3,7 +3,7 @@ package sdis.sharedbackup.utils;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
-import sdis.sharedbackup.backend.MulticastComunicator;
+import sdis.sharedbackup.backend.MulticastCommunicator;
 
 public class Splitter {
 
@@ -16,9 +16,9 @@ public class Splitter {
 		byte[] headerEnd = null;
 
 		try {
-			headerEnd = new String(MulticastComunicator.CRLF
-					+ MulticastComunicator.CRLF)
-					.getBytes(MulticastComunicator.ASCII_CODE);
+			headerEnd = new String(MulticastCommunicator.CRLF
+					+ MulticastCommunicator.CRLF)
+					.getBytes(MulticastCommunicator.ASCII_CODE);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}

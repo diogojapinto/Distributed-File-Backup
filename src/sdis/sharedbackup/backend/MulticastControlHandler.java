@@ -6,10 +6,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.Random;
 
-import sdis.sharedbackup.protocols.ChunkBackup;
-import sdis.sharedbackup.protocols.ChunkRestore;
-import sdis.sharedbackup.protocols.FileDeletion;
-import sdis.sharedbackup.protocols.SpaceReclaiming;
+import sdis.sharedbackup.protocols.*;
 import sdis.sharedbackup.utils.Log;
 import sdis.sharedbackup.utils.SplittedMessage;
 import sdis.sharedbackup.utils.Splitter;
@@ -30,20 +27,9 @@ public class MulticastControlHandler implements Runnable {
 	public void run() {
 
 		String[] headers = mMessage.getHeader()
-				.split(MulticastComunicator.CRLF);
+				.split(MulticastCommunicator.CRLF);
 
 		String[] header_components = headers[0].split(" ");
-
-		if (!header_components[0].equals(FileDeletion.DELETE_COMMAND)
-				&& !header_components[0].equals(FileDeletion.RESPONSE_COMMAND)
-				&& !header_components[1].equals(ConfigsManager.getInstance()
-						.getVersion())
-				&& !header_components[1].equals(ConfigsManager.getInstance()
-						.getEnhancementsVersion())) {
-			System.err
-					.println("Received message with protocol with different version");
-			return;
-		}
 
 		String messageType = header_components[0].trim();
 		final String fileId;
@@ -52,8 +38,8 @@ public class MulticastControlHandler implements Runnable {
 		Log.log("MC RECEIVED A MESSAGE from "+ mSender.getAddr() + ": " + mMessage.getHeader());
 		switch (messageType) {
 		case ChunkBackup.STORED_COMMAND:
-			fileId = header_components[2].trim();
-			chunkNo = Integer.parseInt(header_components[3].trim());
+			fileId = header_components[1].trim();
+			chunkNo = Integer.parseInt(header_components[2].trim());
 
 			try {
 				ConfigsManager.getInstance().incChunkReplication(fileId,
@@ -75,8 +61,8 @@ public class MulticastControlHandler implements Runnable {
 			break;
 		case ChunkRestore.GET_COMMAND:
 
-			fileId = header_components[2].trim();
-			chunkNo = Integer.parseInt(header_components[3].trim());
+			fileId = header_components[1].trim();
+			chunkNo = Integer.parseInt(header_components[2].trim());
 
             if (null != ConfigsManager.getInstance().getFileById(fileId)) {
                 return;
@@ -157,8 +143,8 @@ public class MulticastControlHandler implements Runnable {
 			break;
 		case SpaceReclaiming.REMOVED_COMMAND:
 
-			fileId = header_components[2].trim();
-			chunkNo = Integer.parseInt(header_components[3].trim());
+			fileId = header_components[1].trim();
+			chunkNo = Integer.parseInt(header_components[2].trim());
 
 			FileChunk chunk2 = ConfigsManager.getInstance().getSavedChunk(
 					fileId, chunkNo);
@@ -177,9 +163,11 @@ public class MulticastControlHandler implements Runnable {
 
 			} // else I don't have it
 			break;
-		default:
+            case Election.WAKEUP_CMD:
+                // TODO: send Im master if true
+                break;
+            default:
 			Log.log("MC received non recognized command:");
-			System.out.println(mMessage);
 		}
 	};
 
@@ -212,14 +200,14 @@ public class MulticastControlHandler implements Runnable {
 			SplittedMessage message = Splitter.split(packet.getData());
 			
 			String[] headers = message.getHeader()
-					.split(MulticastComunicator.CRLF);
+					.split(MulticastCommunicator.CRLF);
 
 			String[] header_components = headers[0].split(" ");
 
 			switch (header_components[0]) {
 			case ChunkRestore.CHUNK_CONFIRMATION:
-				String fileId = header_components[2];
-				int chunkNo = Integer.parseInt(header_components[3]);
+				String fileId = header_components[1];
+				int chunkNo = Integer.parseInt(header_components[2]);
 
 				synchronized (MulticastControlListener.getInstance().mSentChunks) {
 					for (ChunkRecord record : MulticastControlListener
