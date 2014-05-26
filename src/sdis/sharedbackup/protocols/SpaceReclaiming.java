@@ -6,8 +6,8 @@ import java.net.InetAddress;
 import sdis.sharedbackup.backend.ChunkRecord;
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.FileChunk;
-import sdis.sharedbackup.backend.MulticastComunicator;
-import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
+import sdis.sharedbackup.backend.MulticastCommunicator;
+import sdis.sharedbackup.backend.MulticastCommunicator.HasToJoinException;
 import sdis.sharedbackup.utils.Log;
 
 public class SpaceReclaiming {
@@ -33,18 +33,16 @@ public class SpaceReclaiming {
 			return false;
 		}
 
-		String version = ConfigsManager.getInstance().getVersion();
-
 		String message = "";
 
-		message += REMOVED_COMMAND + " " + version + " " + chunk.getFileId()
-				+ " " + chunk.getChunkNo() + MulticastComunicator.CRLF
-				+ MulticastComunicator.CRLF;
+		message += REMOVED_COMMAND + " " + chunk.getFileId()
+				+ " " + chunk.getChunkNo() + MulticastCommunicator.CRLF
+				+ MulticastCommunicator.CRLF;
 
 		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCPort = ConfigsManager.getInstance().getMCPort();
 
-		MulticastComunicator sender = new MulticastComunicator(multCAddr,
+		MulticastCommunicator sender = new MulticastCommunicator(multCAddr,
 				multCPort);
 
 		ConfigsManager.getInstance().deleteChunk(
@@ -52,7 +50,7 @@ public class SpaceReclaiming {
 
 		try {
 			sender.sendMessage(message
-					.getBytes(MulticastComunicator.ASCII_CODE));
+					.getBytes(MulticastCommunicator.ASCII_CODE));
 		} catch (HasToJoinException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {

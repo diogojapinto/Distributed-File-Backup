@@ -3,7 +3,7 @@ package sdis.sharedbackup.backend;
 import java.net.InetAddress;
 import java.util.ArrayList;
 
-import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
+import sdis.sharedbackup.backend.MulticastCommunicator.HasToJoinException;
 import sdis.sharedbackup.utils.Log;
 import sdis.sharedbackup.utils.SplittedMessage;
 import sdis.sharedbackup.utils.Splitter;
@@ -38,7 +38,7 @@ public class MulticastControlListener implements Runnable {
 		InetAddress addr = ConfigsManager.getInstance().getMCAddr();
 		int port = ConfigsManager.getInstance().getMCPort();
 
-		MulticastComunicator receiver = new MulticastComunicator(addr, port);
+		MulticastCommunicator receiver = new MulticastCommunicator(addr, port);
 
 		receiver.join();
 

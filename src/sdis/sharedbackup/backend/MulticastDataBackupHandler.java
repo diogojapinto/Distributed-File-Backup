@@ -23,18 +23,9 @@ public class MulticastDataBackupHandler implements Runnable {
 		Log.log("MDB:Received message");
 
 		String[] headers = mMessage.getHeader()
-				.split(MulticastComunicator.CRLF);
+				.split(MulticastCommunicator.CRLF);
 
 		String[] header_components = headers[0].split(" ");
-
-		if (!header_components[1].equals(ConfigsManager.getInstance()
-				.getVersion())
-				&& !header_components[1].equals(ConfigsManager.getInstance()
-						.getEnhancementsVersion())) {
-			System.err
-					.println("Received message with protocol with different version");
-			return;
-		}
 
 		String messageType = header_components[0].trim();
 
@@ -47,15 +38,15 @@ public class MulticastDataBackupHandler implements Runnable {
 				return;
 			}
 
-			final String fileId = header_components[2].trim();
+			final String fileId = header_components[1].trim();
 
 			if (ConfigsManager.getInstance().isMyFile(fileId)) {
 				Log.log("Received PUTCHUNK for a file of mine");
 				return;
 			}
 
-			final int chunkNo = Integer.parseInt(header_components[3].trim());
-			int desiredReplication = Integer.parseInt(header_components[4]
+			final int chunkNo = Integer.parseInt(header_components[2].trim());
+			int desiredReplication = Integer.parseInt(header_components[3]
 					.trim());
 
 			// ENHANCEMENT

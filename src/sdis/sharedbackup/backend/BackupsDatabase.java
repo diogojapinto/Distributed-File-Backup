@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +35,7 @@ public class BackupsDatabase implements Serializable {
 	 */
 	private static final long serialVersionUID = 1;
 
+    private InetAddress communicationInterface = null;
 	private InetAddress mMCaddr = null, mMDBaddr = null, mMDRaddr = null;
 	private int mMCport = 0, mMDBport = 0, mMDRport = 0;
 	private String mBackupFolder;
@@ -381,5 +384,12 @@ public class BackupsDatabase implements Serializable {
 	public int getMDRPort() {
 		return mMDRport;
 	}
-	
+
+    public InetAddress getInterface() {
+        return communicationInterface;
+    }
+
+    public void setInterface(String intrfc) throws SocketException {
+        communicationInterface = NetworkInterface.getByName(intrfc).getInetAddresses().nextElement();
+    }
 }

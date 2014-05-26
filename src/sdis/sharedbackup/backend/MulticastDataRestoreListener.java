@@ -1,13 +1,10 @@
 package sdis.sharedbackup.backend;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.util.ArrayList;
 
-import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
+import sdis.sharedbackup.backend.MulticastCommunicator.HasToJoinException;
 import sdis.sharedbackup.protocols.ChunkRestore;
 import sdis.sharedbackup.utils.Log;
 import sdis.sharedbackup.utils.SplittedMessage;
@@ -40,7 +37,7 @@ public class MulticastDataRestoreListener implements Runnable {
 		InetAddress addr = ConfigsManager.getInstance().getMDRAddr();
 		int port = ConfigsManager.getInstance().getMDRPort();
 
-		MulticastComunicator receiver = new MulticastComunicator(addr, port);
+		MulticastCommunicator receiver = new MulticastCommunicator(addr, port);
 
 		receiver.join();
 
@@ -107,7 +104,7 @@ public class MulticastDataRestoreListener implements Runnable {
 				final SplittedMessage splittedMessage = Splitter.split(message);
 
 				String[] headers = splittedMessage.getHeader().split(
-						MulticastComunicator.CRLF);
+						MulticastCommunicator.CRLF);
 
 				String[] header_components = headers[0].split(" ");
 

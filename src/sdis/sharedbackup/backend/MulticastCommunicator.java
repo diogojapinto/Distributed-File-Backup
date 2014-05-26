@@ -8,7 +8,7 @@ import java.net.SocketException;
 
 import sdis.sharedbackup.utils.Log;
 
-public class MulticastComunicator {
+public class MulticastCommunicator {
 	private static int TTL = 1;
 
 	private MulticastSocket mMSocket;
@@ -21,15 +21,8 @@ public class MulticastComunicator {
 
 	public static final String CRLF = new String("\r\n");
 
-	public MulticastComunicator(InetAddress addr, int port) {
-		this.mInterface = null;
-		this.mAddr = addr;
-		this.mPort = port;
-		this.mMSocket = null;
-	}
-
-	public MulticastComunicator(InetAddress intrfc, InetAddress addr, int port) {
-		this.mInterface = intrfc;
+	public MulticastCommunicator(InetAddress addr, int port) {
+		this.mInterface = ConfigsManager.getInstance().getInterface();
 		this.mAddr = addr;
 		this.mPort = port;
 		this.mMSocket = null;
@@ -62,9 +55,11 @@ public class MulticastComunicator {
 
 		try {
 			mMSocket = new MulticastSocket();
+            mMSocket.setInterface(mInterface);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+
 
 		DatagramPacket packet = new DatagramPacket(messg, messg.length, mAddr,
 				mPort);

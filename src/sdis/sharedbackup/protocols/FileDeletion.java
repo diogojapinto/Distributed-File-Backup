@@ -4,8 +4,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 
 import sdis.sharedbackup.backend.ConfigsManager;
-import sdis.sharedbackup.backend.MulticastComunicator;
-import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
+import sdis.sharedbackup.backend.MulticastCommunicator;
+import sdis.sharedbackup.backend.MulticastCommunicator.HasToJoinException;
 import sdis.sharedbackup.utils.Log;
 
 public class FileDeletion {
@@ -30,19 +30,19 @@ public class FileDeletion {
 
 		String message = "";
 
-		message += DELETE_COMMAND + " " + fileId + MulticastComunicator.CRLF
-				+ MulticastComunicator.CRLF;
+		message += DELETE_COMMAND + " " + fileId + MulticastCommunicator.CRLF
+				+ MulticastCommunicator.CRLF;
 
 		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCPort = ConfigsManager.getInstance().getMCPort();
 
-		MulticastComunicator sender = new MulticastComunicator(multCAddr,
+		MulticastCommunicator sender = new MulticastCommunicator(multCAddr,
 				multCPort);
 
 		try {
 			try {
 				sender.sendMessage(message
-						.getBytes(MulticastComunicator.ASCII_CODE));
+						.getBytes(MulticastCommunicator.ASCII_CODE));
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
@@ -59,19 +59,19 @@ public class FileDeletion {
 
 		String message = "";
 
-		message += RESPONSE_COMMAND + " " + fileId + MulticastComunicator.CRLF
-				+ MulticastComunicator.CRLF;
+		message += RESPONSE_COMMAND + " " + fileId + MulticastCommunicator.CRLF
+				+ MulticastCommunicator.CRLF;
 
 		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCPort = ConfigsManager.getInstance().getMCPort();
 
-		MulticastComunicator sender = new MulticastComunicator(multCAddr,
+		MulticastCommunicator sender = new MulticastCommunicator(multCAddr,
 				multCPort);
 
 		try {
 			try {
 				sender.sendMessage(message
-						.getBytes(MulticastComunicator.ASCII_CODE));
+						.getBytes(MulticastCommunicator.ASCII_CODE));
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}

@@ -8,12 +8,9 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 
-import sdis.sharedbackup.backend.ConfigsManager;
-import sdis.sharedbackup.backend.FileChunk;
-import sdis.sharedbackup.backend.FileChunkWithData;
-import sdis.sharedbackup.backend.MulticastComunicator;
-import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
-import sdis.sharedbackup.backend.MulticastDataRestoreListener;
+import sdis.sharedbackup.backend.*;
+import sdis.sharedbackup.backend.MulticastCommunicator;
+import sdis.sharedbackup.backend.MulticastCommunicator.HasToJoinException;
 import sdis.sharedbackup.utils.Log;
 
 public class ChunkRestore {
@@ -45,17 +42,15 @@ public class ChunkRestore {
 
 		FileChunkWithData retChunk = null;
 
-		String version = ConfigsManager.getInstance().getVersion();
-
 		String message = "";
 
-		message += GET_COMMAND + " " + version + " " + fileId + " " + chunkNo
-				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
+		message += GET_COMMAND + " " + fileId + " " + chunkNo
+				+ MulticastCommunicator.CRLF + MulticastCommunicator.CRLF;
 
 		InetAddress multCAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCPort = ConfigsManager.getInstance().getMCPort();
 
-		MulticastComunicator sender = new MulticastComunicator(multCAddr,
+		MulticastCommunicator sender = new MulticastCommunicator(multCAddr,
 				multCPort);
 
 		MulticastDataRestoreListener.getInstance().subscribeToChunkData(fileId,
@@ -64,7 +59,7 @@ public class ChunkRestore {
 		do {
 			try {
 				sender.sendMessage(message
-						.getBytes(MulticastComunicator.ASCII_CODE));
+						.getBytes(MulticastCommunicator.ASCII_CODE));
 			} catch (HasToJoinException e1) {
 				e1.printStackTrace();
 			} catch (UnsupportedEncodingException e) {
@@ -97,20 +92,18 @@ public class ChunkRestore {
 		InetAddress multDRAddr = ConfigsManager.getInstance().getMDRAddr();
 		int multDRPort = ConfigsManager.getInstance().getMDRPort();
 
-		String version = ConfigsManager.getInstance().getVersion();
-
 		String header = "";
 
-		header += CHUNK_COMMAND + " " + version + " " + chunk.getFileId() + " "
-				+ chunk.getChunkNo() + MulticastComunicator.CRLF
-				+ MulticastComunicator.CRLF;
+		header += CHUNK_COMMAND + " " + chunk.getFileId() + " "
+				+ chunk.getChunkNo() + MulticastCommunicator.CRLF
+				+ MulticastCommunicator.CRLF;
 
 		byte[] data = chunk.getData();
 
 		byte[] message = new byte[header.length() + data.length];
 
 		try {
-			System.arraycopy(header.getBytes(MulticastComunicator.ASCII_CODE),
+			System.arraycopy(header.getBytes(MulticastCommunicator.ASCII_CODE),
 					0, message, 0, header.length());
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
@@ -118,7 +111,7 @@ public class ChunkRestore {
 
 		System.arraycopy(data, 0, message, header.length(), data.length);
 
-		MulticastComunicator sender = new MulticastComunicator(multDRAddr,
+		MulticastCommunicator sender = new MulticastCommunicator(multDRAddr,
 				multDRPort);
 
 		try {
@@ -136,20 +129,18 @@ public class ChunkRestore {
 	public boolean sendChunk(FileChunk chunk, InetAddress destinationAddress,
 			int destinationPort) {
 
-		String version = ConfigsManager.getInstance().getVersion();
-
 		String header = "";
 
-		header += CHUNK_COMMAND + " " + version + " " + chunk.getFileId() + " "
-				+ chunk.getChunkNo() + MulticastComunicator.CRLF
-				+ MulticastComunicator.CRLF;
+		header += CHUNK_COMMAND + " " + chunk.getFileId() + " "
+				+ chunk.getChunkNo() + MulticastCommunicator.CRLF
+				+ MulticastCommunicator.CRLF;
 
 		byte[] data = chunk.getData();
 
 		byte[] message = new byte[header.length() + data.length];
 
 		try {
-			System.arraycopy(header.getBytes(MulticastComunicator.ASCII_CODE),
+			System.arraycopy(header.getBytes(MulticastCommunicator.ASCII_CODE),
 					0, message, 0, header.length());
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
@@ -184,13 +175,12 @@ public class ChunkRestore {
 	}
 
 	public void answerToChunkMessage(InetAddress addr, int port, FileChunk chunk) {
-		String version = ConfigsManager.getInstance().getVersion();
 
 		String message = "";
 
-		message += CHUNK_CONFIRMATION + " " + version + " " + chunk.getFileId() + " "
-				+ chunk.getChunkNo() + MulticastComunicator.CRLF
-				+ MulticastComunicator.CRLF;
+		message += CHUNK_CONFIRMATION + " " + chunk.getFileId() + " "
+				+ chunk.getChunkNo() + MulticastCommunicator.CRLF
+				+ MulticastCommunicator.CRLF;
 
 		DatagramSocket socket = null;
 
@@ -203,8 +193,8 @@ public class ChunkRestore {
 		DatagramPacket packet = null;
 		try {
 			packet = new DatagramPacket(
-					message.getBytes(MulticastComunicator.ASCII_CODE),
-					message.getBytes(MulticastComunicator.ASCII_CODE).length,
+					message.getBytes(MulticastCommunicator.ASCII_CODE),
+					message.getBytes(MulticastCommunicator.ASCII_CODE).length,
 					addr, port);
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
@@ -220,7 +210,7 @@ public class ChunkRestore {
 
 		socket.close();
 
-		Log.log("Answerd to CHUNK command to IP");
+		Log.log("Answered to CHUNK command to IP");
 	}
 
 	public synchronized void addRequestedChunk(FileChunkWithData chunk) {

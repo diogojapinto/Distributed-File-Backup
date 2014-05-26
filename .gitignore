@@ -2,7 +2,9 @@
 .project
 .classpath
 .settings/*
-.directory
+sdirectory
+MyFirstCloudSharingService.iml
+log.log
 .database.ser
 .idea/
 YetAnotherDropbox.iml

@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.Executor;
@@ -14,14 +14,13 @@ import java.util.concurrent.Executors;
 
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
+import sdis.sharedbackup.protocols.Election;
 import sdis.sharedbackup.utils.EnvironmentVerifier;
 import sdis.sharedbackup.utils.Log;
 
 public class ConfigsManager {
 
 	// constants
-	private static final String VERSION = "1.0";
-	private static final String ENHANCEMENTS_VERSION = "1.24";
 	private static final int NR_CONCURRENT_THREADS = 12;
 
 	// static members
@@ -220,16 +219,26 @@ public class ConfigsManager {
 
 	public void init() throws ConfigurationsNotInitializedException {
 		if (mDatabase.isInitialized()) {
-			mExecutor.shutdownNow();
-			mExecutor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
 			startupListeners();
-			mExecutor.execute(new FileDeletionChecker());
 		} else {
 			throw new ConfigurationsNotInitializedException();
 		}
 		mDatabase.saveDatabase();
-
 	}
+
+    public void enterMainStage() throws ConfigurationsNotInitializedException {
+        if (mDatabase.isInitialized()) {
+            mExecutor.shutdownNow();
+            mExecutor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
+
+            Election.getInstance().sendStartup();
+            startupListeners();
+            mExecutor.execute(new FileDeletionChecker());
+        } else {
+            throw new ConfigurationsNotInitializedException();
+        }
+        mDatabase.saveDatabase();
+    }
 
 	private void startupListeners() {
 		if (mMCListener == null) {
@@ -337,6 +346,14 @@ public class ConfigsManager {
 		saveDatabase();
 		return ret;
 	}
+
+    public void setInterface(String selectedInterface) throws SocketException {
+        mDatabase.setInterface(selectedInterface);
+    }
+
+    public InetAddress getInterface() {
+        return mDatabase.getInterface();
+    }
 
 	/*
 	 * Exceptions

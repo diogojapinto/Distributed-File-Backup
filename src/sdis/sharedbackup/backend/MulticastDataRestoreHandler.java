@@ -15,16 +15,9 @@ public class MulticastDataRestoreHandler implements Runnable {
 	public void run() {
 
 		String[] headers = mMessage.getHeader()
-				.split(MulticastComunicator.CRLF);
+				.split(MulticastCommunicator.CRLF);
 
 		String[] header_components = headers[0].split(" ");
-
-		if (!header_components[1].equals(ConfigsManager.getInstance()
-				.getVersion())) {
-			System.err
-					.println("Received message with protocol with different version");
-			return;
-		}
 
 		String messageType = header_components[0].trim();
 		String fileId;
@@ -33,8 +26,8 @@ public class MulticastDataRestoreHandler implements Runnable {
 		switch (messageType) {
 		case ChunkRestore.CHUNK_COMMAND:
 
-			fileId = header_components[2].trim();
-			chunkNo = Integer.parseInt(header_components[3].trim());
+			fileId = header_components[1].trim();
+			chunkNo = Integer.parseInt(header_components[2].trim());
 
 			Log.log("Received CHUNK command for file " + fileId + " chunk "
 					+ chunkNo);
@@ -69,7 +62,6 @@ public class MulticastDataRestoreHandler implements Runnable {
 			break;
 		default:
 			Log.log("MDR received non recognized command");
-			System.out.println(new String(mMessage.getHeader()));
 		}
 	}
 

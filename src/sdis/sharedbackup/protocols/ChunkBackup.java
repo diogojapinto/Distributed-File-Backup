@@ -5,8 +5,8 @@ import java.net.InetAddress;
 
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.FileChunk;
-import sdis.sharedbackup.backend.MulticastComunicator;
-import sdis.sharedbackup.backend.MulticastComunicator.HasToJoinException;
+import sdis.sharedbackup.backend.MulticastCommunicator;
+import sdis.sharedbackup.backend.MulticastCommunicator.HasToJoinException;
 import sdis.sharedbackup.utils.Log;
 
 public class ChunkBackup {
@@ -29,21 +29,20 @@ public class ChunkBackup {
 	}
 
 	public boolean putChunk(FileChunk chunk) {
-		String version = ConfigsManager.getInstance().getVersion();
 
 		String header = "";
 
-		header += PUT_COMMAND + " " + version + " " + chunk.getFileId() + " "
+		header += PUT_COMMAND + " " + chunk.getFileId() + " "
 				+ chunk.getChunkNo() + " " + chunk.getDesiredReplicationDeg()
-				+ MulticastComunicator.CRLF + chunk.getCurrentReplicationDeg()
-				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
+				+ MulticastCommunicator.CRLF + chunk.getCurrentReplicationDeg()
+				+ MulticastCommunicator.CRLF + MulticastCommunicator.CRLF;
 
 		byte[] data = chunk.getData();
 
 		byte[] message = new byte[header.length() + data.length];
 
 		try {
-			System.arraycopy(header.getBytes(MulticastComunicator.ASCII_CODE),
+			System.arraycopy(header.getBytes(MulticastCommunicator.ASCII_CODE),
 					0, message, 0, header.length());
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
@@ -53,7 +52,7 @@ public class ChunkBackup {
 		InetAddress multDBAddr = ConfigsManager.getInstance().getMDBAddr();
 		int multDBPort = ConfigsManager.getInstance().getMDBPort();
 
-		MulticastComunicator sender = new MulticastComunicator(multDBAddr,
+		MulticastCommunicator sender = new MulticastCommunicator(multDBAddr,
 				multDBPort);
 
 		int counter = 0;
@@ -61,7 +60,6 @@ public class ChunkBackup {
 		Log.log("Sending chunk " + chunk.getChunkNo() + " of file "
 				+ chunk.getFileId() + "with " + chunk.getData().length
 				+ " bytes");
-		Log.log("Sending: " + message);
 
 		do {
 			try {
@@ -100,7 +98,7 @@ public class ChunkBackup {
 		InetAddress multCtrlAddr = ConfigsManager.getInstance().getMCAddr();
 		int multCtrlPort = ConfigsManager.getInstance().getMCPort();
 
-		MulticastComunicator sender = new MulticastComunicator(multCtrlAddr,
+		MulticastCommunicator sender = new MulticastCommunicator(multCtrlAddr,
 				multCtrlPort);
 
 		// save chunk in file
@@ -115,13 +113,12 @@ public class ChunkBackup {
 		String message = null;
 
 		message = STORED_COMMAND + " "
-				+ ConfigsManager.getInstance().getVersion() + " "
 				+ chunk.getFileId() + " " + String.valueOf(chunk.getChunkNo())
-				+ MulticastComunicator.CRLF + MulticastComunicator.CRLF;
+				+ MulticastCommunicator.CRLF + MulticastCommunicator.CRLF;
 
 		try {
 			sender.sendMessage(message
-					.getBytes(MulticastComunicator.ASCII_CODE));
+					.getBytes(MulticastCommunicator.ASCII_CODE));
 		} catch (HasToJoinException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {
