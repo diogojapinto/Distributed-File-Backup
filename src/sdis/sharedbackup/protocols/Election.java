@@ -21,13 +21,16 @@ public class Election {
     public static final String CANDIDATE_CMD = "CANDIDATE";
     private static final int WAKE_UP_TIME_INTERVAL = 500;
     private static final int MAX_RETRIES = 3;
+
     private static boolean imMaster = false;
     private Boolean knowsMaster = false;
     private String masterIp = null;
     private long masterUpTime = 0;
+
     private long lastMasterCmdTimestamp;
     private Thread masterUpdate = null;
     private Thread masterChecker = null;
+
     private Long sentUpTime;
     private boolean electionRunning = false;
 
@@ -142,6 +145,7 @@ public class Election {
         }
         if (upTime > masterUpTime) {
             synchronized (knowsMaster) {
+                knowsMaster = true;
                 masterIp = ip;
             }
             masterUpTime = upTime;
@@ -201,8 +205,16 @@ public class Election {
         }
 
         if (!knowsMaster) {
-            System.err.println("Election unsuccessful");
-            System.exit(1);
+            imMaster = true;
+            knowsMaster = true;
+            masterIp = ConfigsManager.getInstance().getInterface().getHostAddress();
+            masterUpTime = uptime;
+
+            masterUpdate = new Thread(new MasterCmdDiffuser());
+            masterUpdate.start();
+        } else {
+            masterChecker = new Thread(new CheckMasterCmdExpiration());
+            masterChecker.start();
         }
     }
 
