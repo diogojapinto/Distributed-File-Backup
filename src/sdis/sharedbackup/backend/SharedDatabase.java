@@ -12,11 +12,18 @@ import java.util.Date;
 public class SharedDatabase implements Serializable{
 
     public static final String FILE = ".shareddatabase.ser";
-    private long lastModification; //TODO hash access levels ou la o que era
-    private Date date;
     private ArrayList<User> users;
+    private Date date;
+    private long lastModification;
+    private ArrayList<String> accessLevelPasswords;
+
 
     public SharedDatabase(){
+        accessLevelPasswords = new ArrayList<>();
+        accessLevelPasswords.add("cenas1");
+        accessLevelPasswords.add("cenas2");
+        accessLevelPasswords.add("cenas3");
+
         date = new Date();
         lastModification = date.getTime();
         users = new ArrayList<>();
@@ -29,8 +36,8 @@ public class SharedDatabase implements Serializable{
 
         users.add(user);
         Log.log("User " + user.getUserName() + " added");
-        setLastModification();
 
+        setLastModification();
         saveDatabase();
 
         return true;
@@ -43,6 +50,8 @@ public class SharedDatabase implements Serializable{
     private void setLastModification() {
         lastModification = date.getTime();
     }
+
+    public long getLastModification() { return lastModification; }
 
     public void saveDatabase() {
         try {
@@ -57,5 +66,22 @@ public class SharedDatabase implements Serializable{
             Log.log("Could not save shared database");
             i.printStackTrace();
         }
+    }
+
+    public int getAccessLevel(String accessPassword) {
+        for (int i = 0; i < accessLevelPasswords.size(); i++)
+            if (accessLevelPasswords.get(i).equals(accessPassword))
+                return i+1;
+
+        return 0;
+    }
+
+    public boolean validLogin(String userName, String password) {
+        for (int i = 0; i < users.size(); i++) {
+            if (users.get(i).getUserName().equals(userName) && users.get(i).getPassword().equals(password))
+                return true;
+        }
+
+        return false;
     }
 }
