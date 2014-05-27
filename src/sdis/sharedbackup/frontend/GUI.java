@@ -68,7 +68,7 @@ public class GUI extends Application {
 		grid.setVgap(5);
 		grid.setPadding(new Insets(25, 25, 25, 25));
 
-		Scene scene = new Scene(grid, 300, 280);
+		Scene scene = new Scene(grid, 300, 300);
 		primaryStage.setScene(scene);
 		scene.getStylesheets().add(
 				GUI.class.getResource("Login.css").toExternalForm());
@@ -165,7 +165,7 @@ public class GUI extends Application {
 		grid.setVgap(5);
 		grid.setPadding(new Insets(25, 25, 25, 25));
 
-		Scene scene = new Scene(grid, 300, 280);
+		Scene scene = new Scene(grid, 300, 300);
 		primaryStage.setScene(scene);
 		scene.getStylesheets().add(
 				GUI.class.getResource("Login.css").toExternalForm());
@@ -212,7 +212,7 @@ public class GUI extends Application {
 		final Text errorMsg = new Text();
 		errorMsg.setFill(Color.FIREBRICK);
 
-		Button confirm = new Button("Ok");
+		Button confirm = new Button("Okay");
 		Button cancel = new Button(" Cancel ");
 		// cancel.setMinWidth(60);
 
@@ -300,7 +300,7 @@ public class GUI extends Application {
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
 
-        Scene scene = new Scene(grid, 300, 275);
+        Scene scene = new Scene(grid, 300, 300);
         primaryStage.setScene(scene);
         scene.getStylesheets().add
                 (GUI.class.getResource("Login.css").toExternalForm());
@@ -342,10 +342,81 @@ public class GUI extends Application {
             @Override
             public void handle(ActionEvent e) {
 
-                //TODO
-                menu(primaryStage);
+                String userName = userTextField.getText();
+                String password = pwBox.getText();
+
+                if (userName.equals("") || password.equals("")) {
+                    errorMsg.setText("Please fill all fields");
+                }
+                else if (!ConfigsManager.getInstance().getSDatabase().validLogin(userName, password))
+                {
+                    errorMsg.setText("Invalid login, please try again!");
+                }
+                else
+                    menu(primaryStage);
             }
         });
+
+        btnRegister.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                register(primaryStage);
+            }
+        });
+
+        //grid.setGridLinesVisible(true);
+        primaryStage.show();
+    }
+
+    private void register(final Stage primaryStage)
+    {
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(25, 25, 25, 25));
+
+        Scene scene = new Scene(grid, 300, 300);
+        primaryStage.setScene(scene);
+        scene.getStylesheets().add
+                (GUI.class.getResource("Login.css").toExternalForm());
+
+        Text scenetitle = new Text("Register New User");
+        scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+
+        Label userName = new Label("User Name:");
+        Label pw = new Label("Password:");
+        Label accessLevelPasswordLbl = new Label("Access Level Password:");
+
+        final TextField userTextField = new TextField();
+
+        final PasswordField pwBox = new PasswordField();
+        final PasswordField accessLevelPasswordField = new PasswordField();
+
+        Button btnRegister = new Button("Register");
+        Button btnCancel = new Button("Cancel");
+
+        HBox hbButtons = new HBox(10);
+        hbButtons.setAlignment(Pos.BOTTOM_RIGHT);
+        hbButtons.getChildren().add(btnCancel);
+        hbButtons.getChildren().add(btnRegister);
+
+        final Text errorMsg = new Text();
+        errorMsg.setFill(Color.FIREBRICK);
+
+        HBox hbErrorMsg = new HBox(10);
+        hbErrorMsg.setAlignment(Pos.BASELINE_CENTER);
+        hbErrorMsg.getChildren().add(errorMsg);
+
+        grid.add(scenetitle, 0, 1);
+        grid.add(userName, 0, 2);
+        grid.add(userTextField, 0, 3);
+        grid.add(pw, 0, 4);
+        grid.add(pwBox, 0, 5);
+        grid.add(accessLevelPasswordLbl, 0, 6);
+        grid.add(accessLevelPasswordField, 0, 7);
+        grid.add(hbErrorMsg, 0, 8);
+        grid.add(hbButtons, 0, 9);
 
         btnRegister.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -353,15 +424,29 @@ public class GUI extends Application {
 
                 String userName = userTextField.getText();
                 String password = pwBox.getText();
+                String accessLevel = accessLevelPasswordField.getText();
 
-                if (userName.equals("") || password.equals("")) {
+                int accessLevelInt = ConfigsManager.getInstance().getSDatabase().getAccessLevel(accessLevel);
+
+                if (userName.equals("") || password.equals("") || accessLevel.equals("")) {
                     errorMsg.setText("Please fill all fields");
-                } else if (!ConfigsManager.getInstance().getSDatabase().addUser(new User(userName, password, 3)))
+                }
+                else if (accessLevelInt == 0) {
+                    errorMsg.setText("Invalid access level password!");
+                }
+                else if (!ConfigsManager.getInstance().getSDatabase().addUser(new User(userName, password, accessLevelInt)))
                 {
                     errorMsg.setText("Username already exists!");
                 }
                 else
                     menu(primaryStage);
+            }
+        });
+
+        btnCancel.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                login(primaryStage);
             }
         });
 
@@ -376,7 +461,7 @@ public class GUI extends Application {
 		grid.setVgap(10);
 		grid.setPadding(new Insets(25, 25, 25, 25));
 
-		Scene scene = new Scene(grid, 300, 280);
+		Scene scene = new Scene(grid, 300, 300);
 		primaryStage.setScene(scene);
 		scene.getStylesheets().add(
 				GUI.class.getResource("Login.css").toExternalForm());
@@ -475,7 +560,7 @@ public class GUI extends Application {
 		grid.setVgap(10);
 		grid.setPadding(new Insets(25, 25, 25, 25));
 
-		Scene scene = new Scene(grid, 300, 280);
+		Scene scene = new Scene(grid, 300, 300);
 		primaryStage.setScene(scene);
 		scene.getStylesheets().add(
 				GUI.class.getResource("Login.css").toExternalForm());
@@ -614,7 +699,7 @@ public class GUI extends Application {
 				alertMessg.setAutoFix(false);
 				alertMessg.setHideOnEscape(true);
 
-				Button btnGoBack = new Button("Ok");
+				Button btnGoBack = new Button("Okay");
 				Label lblAlert = new Label(
 						"The files you've backed up have are still saved in the file system");
 
@@ -650,7 +735,7 @@ public class GUI extends Application {
 		grid.setVgap(10);
 		grid.setPadding(new Insets(25, 25, 25, 25));
 
-		Scene scene = new Scene(grid, 300, 280);
+		Scene scene = new Scene(grid, 300, 300);
 		primaryStage.setScene(scene);
 		scene.getStylesheets().add(
 				GUI.class.getResource("Login.css").toExternalForm());
@@ -740,7 +825,7 @@ public class GUI extends Application {
 				alertMessg.setAutoFix(false);
 				alertMessg.setHideOnEscape(true);
 
-				Button btnGoBack = new Button("Ok");
+				Button btnGoBack = new Button("Okay");
 				Label lblAlert = new Label(
 						"You do not have any backed up files");
 
@@ -776,7 +861,7 @@ public class GUI extends Application {
 		grid.setVgap(10);
 		grid.setPadding(new Insets(25, 25, 25, 25));
 
-		Scene scene = new Scene(grid, 300, 280);
+		Scene scene = new Scene(grid, 300, 300);
 		primaryStage.setScene(scene);
 		scene.getStylesheets().add(
 				GUI.class.getResource("Login.css").toExternalForm());
@@ -863,7 +948,7 @@ public class GUI extends Application {
 		grid.setVgap(10);
 		grid.setPadding(new Insets(25, 25, 25, 25));
 
-		Scene scene = new Scene(grid, 300, 280);
+		Scene scene = new Scene(grid, 300, 300);
 		primaryStage.setScene(scene);
 		scene.getStylesheets().add(
 				GUI.class.getResource("Login.css").toExternalForm());
