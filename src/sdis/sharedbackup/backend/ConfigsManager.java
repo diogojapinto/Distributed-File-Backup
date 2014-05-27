@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -38,6 +39,7 @@ public class ConfigsManager {
 	private ExecutorService mExecutor = null;
 	private Random mRandom;
 	private boolean mIsRunning;
+    private long beginningTime;
 
 	private ConfigsManager() {
 		mMCListener = null;
@@ -124,14 +126,6 @@ public class ConfigsManager {
     }
 
     public SharedDatabase getSDatabase() { return sDatabase; }
-
-    public String getVersion() {
-		return VERSION;
-	}
-
-	public String getEnhancementsVersion() {
-		return ENHANCEMENTS_VERSION;
-	}
 
 	public boolean isToCheckState() {
 		return mCheckState;
@@ -234,6 +228,8 @@ public class ConfigsManager {
             Election.getInstance().sendStartup();
             startupListeners();
             mExecutor.execute(new FileDeletionChecker());
+            Date d = new Date();
+            beginningTime = d.getTime();
         } else {
             throw new ConfigurationsNotInitializedException();
         }
@@ -321,7 +317,6 @@ public class ConfigsManager {
 	public void terminate() {
 		mIsRunning = false;
 		mExecutor.shutdownNow();
-
 	}
 
 	public boolean isAppRunning() {
@@ -353,6 +348,11 @@ public class ConfigsManager {
 
     public InetAddress getInterface() {
         return mDatabase.getInterface();
+    }
+
+    public long getUpTime() {
+        Date d = new Date();
+        return d.getTime() - beginningTime;
     }
 
 	/*
