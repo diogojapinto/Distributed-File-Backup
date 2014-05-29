@@ -166,6 +166,7 @@ public class MulticastControlHandler implements Runnable {
             case Election.WAKEUP_CMD:
                 if (Election.getInstance().imMaster()) {
                     try {
+                        Log.log("Sending IM_MASTER in response to WAKED_UP");
                         Election.getInstance().sendMasterCmd();
                     } catch (Election.NotMasterException e) {
                         e.printStackTrace();
@@ -182,6 +183,7 @@ public class MulticastControlHandler implements Runnable {
                     }
                 } else {
                     // everything is running silky smooth
+                    Log.log("Received valid IM_MASTER command");
                 }
                 break;
             case Election.CANDIDATE_CMD:

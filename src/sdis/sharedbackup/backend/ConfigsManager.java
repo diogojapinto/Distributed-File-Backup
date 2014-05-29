@@ -16,6 +16,8 @@ import java.util.concurrent.Executors;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 import sdis.sharedbackup.protocols.Election;
+import sdis.sharedbackup.protocols.SharedClock;
+import sdis.sharedbackup.protocols.SharedDatabase;
 import sdis.sharedbackup.utils.EnvironmentVerifier;
 import sdis.sharedbackup.utils.Log;
 
@@ -230,6 +232,7 @@ public class ConfigsManager {
             mExecutor.execute(new FileDeletionChecker());
             Date d = new Date();
             beginningTime = d.getTime();
+            SharedClock.getInstance();
         } else {
             throw new ConfigurationsNotInitializedException();
         }

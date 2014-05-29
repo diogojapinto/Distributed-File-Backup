@@ -1,5 +1,6 @@
-package sdis.sharedbackup.backend;
+package sdis.sharedbackup.protocols;
 
+import sdis.sharedbackup.backend.User;
 import sdis.sharedbackup.utils.Log;
 
 import java.io.FileOutputStream;

@@ -1,6 +1,6 @@
 package sdis.sharedbackup.utils;
 
-import sdis.sharedbackup.backend.SharedClock;
+import sdis.sharedbackup.protocols.SharedClock;
 import sdis.sharedbackup.frontend.ApplicationInterface;
 
 import java.io.FileWriter;

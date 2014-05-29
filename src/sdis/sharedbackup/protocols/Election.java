@@ -6,6 +6,12 @@ import sdis.sharedbackup.utils.Log;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.Random;
 
@@ -34,8 +40,15 @@ public class Election {
     private Long sentUpTime;
     private boolean electionRunning = false;
 
-    private Election() {
+    Registry reg;
 
+    private Election() {
+        try {
+            reg = LocateRegistry.getRegistry();
+        } catch (RemoteException e) {
+            System.err.println("RMI registry not available. Exiting...");
+            System.exit(1);
+        }
     }
 
     public static Election getInstance() {
@@ -157,10 +170,18 @@ public class Election {
         return ip.equals(masterIp);
     }
 
-    public static class NotMasterException extends Exception {
-    }
-
     public void candidate() {
+
+        if (imMaster) {
+            try {
+                reg.unbind(MasterServices.REG_ID);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            } catch (NotBoundException e) {
+                e.printStackTrace();
+            }
+        }
+
         // initialize variables
         electionRunning = true;
         long uptime = ConfigsManager.getInstance().getUpTime();
@@ -212,6 +233,12 @@ public class Election {
 
             masterUpdate = new Thread(new MasterCmdDiffuser());
             masterUpdate.start();
+
+            try {
+                electedStartup();
+            } catch (NotMasterException e) {
+                e.printStackTrace();
+            }
         } else {
             masterChecker = new Thread(new CheckMasterCmdExpiration());
             masterChecker.start();
@@ -261,7 +288,48 @@ public class Election {
         }
     }
 
-    public class ElectionNotRunningException extends Exception {
+    private void electedStartup() throws NotMasterException {
+        if (!imMaster) {
+            throw new NotMasterException();
+        }
 
+        MasterActions obj = new MasterActions();
+        try {
+            MasterServices stub = (MasterServices) UnicastRemoteObject.exportObject(obj, 0);
+            reg.bind(MasterServices.REG_ID, obj);
+
+            Log.log("Master services ready");
+
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (AlreadyBoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public MasterServices getMasterStub() throws NotRegularPeerException {
+        if (imMaster) {
+            throw new NotRegularPeerException();
+        }
+
+        try {
+            return (MasterServices) reg.lookup(MasterServices.REG_ID);
+        } catch (RemoteException e) {
+            System.err.println("Error getting stub from RMI Registry. Exiting...");
+            System.exit(1);
+        } catch (NotBoundException e) {
+            System.err.println("Error getting stub from RMI Registry. Exiting...");
+            System.exit(1);
+        }
+        return null;
+    }
+
+    public class ElectionNotRunningException extends Exception {
+    }
+
+    public static class NotMasterException extends Exception {
+    }
+
+    public static class NotRegularPeerException extends Exception {
     }
 }

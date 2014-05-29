@@ -1,4 +1,4 @@
-package sdis.sharedbackup.backend;
+package sdis.sharedbackup.protocols;
 
 import sdis.sharedbackup.utils.Log;
 
@@ -10,16 +10,18 @@ import java.util.Date;
  */
 public class SharedClock {
 
+    private static final int FIVE_MINS = 5 * 60 * 1000;
+
     private long mSharedTime = 0;
     private long mEndSyncTime = 0;
     private boolean isSynced = false;
     private Date mDate;
 
-
     private static SharedClock sInstance = null;
 
     private SharedClock() {
         mDate = new Date();
+        new Thread(new SharedTimeUpdater()).start();
     }
 
     public static SharedClock getInstance() {
@@ -45,17 +47,31 @@ public class SharedClock {
         return new Timestamp(getTime()).toString();
     }
 
-    public void updateSharedTime(long receivedTime) {
-        // TODO : when receive message call this
+    private class SharedTimeUpdater implements Runnable {
 
-        long startSyncTime = mDate.getTime();
+        @Override
+        public void run() {
 
-        mEndSyncTime = mDate.getTime();
-        mSharedTime = receivedTime + mEndSyncTime - startSyncTime;
+            try {
+                Thread.sleep(FIVE_MINS);
+            } catch (InterruptedException e) {
+                System.err.println("Thread interrupted. Exiting...");
+                System.exit(1);
+            }
 
-        Log.log("Clock synchronized");
+            try {
+                long receivedTime = Election.getInstance().getMasterStub().getMasterClock();
+                long startSyncTime = mDate.getTime();
+
+                mEndSyncTime = mDate.getTime();
+                mSharedTime = receivedTime + mEndSyncTime - startSyncTime;
+
+                Log.log("Clock synchronized");
+            } catch (Election.NotRegularPeerException e) {
+                e.printStackTrace();
+            }
+        }
     }
-
 
     public static class NotSyncedException extends Exception {
     }
