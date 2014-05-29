@@ -25,6 +25,7 @@ public class Election {
     public static final String WAKEUP_CMD = "WAKED_UP";
     public static final String MASTER_CMD = "IM_MASTER";
     public static final String CANDIDATE_CMD = "CANDIDATE";
+    public static final int REGISTRY_PORT = 6548;
     private static final int WAKE_UP_TIME_INTERVAL = 500;
     private static final int MAX_RETRIES = 3;
 
@@ -43,12 +44,6 @@ public class Election {
     Registry reg;
 
     private Election() {
-        try {
-            reg = LocateRegistry.getRegistry();
-        } catch (RemoteException e) {
-            System.err.println("RMI registry not available. Exiting...");
-            System.exit(1);
-        }
     }
 
     public static Election getInstance() {
@@ -110,6 +105,11 @@ public class Election {
 
             masterUpdate = new Thread(new MasterCmdDiffuser());
             masterUpdate.start();
+            try {
+                electedStartup();
+            } catch (NotMasterException e) {
+                e.printStackTrace();
+            }
         } else {
             masterChecker = new Thread(new CheckMasterCmdExpiration());
             masterChecker.start();
@@ -295,15 +295,16 @@ public class Election {
 
         MasterActions obj = new MasterActions();
         try {
+            reg = LocateRegistry.createRegistry(REGISTRY_PORT);
             MasterServices stub = (MasterServices) UnicastRemoteObject.exportObject(obj, 0);
             reg.bind(MasterServices.REG_ID, obj);
 
             Log.log("Master services ready");
 
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.err.println("RMI registry not available. Exiting...");
+            System.exit(1);
         } catch (AlreadyBoundException e) {
-            e.printStackTrace();
         }
     }
 
@@ -313,6 +314,7 @@ public class Election {
         }
 
         try {
+            reg = LocateRegistry.getRegistry(REGISTRY_PORT);
             return (MasterServices) reg.lookup(MasterServices.REG_ID);
         } catch (RemoteException e) {
             System.err.println("Error getting stub from RMI Registry. Exiting...");

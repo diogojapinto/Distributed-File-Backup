@@ -35,7 +35,7 @@ public class BackupsDatabase implements Serializable {
 	 */
 	private static final long serialVersionUID = 1;
 
-    private InetAddress communicationInterface = null;
+    private String communicationInterface = null;
 	private InetAddress mMCaddr = null, mMDBaddr = null, mMDRaddr = null;
 	private int mMCport = 0, mMDBport = 0, mMDRport = 0;
 	private String mBackupFolder;
@@ -385,11 +385,15 @@ public class BackupsDatabase implements Serializable {
 		return mMDRport;
 	}
 
-    public InetAddress getInterface() {
+    public InetAddress getInterface() throws SocketException {
+        return NetworkInterface.getByName(communicationInterface).getInetAddresses().nextElement();
+    }
+
+    public String getInterfaceName() {
         return communicationInterface;
     }
 
-    public void setInterface(String intrfc) throws SocketException {
-        communicationInterface = NetworkInterface.getByName(intrfc).getInetAddresses().nextElement();
+    public void setInterface(String intrfc) {
+        communicationInterface = intrfc;
     }
 }

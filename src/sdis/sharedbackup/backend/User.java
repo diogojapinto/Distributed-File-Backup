@@ -1,13 +1,15 @@
 package sdis.sharedbackup.backend;
 
+import sdis.sharedbackup.protocols.AccessLevel;
+
 import java.io.Serializable;
 
 public class User implements Serializable{
 
     private String userName, password;
-    private int accessLevel;
+    private AccessLevel accessLevel;
 
-    public User(String userName, String password, int accessLevel) {
+    public User(String userName, String password, AccessLevel accessLevel) {
         this.userName = userName;
         this.password = password;
         this.accessLevel = accessLevel;
@@ -21,9 +23,9 @@ public class User implements Serializable{
 
     public String getPassword() { return password; }
 
-    public void setAccessLevel(int accessLevel) {
+    public void setAccessLevel(AccessLevel accessLevel) {
         this.accessLevel = accessLevel;
     }
 
-    public int getAccessLevel() { return accessLevel; }
+    public AccessLevel getAccessLevel() { return accessLevel; }
 }

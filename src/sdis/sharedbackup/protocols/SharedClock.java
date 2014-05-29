@@ -2,6 +2,7 @@ package sdis.sharedbackup.protocols;
 
 import sdis.sharedbackup.utils.Log;
 
+import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -68,6 +69,8 @@ public class SharedClock {
 
                 Log.log("Clock synchronized");
             } catch (Election.NotRegularPeerException e) {
+                e.printStackTrace();
+            } catch (RemoteException e) {
                 e.printStackTrace();
             }
         }

@@ -215,7 +215,7 @@ public class ConfigsManager {
 
 	public void init() throws ConfigurationsNotInitializedException {
 		if (mDatabase.isInitialized()) {
-			startupListeners();
+            Election.getInstance().sendStartup();
 		} else {
 			throw new ConfigurationsNotInitializedException();
 		}
@@ -224,10 +224,12 @@ public class ConfigsManager {
 
     public void enterMainStage() throws ConfigurationsNotInitializedException {
         if (mDatabase.isInitialized()) {
+            mMCListener = null;
+            mMDBListener = null;
+            mMDRListener = null;
             mExecutor.shutdownNow();
-            mExecutor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
 
-            Election.getInstance().sendStartup();
+            mExecutor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
             startupListeners();
             mExecutor.execute(new FileDeletionChecker());
             Date d = new Date();
@@ -350,7 +352,16 @@ public class ConfigsManager {
     }
 
     public InetAddress getInterface() {
-        return mDatabase.getInterface();
+        try {
+            return mDatabase.getInterface();
+        } catch (SocketException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String getInterfaceName() {
+        return mDatabase.getInterfaceName();
     }
 
     public long getUpTime() {

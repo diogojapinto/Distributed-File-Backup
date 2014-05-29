@@ -10,24 +10,40 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class SharedDatabase implements Serializable{
+public class SharedDatabase implements Serializable {
 
     public static final String FILE = ".shareddatabase.ser";
     private ArrayList<User> users;
     private Date date;
     private long lastModification;
-    private ArrayList<String> accessLevelPasswords;
+    private ArrayList<AccessLevel> accessLevels;
 
 
-    public SharedDatabase(){
-        accessLevelPasswords = new ArrayList<>();
-        accessLevelPasswords.add("cenas1");
-        accessLevelPasswords.add("cenas2");
-        accessLevelPasswords.add("cenas3");
-
+    public SharedDatabase() {
         date = new Date();
-        lastModification = date.getTime();
         users = new ArrayList<>();
+        accessLevels = new ArrayList<>();
+
+        // add default access levels
+        AccessLevel l1 = new AccessLevel("Administration", "dificultpass");
+        AccessLevel l2 = new AccessLevel("Projects", "mediumpass");
+        AccessLevel l3 = new AccessLevel("GeneralPurpose", "atuamae");
+        l1.addChild(l2);
+        l2.addChild(l3);
+
+        accessLevels.add(l1);
+        accessLevels.add(l2);
+        accessLevels.add(l3);
+
+        updateTimestamp();
+    }
+
+    private void updateTimestamp() {
+        try {
+            lastModification = SharedClock.getInstance().getTime();
+        } catch (SharedClock.NotSyncedException e) {
+            lastModification = date.getTime();
+        }
     }
 
     public boolean addUser(User user) {
@@ -38,7 +54,7 @@ public class SharedDatabase implements Serializable{
         users.add(user);
         Log.log("User " + user.getUserName() + " added");
 
-        setLastModification();
+        updateTimestamp();
         saveDatabase();
 
         return true;
@@ -48,11 +64,9 @@ public class SharedDatabase implements Serializable{
         return users;
     }
 
-    private void setLastModification() {
-        lastModification = date.getTime();
+    public long getLastModification() {
+        return lastModification;
     }
-
-    public long getLastModification() { return lastModification; }
 
     public void saveDatabase() {
         try {
@@ -69,12 +83,12 @@ public class SharedDatabase implements Serializable{
         }
     }
 
-    public int getAccessLevel(String accessPassword) {
-        for (int i = 0; i < accessLevelPasswords.size(); i++)
-            if (accessLevelPasswords.get(i).equals(accessPassword))
-                return i+1;
+    public AccessLevel getAccessLevel(String accessPassword) {
+        for (int i = 0; i < accessLevels.size(); i++)
+            if (accessLevels.get(i).getPassword().equals(accessPassword))
+                return accessLevels.get(i);
 
-        return 0;
+        return null;
     }
 
     public boolean validLogin(String userName, String password) {
