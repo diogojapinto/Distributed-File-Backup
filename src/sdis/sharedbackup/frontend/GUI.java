@@ -32,9 +32,11 @@ import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 import sdis.sharedbackup.backend.User;
 import sdis.sharedbackup.protocols.AccessLevel;
 import sdis.sharedbackup.utils.EnvironmentVerifier;
+import sdis.sharedbackup.utils.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -1041,24 +1043,18 @@ public class GUI extends Application {
     }
 
     private void relaunchApplication() {
-        final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-        File currentJar = null;
-        try {
-            currentJar = new File(GUI.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        StringBuilder cmd = new StringBuilder();
+        cmd.append(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java ");
+        for (String jvmArg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+            cmd.append(jvmArg + " ");
         }
+        cmd.append("-cp ").append(ManagementFactory.getRuntimeMXBean().getClassPath()).append(" ");
+        cmd.append(GUI.class.getName()).append(" ");
 
-  /* Build command: java -jar application.jar */
-        final ArrayList<String> command = new ArrayList<String>();
-        command.add(javaBin);
-        command.add("./GUI");
-        for (String s: command) {
-            System.out.println(s);
-        }
-        final ProcessBuilder builder = new ProcessBuilder(command);
+        Log.log("Restarting: " + cmd);
+
         try {
-            builder.start();
+            Runtime.getRuntime().exec(cmd.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -8,4 +8,5 @@ log.log
 .database.ser
 .idea/
 YetAnotherDropbox.iml
+.shareddatabase.ser
 
