@@ -17,6 +17,7 @@ public class SharedDatabase implements Serializable {
     private Date date;
     private long lastModification;
     private ArrayList<AccessLevel> accessLevels;
+    // TODO: missing files
 
 
     public SharedDatabase() {
@@ -84,19 +85,23 @@ public class SharedDatabase implements Serializable {
     }
 
     public AccessLevel getAccessLevel(String accessPassword) {
-        for (int i = 0; i < accessLevels.size(); i++)
-            if (accessLevels.get(i).getPassword().equals(accessPassword))
-                return accessLevels.get(i);
+        for (int i = 0; i < accessLevels.size(); i++) {
+            AccessLevel al = accessLevels.get(i);
+            if (al.login(accessPassword)) {
+                return al;
+            }
+        }
 
         return null;
     }
 
-    public boolean validLogin(String userName, String password) {
+    public User login(String userName, String password) {
         for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getUserName().equals(userName) && users.get(i).getPassword().equals(password))
-                return true;
+            User u = users.get(i);
+            if (u.login(userName, password))
+                return u;
         }
 
-        return false;
+        return null;
     }
 }

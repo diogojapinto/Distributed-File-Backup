@@ -38,11 +38,11 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.SocketException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 public class GUI extends Application {
 
+    private boolean hasStarted = false;
     private static final String addressPlaceholder1 = "239.0.0.1:6666", addressPlaceholder2 = "239.0.0.1:6667", addressPlaceholder3 = "239.0.0.1:6668";
 
     private File file;
@@ -52,17 +52,11 @@ public class GUI extends Application {
     }
 
     @Override
-    public void start(final Stage primaryStage) throws Exception {
+    public void start(final Stage primaryStage) {
         primaryStage.setTitle("MFCSS");
-        if (!ApplicationInterface.getInstance().getDatabaseStatus())
+        if (!ApplicationInterface.getInstance().getDatabaseStatus()) {
             setupService(primaryStage);
-        else {
-            try {
-                ApplicationInterface.getInstance().startupService();
-            } catch (ConfigurationsNotInitializedException e1) {
-                e1.printStackTrace();
-            }
-
+        } else {
             login(primaryStage);
         }
     }
@@ -162,6 +156,7 @@ public class GUI extends Application {
             }
         });
         primaryStage.show();
+        primaryStage.toFront();
     }
 
     private void setArgs(final Stage primaryStage, final boolean isSetup) {
@@ -222,7 +217,7 @@ public class GUI extends Application {
         final Text errorMsg = new Text();
         errorMsg.setFill(Color.FIREBRICK);
 
-        Button confirm = new Button("Okay");
+        Button confirm = new Button("Confirm");
         Button cancel = new Button(" Cancel ");
         // cancel.setMinWidth(60);
 
@@ -284,10 +279,12 @@ public class GUI extends Application {
                             e1.printStackTrace();
                         }
 
-                        if (isSetup)
+                        if (isSetup) {
+                            ConfigsManager.getInstance().saveDatabase();
                             login(primaryStage);
-                        else
+                        } else {
                             relaunchApplication();
+                        }
 
                     }
                 }
@@ -302,6 +299,7 @@ public class GUI extends Application {
         });
 
         primaryStage.show();
+        primaryStage.toFront();
     }
 
     private void login(final Stage primaryStage) {
@@ -358,10 +356,15 @@ public class GUI extends Application {
 
                 if (userName.equals("") || password.equals("")) {
                     errorMsg.setText("Please fill all fields");
-                } else if (!ConfigsManager.getInstance().getSDatabase().validLogin(userName, password)) {
+                } else if (!ConfigsManager.getInstance().login(userName, password)) {
                     errorMsg.setText("Invalid login, please try again!");
                 } else
-                    menu(primaryStage);
+                    try {
+                        ApplicationInterface.getInstance().startupService();
+                    } catch (ConfigurationsNotInitializedException e1) {
+                        e1.printStackTrace();
+                    }
+                menu(primaryStage);
             }
         });
 
@@ -374,6 +377,7 @@ public class GUI extends Application {
 
         //grid.setGridLinesVisible(true);
         primaryStage.show();
+        primaryStage.toFront();
     }
 
     private void register(final Stage primaryStage) {
@@ -441,8 +445,10 @@ public class GUI extends Application {
                     errorMsg.setText("Invalid access level password!");
                 } else if (!ConfigsManager.getInstance().getSDatabase().addUser(new User(userName, password, accessLevel))) {
                     errorMsg.setText("Username already exists!");
-                } else
+                } else {
+                    ConfigsManager.getInstance().login(userName, password);
                     menu(primaryStage);
+                }
             }
         });
 
@@ -455,9 +461,11 @@ public class GUI extends Application {
 
         //grid.setGridLinesVisible(true);
         primaryStage.show();
+        primaryStage.toFront();
     }
 
     private void menu(final Stage primaryStage) {
+        hasStarted = true;
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
@@ -554,6 +562,7 @@ public class GUI extends Application {
 
         // grid.setGridLinesVisible(true);
         primaryStage.show();
+        primaryStage.toFront();
     }
 
     private void backupFile(final Stage primaryStage) {
@@ -702,7 +711,7 @@ public class GUI extends Application {
                 alertMessg.setAutoFix(false);
                 alertMessg.setHideOnEscape(true);
 
-                Button btnGoBack = new Button("Okay");
+                Button btnGoBack = new Button("Confirm");
                 Label lblAlert = new Label(
                         "The files you've backed up have are still saved in the file system");
 
@@ -828,7 +837,7 @@ public class GUI extends Application {
                 alertMessg.setAutoFix(false);
                 alertMessg.setHideOnEscape(true);
 
-                Button btnGoBack = new Button("Okay");
+                Button btnGoBack = new Button("Confirm");
                 Label lblAlert = new Label(
                         "You do not have any backed up files");
 
@@ -1026,8 +1035,10 @@ public class GUI extends Application {
 
     @Override
     public void stop() throws Exception {
-        // close operation
-        ApplicationInterface.getInstance().terminate();
+        if (hasStarted) {
+            // close operation
+            ApplicationInterface.getInstance().terminate();
+        }
         super.stop();
         System.exit(0);
     }

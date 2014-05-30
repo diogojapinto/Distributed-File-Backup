@@ -1,5 +1,7 @@
 package sdis.sharedbackup.protocols;
 
+import sdis.sharedbackup.utils.Encoder;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -13,7 +15,7 @@ public class AccessLevel implements Serializable {
 
     public AccessLevel(String id, String password) {
         this.id = id;
-        this.password = password;
+        this.password = Encoder.byteArrayToHexString(password.getBytes());
         children = new ArrayList<>();
     }
 
@@ -22,7 +24,11 @@ public class AccessLevel implements Serializable {
     }
 
     public void setPassword(String password) {
-        this.password = password;
+        this.password = Encoder.byteArrayToHexString(password.getBytes());
+    }
+
+    public boolean login(String password) {
+        return this.password.equals(Encoder.byteArrayToHexString(password.getBytes()));
     }
 
     public void addChild(AccessLevel accessLevel) {
@@ -31,10 +37,6 @@ public class AccessLevel implements Serializable {
 
     public String getId() {
         return id;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public ArrayList<AccessLevel> getChildren() {

@@ -18,8 +18,6 @@ import java.util.ArrayList;
 
 public class ApplicationInterface {
 
-    private static boolean firstInit = true;
-
     public static boolean DEBUGG = true;
 
     private static ApplicationInterface instance = null;
@@ -51,12 +49,7 @@ public class ApplicationInterface {
      * Function to be called after proper initialization
      */
     public void startupService() throws ConfigurationsNotInitializedException {
-        if (firstInit) {
-            ConfigsManager.getInstance().init();
-            firstInit = false;
-        } else {
-            ConfigsManager.getInstance().enterMainStage();
-        }
+        ConfigsManager.getInstance().init();
     }
 
     /*

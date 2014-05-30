@@ -42,6 +42,7 @@ public class ConfigsManager {
 	private Random mRandom;
 	private boolean mIsRunning;
     private long beginningTime;
+    private User user;
 
 	private ConfigsManager() {
 		mMCListener = null;
@@ -122,6 +123,7 @@ public class ConfigsManager {
             sDatabase = new SharedDatabase();
             return false;
         } catch (IOException e) {
+            System.out.println("pig");
             e.printStackTrace();
         }
         return true;
@@ -367,6 +369,10 @@ public class ConfigsManager {
     public long getUpTime() {
         Date d = new Date();
         return d.getTime() - beginningTime;
+    }
+
+    public boolean login(String username, String password) {
+        return (user = sDatabase.login(username, password)) != null;
     }
 
 	/*
