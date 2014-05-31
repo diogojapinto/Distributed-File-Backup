@@ -38,10 +38,6 @@ public class User implements Serializable {
 
     public boolean login(String userName, String password) {
 
-        if (this.userName.equals(userName) && Encoder.byteArrayToHexString(password.getBytes()).equals(this.password)) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.userName.equals(userName) && Encoder.byteArrayToHexString(password.getBytes()).equals(this.password);
     }
 }

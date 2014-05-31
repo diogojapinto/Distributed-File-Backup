@@ -113,9 +113,18 @@ public class Election {
         } else {
             masterChecker = new Thread(new CheckMasterCmdExpiration());
             masterChecker.start();
-        }
 
-        // TODO: database synchronization or nothing (because it is already initialized)
+            // update database with master's one
+            SharedDatabase masterDB = null;
+            try {
+                masterDB = getMasterStub().getMasterDB();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            } catch (NotRegularPeerException e) {
+                e.printStackTrace();
+            }
+            ConfigsManager.getInstance().getSDatabase().merge(masterDB);
+        }
 
         try {
             ConfigsManager.getInstance().enterMainStage();
@@ -305,6 +314,7 @@ public class Election {
             System.err.println("RMI registry not available. Exiting...");
             System.exit(1);
         } catch (AlreadyBoundException e) {
+            e.printStackTrace();
         }
     }
 

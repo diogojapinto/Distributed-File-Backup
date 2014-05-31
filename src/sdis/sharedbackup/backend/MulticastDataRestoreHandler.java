@@ -42,7 +42,7 @@ public class MulticastDataRestoreHandler implements Runnable {
 				if (record.fileId.equals(fileId) && record.chunkNo == chunkNo) {
 
 					FileChunkWithData requestedChunk = new FileChunkWithData(
-							fileId, chunkNo, mMessage.getBody());
+							fileId, chunkNo, mMessage.getBody(), null);
 
 					ChunkRestore.getInstance()
 							.addRequestedChunk(requestedChunk);

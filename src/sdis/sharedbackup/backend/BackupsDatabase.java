@@ -23,6 +23,7 @@ import sdis.sharedbackup.backend.ConfigsManager.InvalidChunkException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
+import sdis.sharedbackup.protocols.AccessLevel;
 import sdis.sharedbackup.utils.EnvironmentVerifier;
 import sdis.sharedbackup.utils.Log;
 
@@ -159,8 +160,8 @@ public class BackupsDatabase implements Serializable {
 	 */
 
 	public FileChunk getNewChunkForSavingInstance(String fileId, int chunkNo,
-			int desiredReplication) {
-		FileChunk chunk = new FileChunk(fileId, chunkNo, desiredReplication);
+			int desiredReplication, AccessLevel al) {
+		FileChunk chunk = new FileChunk(fileId, chunkNo, desiredReplication, al);
 		synchronized (mSavedChunks) {
 			mSavedChunks.add(chunk);
 		}
@@ -168,9 +169,9 @@ public class BackupsDatabase implements Serializable {
 	}
 
 	public SharedFile getNewSharedFileInstance(String filePath,
-			int replicationDegree) throws FileTooLargeException,
+                                               int replicationDegree, AccessLevel al) throws FileTooLargeException,
 			FileDoesNotExistsExeption, FileAlreadySaved {
-		SharedFile file = new SharedFile(filePath, replicationDegree);
+		SharedFile file = new SharedFile(filePath, replicationDegree, al);
 		if (mSharedFiles.containsKey(file.getFileId())) {
 			throw new ConfigsManager.FileAlreadySaved();
 		}
@@ -225,11 +226,7 @@ public class BackupsDatabase implements Serializable {
 				if (chunk.getFileId().equals(record.fileId)
 						&& chunk.getChunkNo() == record.chunkNo) {
 					mSavedChunks.remove(chunk);
-					if (!chunk.removeData()) {
-						return false;
-					} else {
-						return true;
-					}
+                    return chunk.removeData();
 				}
 			}
 		}

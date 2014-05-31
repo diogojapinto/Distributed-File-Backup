@@ -214,8 +214,6 @@ public class MulticastControlHandler implements Runnable {
         }
     }
 
-    ;
-
     private static class restoreSenderIPListener implements Runnable {
 
         private static DatagramSocket restoreEnhSocket = null;

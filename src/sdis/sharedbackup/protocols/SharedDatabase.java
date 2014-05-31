@@ -84,10 +84,21 @@ public class SharedDatabase implements Serializable {
         }
     }
 
-    public AccessLevel getAccessLevel(String accessPassword) {
+    public AccessLevel getAccessLevelByPassword(String accessPassword) {
         for (int i = 0; i < accessLevels.size(); i++) {
             AccessLevel al = accessLevels.get(i);
             if (al.login(accessPassword)) {
+                return al;
+            }
+        }
+
+        return null;
+    }
+
+    public AccessLevel getAccessLevelById(String id) {
+        for (int i = 0; i < accessLevels.size(); i++) {
+            AccessLevel al = accessLevels.get(i);
+            if (al.getId().equals(id)) {
                 return al;
             }
         }
@@ -103,5 +114,14 @@ public class SharedDatabase implements Serializable {
         }
 
         return null;
+    }
+
+    public void createNameSpace(String path) {
+        accessLevels.get(0).createFolders(path);
+        Log.log("Created namespace folders");
+    }
+
+    public void merge(SharedDatabase masterDB) {
+        //TODO
     }
 }

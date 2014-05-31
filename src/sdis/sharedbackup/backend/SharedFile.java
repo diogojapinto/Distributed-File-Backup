@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import sdis.sharedbackup.backend.ConfigsManager.InvalidChunkException;
+import sdis.sharedbackup.protocols.AccessLevel;
 import sdis.sharedbackup.utils.Encoder;
 import sdis.sharedbackup.utils.Log;
 
@@ -26,8 +27,9 @@ public class SharedFile implements Serializable {
 	private ArrayList<FileChunk> mChunkList;
 	private int mDesiredReplicationDegree;
 	private long mChunkCounter;
+    private AccessLevel accessLevel;
 
-	public SharedFile(String filePath, int desiredReplicationDegree)
+	public SharedFile(String filePath, int desiredReplicationDegree, AccessLevel al)
 			throws FileTooLargeException, FileDoesNotExistsExeption {
 		mFilePath = filePath;
 
@@ -37,6 +39,7 @@ public class SharedFile implements Serializable {
 		mFileId = Encoder.generateBitString(new File(mFilePath));
 		mChunkCounter = 0;
 		mChunkList = new ArrayList<FileChunk>();
+        accessLevel = al;
 				
 		// generate the chunks for this file
 		generateChunks();
@@ -103,12 +106,12 @@ public class SharedFile implements Serializable {
 		//Log.log("Tamanho ficheiro: " + fileSize);
 		for (int i = 0; i < fileSize; i += CHUNK_SIZE) {
 			//Log.log("Tamanho I: " + i);
-			mChunkList.add(new FileChunk(this, mChunkCounter++));
+			mChunkList.add(new FileChunk(this, mChunkCounter++, accessLevel));
 		}
 		
 		// verify if there is the need to add the last empty chunk
 		if (fileSize % CHUNK_SIZE == 0) {
-			mChunkList.add(new FileChunk(this, mChunkCounter++));
+			mChunkList.add(new FileChunk(this, mChunkCounter++, accessLevel));
 		}
 		
 

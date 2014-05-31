@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
+import sdis.sharedbackup.protocols.AccessLevel;
 import sdis.sharedbackup.utils.Log;
 
 public class FileChunk implements Serializable {
@@ -25,17 +26,19 @@ public class FileChunk implements Serializable {
 	private int mDesiredReplicationDegree;
 
 	private boolean isOwnMachineFile;
+    private AccessLevel accessLevel;
 
-	public FileChunk(SharedFile parentFile, long chunkNo) {
+	public FileChunk(SharedFile parentFile, long chunkNo, AccessLevel al) {
 		this.mParentFile = parentFile;
 		this.mChunkNo = chunkNo;
 		this.mFileId = mParentFile.getFileId();
 		this.mCurrentReplicationDegree = 0;
 		this.mDesiredReplicationDegree = mParentFile.getDesiredReplication();
 		isOwnMachineFile = true;
+        accessLevel = al;
 	}
 
-	public FileChunk(String fileId, int chunkNo, int desiredReplication) {
+	public FileChunk(String fileId, int chunkNo, int desiredReplication, AccessLevel al) {
 
 		this.mParentFile = null;
 		this.mChunkNo = chunkNo;
@@ -43,6 +46,7 @@ public class FileChunk implements Serializable {
 		this.mCurrentReplicationDegree = 0;
 		this.mDesiredReplicationDegree = desiredReplication;
 		isOwnMachineFile = false;
+        accessLevel = al;
 	}
 
 	public boolean saveToFile(byte[] data) {
@@ -169,8 +173,15 @@ public class FileChunk implements Serializable {
 
 	public String getFilePath() {
 		if (!isOwnMachineFile) {
+
+            String nameSpace = "";
+            if (accessLevel != null) {
+                nameSpace = accessLevel.getRelativePath();
+            }
+
 			return new String(ConfigsManager.getInstance()
 					.getChunksDestination()
+                    + nameSpace
 					+ mFileId
 					+ "_"
 					+ String.valueOf(mChunkNo) + ".cnk");
@@ -179,7 +190,11 @@ public class FileChunk implements Serializable {
 		}
 	}
 
-	// Setters
+    public AccessLevel getAccessLevel() {
+        return accessLevel;
+    }
+
+    // Setters
 
 	public synchronized int incCurrentReplication() {
 		return ++mCurrentReplicationDegree;

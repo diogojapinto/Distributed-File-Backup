@@ -32,7 +32,15 @@ public class ChunkBackup {
 
 		String header = "";
 
-		header += PUT_COMMAND + " " + chunk.getFileId() + " "
+        AccessLevel al = chunk.getAccessLevel();
+        String alId;
+        if (al == null) {
+            alId = "none";
+        } else {
+            alId = al.getId();
+        }
+
+		header += PUT_COMMAND + " " + alId + " " + chunk.getFileId() + " "
 				+ chunk.getChunkNo() + " " + chunk.getDesiredReplicationDeg()
 				+ MulticastCommunicator.CRLF + chunk.getCurrentReplicationDeg()
 				+ MulticastCommunicator.CRLF + MulticastCommunicator.CRLF;

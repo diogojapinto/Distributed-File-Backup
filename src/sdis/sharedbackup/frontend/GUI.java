@@ -437,7 +437,7 @@ public class GUI extends Application {
                 String password = pwBox.getText();
                 String accessLevelPass = accessLevelPasswordField.getText();
 
-                AccessLevel accessLevel = ConfigsManager.getInstance().getSDatabase().getAccessLevel(accessLevelPass);
+                AccessLevel accessLevel = ConfigsManager.getInstance().getSDatabase().getAccessLevelByPassword(accessLevelPass);
 
                 if (userName.equals("") || password.equals("") || accessLevelPass.equals("")) {
                     errorMsg.setText("Please fill all fields");
@@ -600,6 +600,14 @@ public class GUI extends Application {
         chosenFile.setWrappingWidth(215);
         errorMsg.setTextAlignment(TextAlignment.CENTER);
 
+        //TODO
+
+        final ObservableList<String> levelsAvailable = FXCollections
+                .observableArrayList(ConfigsManager.getInstance().getUser().getAccessLevel().getAvailableAccessLevels());
+
+        final ComboBox<String> selectableLevel = new ComboBox<String>(
+                levelsAvailable);
+
         HBox fB = new HBox(10);
         fB.setAlignment(Pos.CENTER);
         fB.getChildren().add(fileBackup);
@@ -607,6 +615,7 @@ public class GUI extends Application {
         HBox hbChooseFile = new HBox(10);
         hbChooseFile.setAlignment(Pos.BASELINE_LEFT);
         hbChooseFile.getChildren().add(chooseFile);
+        hbChooseFile.getChildren().add(selectableLevel);
 
         HBox hbChosenFile = new HBox(10);
         hbChosenFile.setAlignment(Pos.BASELINE_LEFT);
@@ -659,8 +668,10 @@ public class GUI extends Application {
             public void handle(ActionEvent e) {
 
                 final String repDegree = repTextField.getText();
+                String accessLevel = selectableLevel.getSelectionModel().getSelectedItem();
+                final AccessLevel al = ConfigsManager.getInstance().getSDatabase().getAccessLevelById(accessLevel);
 
-                if (file == null || repDegree.equals("")) {
+                if (file == null || repDegree.equals("") | accessLevel == null | accessLevel.equals("")) {
                     errorMsg.setText("Please fill all fields");
                 } else if (!repDegree.matches("\\d+")) // not an integer
                 {
@@ -677,7 +688,7 @@ public class GUI extends Application {
                                 boolean backupSuccess = ApplicationInterface
                                         .getInstance().backupFile(
                                                 file.getAbsolutePath(),
-                                                Integer.parseInt(repDegree));
+                                                Integer.parseInt(repDegree), al);
                                 if (!backupSuccess)
                                     setText(errorMsg, "Not enough peers to meet\n necessary replication");
                                 else

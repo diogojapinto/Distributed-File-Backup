@@ -11,6 +11,7 @@ import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 import sdis.sharedbackup.functionality.FileBackup;
 import sdis.sharedbackup.functionality.FileRestore;
+import sdis.sharedbackup.protocols.AccessLevel;
 import sdis.sharedbackup.protocols.FileDeletion;
 import sdis.sharedbackup.protocols.SpaceReclaiming;
 
@@ -55,11 +56,11 @@ public class ApplicationInterface {
     /*
      * Provides the service of backup. Returns the backed-up file id.
      */
-    public boolean backupFile(String filePath, int replication)
+    public boolean backupFile(String filePath, int replication, AccessLevel al)
             throws FileTooLargeException, FileDoesNotExistsExeption,
             FileAlreadySaved {
         SharedFile file = ConfigsManager.getInstance()
-                .getNewSharedFileInstance(filePath, replication);
+                .getNewSharedFileInstance(filePath, replication, al);
 
         FileBackup.getInstance().saveFile(file);
 

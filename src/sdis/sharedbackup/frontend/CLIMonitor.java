@@ -157,7 +157,7 @@ public class CLIMonitor {
 				}
 			}
 			try {
-				ApplicationInterface.getInstance().backupFile(path, repdeg);
+				ApplicationInterface.getInstance().backupFile(path, repdeg, null);
 				return true;
 			} catch (FileTooLargeException e) {
 				System.out.println("The selected file is too large");

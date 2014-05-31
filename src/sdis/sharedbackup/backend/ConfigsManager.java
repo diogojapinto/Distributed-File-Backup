@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
+import sdis.sharedbackup.protocols.AccessLevel;
 import sdis.sharedbackup.protocols.Election;
 import sdis.sharedbackup.protocols.SharedClock;
 import sdis.sharedbackup.protocols.SharedDatabase;
@@ -237,6 +238,7 @@ public class ConfigsManager {
             Date d = new Date();
             beginningTime = d.getTime();
             SharedClock.getInstance();
+            sDatabase.createNameSpace(getChunksDestination());
         } else {
             throw new ConfigurationsNotInitializedException();
         }
@@ -258,11 +260,11 @@ public class ConfigsManager {
 		}
 	}
 
-	public SharedFile getNewSharedFileInstance(String filePath, int replication)
+	public SharedFile getNewSharedFileInstance(String filePath, int replication, AccessLevel al)
 			throws FileTooLargeException, FileDoesNotExistsExeption,
 			FileAlreadySaved {
 
-		return mDatabase.getNewSharedFileInstance(filePath, replication);
+		return mDatabase.getNewSharedFileInstance(filePath, replication, al);
 	}
 
 	public void removeSharedFile(String deletedFileID) {
@@ -375,9 +377,13 @@ public class ConfigsManager {
         return (user = sDatabase.login(username, password)) != null;
     }
 
-	/*
-	 * Exceptions
-	 */
+    public User getUser() {
+        return user;
+    }
+
+    /*
+         * Exceptions
+         */
 	public static class ConfigurationsNotInitializedException extends Exception {
 
 		/**
