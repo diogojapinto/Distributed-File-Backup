@@ -13,6 +13,7 @@ import sdis.sharedbackup.functionality.FileBackup;
 import sdis.sharedbackup.functionality.FileRestore;
 import sdis.sharedbackup.protocols.AccessLevel;
 import sdis.sharedbackup.protocols.FileDeletion;
+import sdis.sharedbackup.protocols.FileRecord;
 import sdis.sharedbackup.protocols.SpaceReclaiming;
 
 import java.util.ArrayList;
@@ -70,7 +71,17 @@ public class ApplicationInterface {
     public boolean restoreFileByPath(String oldFilePath) {
         SharedFile file = ConfigsManager.getInstance().getFileByPath(
                 oldFilePath);
-        return restoreFileById(file.getFileId());
+        if (file == null) {
+            ArrayList<FileRecord> list = ConfigsManager.getInstance().getOthersAvailableFiles();
+            for (FileRecord record : list) {
+                if (record.getFileName().equals(oldFilePath)) {
+                    return FileRestore.getInstance().restoreOthersFile(record);
+                }
+            }
+        } else {
+            return restoreFileById(file.getFileId());
+        }
+        return false;
     }
 
     public boolean restoreFileById(String fileId) {

@@ -13,5 +13,5 @@ public interface MasterServices extends Remote {
     public long getMasterClock() throws RemoteException;
     public SharedDatabase getMasterDB() throws RemoteException;
     public void addFile(FileRecord record) throws RemoteException;
-    public void addUser(String username, String hashedPassword) throws RemoteException;
+    public void addUser(String username, String hashedPassword, AccessLevel accessLevel) throws RemoteException;
 }

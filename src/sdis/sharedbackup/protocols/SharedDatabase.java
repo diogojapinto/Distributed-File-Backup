@@ -232,6 +232,11 @@ public class SharedDatabase implements Serializable {
         }
     }
 
+    public ArrayList<FileRecord> getFilesByAccessLevel(String id) {
+        AccessLevel accessLevel = getAccessLevelById(id);
+        return files.get(accessLevel);
+    }
+
     private HashMap<AccessLevel, ArrayList<FileRecord>> getFiles() {
         return files;
     }

@@ -2,6 +2,7 @@ package sdis.sharedbackup.protocols;
 
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.MulticastCommunicator;
+import sdis.sharedbackup.backend.User;
 import sdis.sharedbackup.utils.Log;
 
 import java.io.UnsupportedEncodingException;
@@ -25,8 +26,8 @@ public class UsersSharingManager {
         return instance;
     }
 
-    // ADD FILE <hash> <file-name> <access-level>
-    public boolean addFileToSharedDB(FileRecord record) {
+    // ADD_USER username hashedpassword accesslevel
+    public boolean addUserToSharedDB(User user) {
 
         InetAddress multCtrlAddr = ConfigsManager.getInstance().getMCAddr();
         int multCtrlPort = ConfigsManager.getInstance().getMCPort();
@@ -36,8 +37,8 @@ public class UsersSharingManager {
 
         String message;
 
-        message = ADD_FILE_CMD + " " + record.getHash() + " " + record.getFileName() + " " + record.getAccessLevel()
-                .getId() + " " + MulticastCommunicator.CRLF + MulticastCommunicator.CRLF;
+        message = ADD_FILE_CMD + " " + user.getUserName() + " " + user.getHashedPassword() + " " + user
+                .getAccessLevel().getId() + " " + MulticastCommunicator.CRLF + MulticastCommunicator.CRLF;
 
         try {
             sender.sendMessage(message
@@ -48,8 +49,7 @@ public class UsersSharingManager {
             e.printStackTrace();
         }
 
-        Log.log("Sent ADD_FILE command for file " + record.getFileName()
-                + " with hash " + record.getHash());
+        Log.log("Sent ADD_USER command for file " + user.getUserName());
 
         return true;
     }

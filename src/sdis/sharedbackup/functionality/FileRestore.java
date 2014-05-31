@@ -9,56 +9,83 @@ import sdis.sharedbackup.backend.FileChunk;
 import sdis.sharedbackup.backend.FileChunkWithData;
 import sdis.sharedbackup.backend.SharedFile;
 import sdis.sharedbackup.protocols.ChunkRestore;
+import sdis.sharedbackup.protocols.FileRecord;
 
 public class FileRestore {
-	private static FileRestore mInstance = null;
+    private static FileRestore mInstance = null;
 
-	private FileRestore() {
-	}
+    private FileRestore() {
+    }
 
-	public static FileRestore getInstance() {
-		return (mInstance == null) ? mInstance = new FileRestore() : mInstance;
-	}
+    public static FileRestore getInstance() {
+        return (mInstance == null) ? mInstance = new FileRestore() : mInstance;
+    }
 
-	public boolean restoreFile(SharedFile file) {
-		ArrayList<FileChunkWithData> receivedChunks = new ArrayList<FileChunkWithData>();
+    public boolean restoreFile(SharedFile file) {
+        ArrayList<FileChunkWithData> receivedChunks = new ArrayList<FileChunkWithData>();
 
-		for (FileChunk chunk : file.getChunkList()) {
-			receivedChunks.add(ChunkRestore.getInstance().requestChunk(
-					chunk.getFileId(), chunk.getChunkNo()));
-		}
+        for (FileChunk chunk : file.getChunkList()) {
+            receivedChunks.add(ChunkRestore.getInstance().requestChunk(
+                    chunk.getFileId(), chunk.getChunkNo()));
+        }
 
-		rebuildFile(file, receivedChunks);
+        rebuildFile(file, receivedChunks);
 
-		return true;
-	}
+        return true;
+    }
 
-	private boolean rebuildFile(SharedFile file,
-			ArrayList<FileChunkWithData> chunks) {
+    public boolean restoreOthersFile(FileRecord record) {
+        ArrayList<FileChunkWithData> receivedChunks = new ArrayList<FileChunkWithData>();
 
-		for (FileChunkWithData chunk : chunks) {
-			if (!appendToFile(chunk.getData(), file.getFilePath())) {
-				return false;
-			}
-		}
+        for (int i = 0; i < record.getChunksCount(); i++) {
+            receivedChunks.add(ChunkRestore.getInstance().requestChunk(
+                    record.getHash(), i));
+        }
 
-		return true;
-	}
+        rebuildOthersFile(record, receivedChunks);
 
-	private boolean appendToFile(byte[] data, String filePath) {
+        return true;
+    }
 
-		FileOutputStream os = null;
-		try {
-			os = new FileOutputStream(new File(filePath), true);
+    private boolean rebuildFile(SharedFile file,
+                                ArrayList<FileChunkWithData> chunks) {
 
-			os.write(data);
-			os.close();
-			return true;
+        for (FileChunkWithData chunk : chunks) {
+            if (!appendToFile(chunk.getData(), file.getFilePath())) {
+                return false;
+            }
+        }
 
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        return true;
+    }
 
-		return false;
-	}
+    private boolean rebuildOthersFile(FileRecord record,
+                                ArrayList<FileChunkWithData> chunks) {
+
+        for (FileChunkWithData chunk : chunks) {
+            String path = record.getAccessLevel().getId() + File.separator + record.getFileName();
+            if (!appendToFile(chunk.getData(), path)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean appendToFile(byte[] data, String filePath) {
+
+        FileOutputStream os = null;
+        try {
+            os = new FileOutputStream(new File(filePath), true);
+
+            os.write(data);
+            os.close();
+            return true;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }

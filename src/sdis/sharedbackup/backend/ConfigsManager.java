@@ -15,88 +15,85 @@ import java.util.concurrent.Executors;
 
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
-import sdis.sharedbackup.protocols.AccessLevel;
-import sdis.sharedbackup.protocols.Election;
-import sdis.sharedbackup.protocols.SharedClock;
-import sdis.sharedbackup.protocols.SharedDatabase;
+import sdis.sharedbackup.protocols.*;
 import sdis.sharedbackup.utils.EnvironmentVerifier;
 import sdis.sharedbackup.utils.Log;
 
 public class ConfigsManager {
 
-	// constants
-	private static final int NR_CONCURRENT_THREADS = 12;
+    // constants
+    private static final int NR_CONCURRENT_THREADS = 12;
 
-	// static members
-	private static ConfigsManager sInstance = null;
+    // static members
+    private static ConfigsManager sInstance = null;
 
-	// private members
+    // private members
 
-	private boolean mCheckState;
-	private MulticastControlListener mMCListener;
-	private MulticastDataBackupListener mMDBListener;
-	private MulticastDataRestoreListener mMDRListener;
-	private boolean mDatabaseLoaded = false, sDatabaseLoaded = false;
-	private BackupsDatabase mDatabase = null;
+    private boolean mCheckState;
+    private MulticastControlListener mMCListener;
+    private MulticastDataBackupListener mMDBListener;
+    private MulticastDataRestoreListener mMDRListener;
+    private boolean mDatabaseLoaded = false, sDatabaseLoaded = false;
+    private BackupsDatabase mDatabase = null;
     private SharedDatabase sDatabase = null;
-	private ExecutorService mExecutor = null;
-	private Random mRandom;
-	private boolean mIsRunning;
+    private ExecutorService mExecutor = null;
+    private Random mRandom;
+    private boolean mIsRunning;
     private long beginningTime;
     private User user;
 
-	private ConfigsManager() {
-		mMCListener = null;
-		mMDBListener = null;
-		mMDRListener = null;
-		mExecutor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
-		mRandom = new Random();
-		mIsRunning = true;
-		mDatabaseLoaded = loadDatabase();
+    private ConfigsManager() {
+        mMCListener = null;
+        mMDBListener = null;
+        mMDRListener = null;
+        mExecutor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
+        mRandom = new Random();
+        mIsRunning = true;
+        mDatabaseLoaded = loadDatabase();
         sDatabaseLoaded = loadSharedDatabase();
-	}
+    }
 
-	public static ConfigsManager getInstance() {
-		if (sInstance == null) {
-			sInstance = new ConfigsManager();
-		}
-		return sInstance;
-	}
+    public static ConfigsManager getInstance() {
+        if (sInstance == null) {
+            sInstance = new ConfigsManager();
+        }
+        return sInstance;
+    }
 
-	public boolean getDatabaseStatus() {
-		return mDatabaseLoaded;
-	}
+    public boolean getDatabaseStatus() {
+        return mDatabaseLoaded;
+    }
 
-	private boolean loadDatabase() {
-		try {
-			FileInputStream fileIn = new FileInputStream(BackupsDatabase.FILE);
-			ObjectInputStream in = new ObjectInputStream(fileIn);
+    private boolean loadDatabase() {
+        try {
+            FileInputStream fileIn = new FileInputStream(BackupsDatabase.FILE);
+            ObjectInputStream in = new ObjectInputStream(fileIn);
 
-			try {
-				mDatabase = (BackupsDatabase) in.readObject();
-			} catch (ClassNotFoundException e) {
+            try {
+                mDatabase = (BackupsDatabase) in.readObject();
+            } catch (ClassNotFoundException e) {
 
-				Log.log("Error while reading from saved database. Starting fresh");
+                Log.log("Error while reading from saved database. Starting fresh");
 
-				mDatabase = new BackupsDatabase();
-			}
+                mDatabase = new BackupsDatabase();
+            }
 
-			Log.log("Loaded database");
+            Log.log("Loaded database");
 
-			in.close();
-			fileIn.close();
+            in.close();
+            fileIn.close();
 
-		} catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
 
-			Log.log("Fresh database");
+            Log.log("Fresh database");
 
-			mDatabase = new BackupsDatabase();
-			return false;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return true;
-	}
+            mDatabase = new BackupsDatabase();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
 
     private boolean loadSharedDatabase() {
         try {
@@ -130,100 +127,102 @@ public class ConfigsManager {
         return true;
     }
 
-    public SharedDatabase getSDatabase() { return sDatabase; }
+    public SharedDatabase getSDatabase() {
+        return sDatabase;
+    }
 
-	public boolean isToCheckState() {
-		return mCheckState;
-	}
+    public boolean isToCheckState() {
+        return mCheckState;
+    }
 
-	public boolean setMulticastAddrs(String mcAddr, int mcPort, String mdbAddr,
-			int mdbPort, String mdrAddr, int mdrPort) {
-		return mDatabase.setMulticastAddrs(mcAddr, mcPort, mdbAddr, mdbPort, mdrAddr, mdrPort);
-	}
+    public boolean setMulticastAddrs(String mcAddr, int mcPort, String mdbAddr,
+                                     int mdbPort, String mdrAddr, int mdrPort) {
+        return mDatabase.setMulticastAddrs(mcAddr, mcPort, mdbAddr, mdbPort, mdrAddr, mdrPort);
+    }
 
-	public InetAddress getMCAddr() {
-		return mDatabase.getMCAddr();
-	}
+    public InetAddress getMCAddr() {
+        return mDatabase.getMCAddr();
+    }
 
-	public int getMCPort() {
-		return mDatabase.getMCPort();
-	}
+    public int getMCPort() {
+        return mDatabase.getMCPort();
+    }
 
-	public InetAddress getMDBAddr() {
-		return mDatabase.getMDBAddr();
-	}
+    public InetAddress getMDBAddr() {
+        return mDatabase.getMDBAddr();
+    }
 
-	public int getMDBPort() {
-		return mDatabase.getMDBPort();
-	}
+    public int getMDBPort() {
+        return mDatabase.getMDBPort();
+    }
 
-	public InetAddress getMDRAddr() {
-		return mDatabase.getMDRAddr();
-	}
+    public InetAddress getMDRAddr() {
+        return mDatabase.getMDRAddr();
+    }
 
-	public int getMDRPort() {
-		return mDatabase.getMDRPort();
-	}
+    public int getMDRPort() {
+        return mDatabase.getMDRPort();
+    }
 
-	public String getChunksDestination() {
-		return mDatabase.getChunksDestination();
-	}
+    public String getChunksDestination() {
+        return mDatabase.getChunksDestination();
+    }
 
-	public FileChunk getSavedChunk(String fileId, int chunkNo) {
-		return mDatabase.getSavedChunk(fileId, chunkNo);
-	}
+    public FileChunk getSavedChunk(String fileId, int chunkNo) {
+        return mDatabase.getSavedChunk(fileId, chunkNo);
+    }
 
-	public boolean isMyFile(String fileId) {
-		return mDatabase.isMyFile(fileId);
-	}
+    public boolean isMyFile(String fileId) {
+        return mDatabase.isMyFile(fileId);
+    }
 
-	public FileChunk getNextDispensableChunk() {
-		ArrayList<FileChunk> savedChunks = mDatabase.getSavedChunks();
+    public FileChunk getNextDispensableChunk() {
+        ArrayList<FileChunk> savedChunks = mDatabase.getSavedChunks();
 
-		for (FileChunk chunk : savedChunks) {
-			if (chunk.getCurrentReplicationDeg() > chunk
-					.getDesiredReplicationDeg()) {
-				return chunk;
-			}
-		}
+        for (FileChunk chunk : savedChunks) {
+            if (chunk.getCurrentReplicationDeg() > chunk
+                    .getDesiredReplicationDeg()) {
+                return chunk;
+            }
+        }
 
-		// else there is no chunk with replication degree higher than desired
+        // else there is no chunk with replication degree higher than desired
 
-		FileChunk retChunk = null;
+        FileChunk retChunk = null;
 
-		do {
-			retChunk = savedChunks.get(mRandom.nextInt(savedChunks.size()));
-		} while (retChunk.getCurrentReplicationDeg() <= 0);
+        do {
+            retChunk = savedChunks.get(mRandom.nextInt(savedChunks.size()));
+        } while (retChunk.getCurrentReplicationDeg() <= 0);
 
-		return retChunk;
-	}
+        return retChunk;
+    }
 
-	public long getBackupDirActualSize() {
-		return EnvironmentVerifier.getFolderSize(mDatabase
-				.getChunksDestination());
-	}
+    public long getBackupDirActualSize() {
+        return EnvironmentVerifier.getFolderSize(mDatabase
+                .getChunksDestination());
+    }
 
-	public Executor getExecutor() {
-		return mExecutor;
-	}
+    public Executor getExecutor() {
+        return mExecutor;
+    }
 
-	// Setters
+    // Setters
 
-	public void setBackupsDestination(String dirPath)
-			throws InvalidFolderException {
-		mDatabase.setBackupsDestination(dirPath);
-	}
+    public void setBackupsDestination(String dirPath)
+            throws InvalidFolderException {
+        mDatabase.setBackupsDestination(dirPath);
+    }
 
-	// Others
+    // Others
 
-	public void init() throws ConfigurationsNotInitializedException {
-		if (mDatabase.isInitialized()) {
+    public void init() throws ConfigurationsNotInitializedException {
+        if (mDatabase.isInitialized()) {
             Election.getInstance().sendStartup();
-		} else {
-			throw new ConfigurationsNotInitializedException();
-		}
-		mDatabase.saveDatabase();
-	}
+        } else {
+            throw new ConfigurationsNotInitializedException();
+        }
+        mDatabase.saveDatabase();
+    }
 
     public void enterMainStage() throws ConfigurationsNotInitializedException {
         if (mDatabase.isInitialized()) {
@@ -245,111 +244,139 @@ public class ConfigsManager {
         mDatabase.saveDatabase();
     }
 
-	private void startupListeners() {
-		if (mMCListener == null) {
-			mMCListener = MulticastControlListener.getInstance();
-			mExecutor.execute(mMCListener);
-		}
-		if (mMDBListener == null) {
-			mMDBListener = MulticastDataBackupListener.getInstance();
-			mExecutor.execute(mMDBListener);
-		}
-		if (mMDRListener == null) {
-			mMDRListener = MulticastDataRestoreListener.getInstance();
-			mExecutor.execute(mMDRListener);
-		}
-	}
+    private void startupListeners() {
+        if (mMCListener == null) {
+            mMCListener = MulticastControlListener.getInstance();
+            mExecutor.execute(mMCListener);
+        }
+        if (mMDBListener == null) {
+            mMDBListener = MulticastDataBackupListener.getInstance();
+            mExecutor.execute(mMDBListener);
+        }
+        if (mMDRListener == null) {
+            mMDRListener = MulticastDataRestoreListener.getInstance();
+            mExecutor.execute(mMDRListener);
+        }
+    }
 
-	public SharedFile getNewSharedFileInstance(String filePath, int replication, AccessLevel al)
-			throws FileTooLargeException, FileDoesNotExistsExeption,
-			FileAlreadySaved {
+    public SharedFile getNewSharedFileInstance(String filePath, int replication, AccessLevel al)
+            throws FileTooLargeException, FileDoesNotExistsExeption,
+            FileAlreadySaved {
 
-		return mDatabase.getNewSharedFileInstance(filePath, replication, al);
-	}
+        return mDatabase.getNewSharedFileInstance(filePath, replication, al);
+    }
 
-	public void removeSharedFile(String deletedFileID) {
-		mDatabase.removeSharedFile(deletedFileID);
-		mDatabase.saveDatabase();
-	}
+    public void removeSharedFile(String deletedFileID) {
+        mDatabase.removeSharedFile(deletedFileID);
+        mDatabase.saveDatabase();
+    }
 
-	public long getMaxBackupSize() {
-		return mDatabase.getMaxBackupSize();
-	}
+    public long getMaxBackupSize() {
+        return mDatabase.getMaxBackupSize();
+    }
 
-	public SharedFile getFileById(String fileId) {
-		return mDatabase.getFileById(fileId);
-	}
+    public SharedFile getFileById(String fileId) {
+        return mDatabase.getFileById(fileId);
+    }
 
-	public SharedFile getFileByPath(String filePath) {
-		return mDatabase.getFileByPath(filePath);
-	}
+    public SharedFile getFileByPath(String filePath) {
+        return mDatabase.getFileByPath(filePath);
+    }
 
-	public void setAvailSpace(long newSpace) throws InvalidBackupSizeException {
-		mDatabase.setAvailSpace(newSpace);
-	}
+    public void setAvailSpace(long newSpace) throws InvalidBackupSizeException {
+        mDatabase.setAvailSpace(newSpace);
+    }
 
-	public void incChunkReplication(String fileId, int chunkNo)
-			throws InvalidChunkException {
-		mDatabase.incChunkReplication(fileId, chunkNo);
-		mDatabase.saveDatabase();
-	}
+    public void incChunkReplication(String fileId, int chunkNo)
+            throws InvalidChunkException {
+        mDatabase.incChunkReplication(fileId, chunkNo);
+        mDatabase.saveDatabase();
+    }
 
-	public boolean deleteChunk(ChunkRecord record) {
-		boolean state = mDatabase.removeSingleChunk(record);
-		mDatabase.saveDatabase();
+    public boolean deleteChunk(ChunkRecord record) {
+        boolean state = mDatabase.removeSingleChunk(record);
+        mDatabase.saveDatabase();
 
-		return state;
-	}
+        return state;
+    }
 
-	public boolean fileIsTracked(String fileId) {
-		return mDatabase.fileIsTracked(fileId);
-	}
+    public boolean fileIsTracked(String fileId) {
+        return mDatabase.fileIsTracked(fileId);
+    }
 
-	public ArrayList<String> getRestorableFiles() {
-		return mDatabase.getFilesDeletedFromFileSystem();
-	}
+    public ArrayList<String> getRestorableFiles() {
+        ArrayList<String> list = mDatabase.getFilesDeletedFromFileSystem();
+        User thisUser = getUser();
+        ArrayList<String> accessLevels = getSDatabase().getAccessLevelById(thisUser
+                .getAccessLevel().getId()).getAvailableAccessLevels();
+        for (String level : accessLevels) {
+            ArrayList<FileRecord> files = getSDatabase().getFilesByAccessLevel(level);
+            for (FileRecord addFile : files) {
+                boolean found = false;
+                for (String ownFile : list) {
+                    if (addFile.getFileName().equals(ownFile)) {
+                        found = true;
+                    }
+                }
+                if (!found) {
+                    list.add(addFile.getFileName());
+                }
+            }
+        }
+        return list;
+    }
 
-	public ArrayList<String> getDeletedFiles() {
-		return mDatabase.getDeletedFilesIds();
-	}
+    public ArrayList<FileRecord> getOthersAvailableFiles() {
+        ArrayList<FileRecord> list = new ArrayList<>();
+        ArrayList<String> accessLevels = getSDatabase().getAccessLevelById(getUser()
+                .getAccessLevel().getId()).getAvailableAccessLevels();
+        for (String level : accessLevels) {
+            list.addAll(getSDatabase().getFilesByAccessLevel(level));
+        }
+        return list;
+    }
 
-	public void decDeletedFileReplication(String fileId) {
+    public ArrayList<String> getDeletedFiles() {
+        return mDatabase.getDeletedFilesIds();
+    }
 
-		mDatabase.decDeletedFileCount(fileId);
-		mDatabase.saveDatabase();
-	}
+    public void decDeletedFileReplication(String fileId) {
 
-	public void saveDatabase() {
-		mDatabase.saveDatabase();
-	}
+        mDatabase.decDeletedFileCount(fileId);
+        mDatabase.saveDatabase();
+    }
 
-	public void terminate() {
-		mIsRunning = false;
-		mExecutor.shutdownNow();
-	}
+    public void saveDatabase() {
+        mDatabase.saveDatabase();
+    }
 
-	public boolean isAppRunning() {
-		return mIsRunning;
-	}
+    public void terminate() {
+        mIsRunning = false;
+        mExecutor.shutdownNow();
+    }
 
-	public void addSavedChunk(FileChunk chunk) {
-		mDatabase.addSavedChunk(chunk);
-		saveDatabase();
-	}
+    public boolean isAppRunning() {
+        return mIsRunning;
+    }
 
-	public ArrayList<String> getDeletableFiles() {
-		return mDatabase.getDeletableFiles();
-	}
+    public void addSavedChunk(FileChunk chunk) {
+        mDatabase.addSavedChunk(chunk);
+        saveDatabase();
+    }
 
-	public String getFileIdByPath(String path) {
-		return mDatabase.getFileIdByPath(path);
-	}
+    public ArrayList<String> getDeletableFiles() {
+        return mDatabase.getDeletableFiles();
+    }
 
-	public boolean removeChunksOfFile(String fileId) {
-		boolean ret = mDatabase.deleteChunksOfFile(fileId);
-		saveDatabase();
-		return ret;
-	}
+    public String getFileIdByPath(String path) {
+        return mDatabase.getFileIdByPath(path);
+    }
+
+    public boolean removeChunksOfFile(String fileId) {
+        boolean ret = mDatabase.deleteChunksOfFile(fileId);
+        saveDatabase();
+        return ret;
+    }
 
     public void setInterface(String selectedInterface) throws SocketException {
         mDatabase.setInterface(selectedInterface);
@@ -384,44 +411,44 @@ public class ConfigsManager {
     /*
          * Exceptions
          */
-	public static class ConfigurationsNotInitializedException extends Exception {
+    public static class ConfigurationsNotInitializedException extends Exception {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-	}
+        /**
+         *
+         */
+        private static final long serialVersionUID = 1L;
+    }
 
-	public static class InvalidFolderException extends Exception {
+    public static class InvalidFolderException extends Exception {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-	}
+        /**
+         *
+         */
+        private static final long serialVersionUID = 1L;
+    }
 
-	public static class InvalidBackupSizeException extends Exception {
+    public static class InvalidBackupSizeException extends Exception {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-	}
+        /**
+         *
+         */
+        private static final long serialVersionUID = 1L;
+    }
 
-	public static class InvalidChunkException extends Exception {
+    public static class InvalidChunkException extends Exception {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-	}
+        /**
+         *
+         */
+        private static final long serialVersionUID = 1L;
+    }
 
-	public static class FileAlreadySaved extends Exception {
+    public static class FileAlreadySaved extends Exception {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-	}
+        /**
+         *
+         */
+        private static final long serialVersionUID = 1L;
+    }
 
 }

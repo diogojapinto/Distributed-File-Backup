@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.rmi.RemoteException;
 import java.util.Random;
 
 public class MulticastControlHandler implements Runnable {
@@ -128,11 +129,13 @@ public class MulticastControlHandler implements Runnable {
                 break;
 
             case FileDeletion.DELETE_COMMAND:
-                String fileIde = header_components[1];
+                fileId = header_components[1];
 
-                if (ConfigsManager.getInstance().removeChunksOfFile(fileIde)) {
-                    FileDeletion.getInstance().reply(fileIde);
+                if (ConfigsManager.getInstance().removeChunksOfFile(fileId)) {
+                    FileDeletion.getInstance().reply(fileId);
                 }
+
+                ConfigsManager.getInstance().getSDatabase().removeFile(new FileRecord(fileId, null, null, 0));
 
                 break;
             case FileDeletion.RESPONSE_COMMAND:
@@ -179,7 +182,14 @@ public class MulticastControlHandler implements Runnable {
                     if (Election.getInstance().imMaster()) {
                         Election.getInstance().candidate();
                     } else {
-                        // todo ask for new bd
+                        try {
+                            ConfigsManager.getInstance().getSDatabase().merge(Election.getInstance().getMasterStub()
+                                    .getMasterDB());
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        } catch (Election.NotRegularPeerException e) {
+                            e.printStackTrace();
+                        }
                     }
                 } else {
                     // everything is running silky smooth
@@ -213,8 +223,27 @@ public class MulticastControlHandler implements Runnable {
                 fileId = header_components[1].trim();
                 String filename = header_components[2].trim();
                 String accessLevelStr = header_components[3].trim();
+                int chunksCount = Integer.parseInt(header_components[4].trim());
+                AccessLevel accessLevel = ConfigsManager.getInstance().getSDatabase().getAccessLevelById
+                        (accessLevelStr);
+                FileRecord newRecord = new FileRecord(filename, fileId, accessLevel, chunksCount);
 
-                // TODO
+                // add record to shared database, to keep them synced
+                ConfigsManager.getInstance().getSDatabase().addFile(newRecord);
+                break;
+            case UsersSharingManager.ADD_FILE_CMD:
+
+                String username = header_components[1].trim();
+                String hashedPassword = header_components[2].trim();
+                accessLevelStr = header_components[3].trim();
+                accessLevel = ConfigsManager.getInstance().getSDatabase().getAccessLevelById
+                        (accessLevelStr);
+                User newUser = new User(username, hashedPassword, accessLevel);
+                // update to proper password
+                newUser.setHashedPassword(hashedPassword);
+
+                // add record to shared database, to keep them synced
+                ConfigsManager.getInstance().getSDatabase().addUser(newUser);
                 break;
             default:
                 Log.log("MC received non recognized command:");

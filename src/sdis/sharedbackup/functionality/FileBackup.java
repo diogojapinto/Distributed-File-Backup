@@ -36,7 +36,7 @@ public class FileBackup {
                 String filename = p.getFileName().toString();
                 try {
                     Election.getInstance().getMasterStub().addFile(new FileRecord(filename, file.getFileId(), file
-                                .getAccessLevel()));
+                                .getAccessLevel(), file.getChunkList().size()));
                 } catch (RemoteException e) {
                     System.err.println("Could not sync new file");
                 } catch (Election.NotRegularPeerException e) {
