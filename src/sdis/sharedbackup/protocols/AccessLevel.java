@@ -90,4 +90,21 @@ public class AccessLevel implements Serializable {
         }
         return retList;
     }
+
+    public String getHashedPassword() {
+        return password;
+    }
+
+    public void updateHashedPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof AccessLevel && ((AccessLevel) obj).getId().equals(getId())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 public class SharedDatabase implements Serializable {
 
@@ -17,13 +18,14 @@ public class SharedDatabase implements Serializable {
     private Date date;
     private long lastModification;
     private ArrayList<AccessLevel> accessLevels;
-    // TODO: missing files
+    private HashMap<AccessLevel, ArrayList<FileRecord>> files;
 
 
     public SharedDatabase() {
         date = new Date();
         users = new ArrayList<>();
         accessLevels = new ArrayList<>();
+        files = new HashMap<>();
 
         // add default access levels
         AccessLevel l1 = new AccessLevel("Administration", "dificultpass");
@@ -36,7 +38,13 @@ public class SharedDatabase implements Serializable {
         accessLevels.add(l2);
         accessLevels.add(l3);
 
-        updateTimestamp();
+        files.put(l1, new ArrayList<FileRecord>());
+        files.put(l2, new ArrayList<FileRecord>());
+        files.put(l3, new ArrayList<FileRecord>());
+
+
+        // indicates default database
+        lastModification = 0;
     }
 
     private void updateTimestamp() {
@@ -122,6 +130,118 @@ public class SharedDatabase implements Serializable {
     }
 
     public void merge(SharedDatabase masterDB) {
-        //TODO
+        long masterTimestamp = masterDB.getLastModification();
+        ArrayList<AccessLevel> masterLevels = masterDB.getAccessLevels();
+        ArrayList<User> masterUsers = masterDB.getUsers();
+        HashMap<AccessLevel, ArrayList<FileRecord>> masterFiles = masterDB.getFiles();
+
+        if (lastModification == 0) {
+            // this is the default database
+            lastModification = masterTimestamp;
+            accessLevels = masterLevels;
+            users = masterUsers;
+            files = masterFiles;
+            return;
+        }
+        // merge access levels (update password according to timestamp)
+        for (AccessLevel masterLV : masterLevels) {
+            boolean found = false;
+            for (AccessLevel mineLV : accessLevels) {
+                if (masterLV.equals(mineLV)) {
+                    found = true;
+                    if (masterLV.getHashedPassword().equals(mineLV.getHashedPassword())
+                            && masterTimestamp > lastModification) {
+                        mineLV.updateHashedPassword(masterLV.getHashedPassword());
+                    }
+                    break;
+                }
+            }
+            if (!found) {
+                accessLevels.add(masterLV);
+            }
+        }
+        // merge users
+        for (User masterU : masterUsers) {
+            boolean found = false;
+            for (User mineU : users) {
+                if (masterU.equals(mineU)) {
+                    found = true;
+                    if (masterU.getHashedPassword().equals(mineU.getHashedPassword())
+                            && masterTimestamp > lastModification) {
+                        mineU.setHashedPassword(masterU.getHashedPassword());
+                    }
+                    break;
+                }
+            }
+            if (!found) {
+                users.add(masterU);
+            }
+        }
+
+        // merge files
+        for (AccessLevel masterAl : masterFiles.keySet()) {
+            boolean found = false;
+            for (AccessLevel mineAl : files.keySet()) {
+                if (masterAl.equals(mineAl)) {
+                    found = true;
+
+                    // if equals, verify individual files
+                    ArrayList<FileRecord> masterRecords = masterFiles.get(masterAl);
+                    ArrayList<FileRecord> mineRecords = files.get(mineAl);
+                    for (FileRecord masterFr : masterRecords) {
+                        boolean fileFound = false;
+                        for (FileRecord mineFr : mineRecords) {
+                            if (masterFr.equals(mineFr)) {
+                                fileFound = true;
+                                break;
+                            }
+                        }
+                        if (!fileFound) {
+                            files.get(mineAl).add(masterFr);
+                        }
+                    }
+
+
+                    break;
+                }
+            }
+            if (!found) {
+                files.put(masterAl, masterFiles.get(masterAl));
+            }
+        }
+    }
+
+    public boolean addFile(FileRecord record) {
+        ArrayList<FileRecord> list = files.get(record.getAccessLevel());
+        for (FileRecord fr : list) {
+            if (fr.getHash().equals(record.getHash())) {
+                return false;
+            }
+        }
+        // file not found
+        list.add(record);
+        return true;
+    }
+
+    public void removeFile(FileRecord record) {
+        ArrayList<FileRecord> list = files.get(record.getAccessLevel());
+        for (FileRecord fr : list) {
+            if (fr.getHash().equals(record.getHash())) {
+                list.remove(fr);
+            }
+        }
+    }
+
+    private HashMap<AccessLevel, ArrayList<FileRecord>> getFiles() {
+        return files;
+    }
+
+    private ArrayList<AccessLevel> getAccessLevels() {
+        return accessLevels;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

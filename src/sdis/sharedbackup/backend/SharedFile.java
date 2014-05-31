@@ -118,7 +118,11 @@ public class SharedFile implements Serializable {
 		Log.log("Created " + mChunkCounter + " chunks for file " + mFileId);
 	}
 
-	public class FileTooLargeException extends Exception {
+    public AccessLevel getAccessLevel() {
+        return accessLevel;
+    }
+
+    public class FileTooLargeException extends Exception {
 
 		/**
 		 * 

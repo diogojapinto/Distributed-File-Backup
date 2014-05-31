@@ -38,6 +38,21 @@ public class User implements Serializable {
 
     public boolean login(String userName, String password) {
 
-        return this.userName.equals(userName) && Encoder.byteArrayToHexString(password.getBytes()).equals(this.password);
+        return this.userName.equals(userName) && Encoder.byteArrayToHexString(password.getBytes()).equals(this
+                .password);
+    }
+
+    public String getHashedPassword() {
+        return password;
+    }
+
+    public void setHashedPassword(String password) {
+        this.password = password;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof User && ((User) obj).getUserName().equals(userName);
     }
 }

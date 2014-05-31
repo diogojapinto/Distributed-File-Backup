@@ -2,6 +2,8 @@ package sdis.sharedbackup.protocols;
 
 import sdis.sharedbackup.backend.ConfigsManager;
 
+import java.rmi.RemoteException;
+
 /**
  * Created by knoweat on 29/05/14.
  */
@@ -15,5 +17,18 @@ public class MasterActions implements MasterServices {
     @Override
     public SharedDatabase getMasterDB() {
         return ConfigsManager.getInstance().getSDatabase();
+    }
+
+    @Override
+    public void addFile(FileRecord record) throws RemoteException {
+        boolean isNew = ConfigsManager.getInstance().getSDatabase().addFile(record);
+        if (isNew) {
+            FilesSharingManager.getInstance().addFileToSharedDB(record);
+        }
+    }
+
+    @Override
+    public void addUser(String username, String hashedPassword) throws RemoteException {
+        // TODO
     }
 }

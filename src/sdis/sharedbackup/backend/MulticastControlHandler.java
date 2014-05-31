@@ -207,7 +207,14 @@ public class MulticastControlHandler implements Runnable {
                         e1.printStackTrace();
                     }
                 }
+                break;
+            case FilesSharingManager.ADD_FILE_CMD:
 
+                fileId = header_components[1].trim();
+                String filename = header_components[2].trim();
+                String accessLevelStr = header_components[3].trim();
+
+                // TODO
                 break;
             default:
                 Log.log("MC received non recognized command:");
