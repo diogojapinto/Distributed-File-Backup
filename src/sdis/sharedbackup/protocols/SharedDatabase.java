@@ -30,7 +30,7 @@ public class SharedDatabase implements Serializable {
         // add default access levels
         AccessLevel l1 = new AccessLevel("Administration", "dificultpass");
         AccessLevel l2 = new AccessLevel("Projects", "mediumpass");
-        AccessLevel l3 = new AccessLevel("GeneralPurpose", "atuamae");
+        AccessLevel l3 = new AccessLevel("GeneralPurpose", "easypass");
         l1.addChild(l2);
         l2.addChild(l3);
 

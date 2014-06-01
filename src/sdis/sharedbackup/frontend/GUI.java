@@ -53,7 +53,7 @@ public class GUI extends Application {
 
     @Override
     public void start(final Stage primaryStage) {
-        primaryStage.setTitle("MFCSS");
+        primaryStage.setTitle("MyFirstCloudSharingService");
         if (!ApplicationInterface.getInstance().getDatabaseStatus()) {
             setupService(primaryStage);
         } else {

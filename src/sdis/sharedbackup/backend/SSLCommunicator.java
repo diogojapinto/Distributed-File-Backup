@@ -134,6 +134,14 @@ public class SSLCommunicator {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+
+                        try {
+                            requestStart(in, out);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
 
