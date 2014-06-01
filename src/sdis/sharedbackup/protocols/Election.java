@@ -30,8 +30,8 @@ public class Election {
     private static final int MAX_RETRIES = 3;
 
     private static boolean imMaster = false;
-    private Boolean knowsMaster = false;
-    private String masterIp = null;
+    private static Boolean knowsMaster = false;
+    private static String masterIp = null;
     private long masterUpTime = 0;
 
     private long lastMasterCmdTimestamp;
@@ -173,6 +173,11 @@ public class Election {
             }
             masterUpTime = upTime;
         }
+    }
+
+    public static void setInitMaster(String ip) {
+        knowsMaster = true;
+        masterIp = ip;
     }
 
     public boolean checkIfMaster(String ip) {

@@ -190,13 +190,18 @@ public class MulticastControlHandler implements Runnable {
                 break;
             case Election.MASTER_CMD:
                 String master = header_components[1];
+
+                Log.log("Received MASTER_CMD from" + master);
+
                 if (!Election.getInstance().checkIfMaster(master)) {
+
                     if (Election.getInstance().imMaster()) {
                         Election.getInstance().candidate();
                     } else {
                         try {
                             ConfigsManager.getInstance().getSDatabase().merge(Election.getInstance().getMasterStub()
                                     .getMasterDB());
+                            Election.setInitMaster(master);
                         } catch (RemoteException e) {
                             e.printStackTrace();
                         } catch (Election.NotRegularPeerException e) {

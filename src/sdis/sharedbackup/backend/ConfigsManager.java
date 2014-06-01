@@ -218,6 +218,13 @@ public class ConfigsManager {
 
     public void init() throws ConfigurationsNotInitializedException {
         if (mDatabase.isInitialized()) {
+            mMCListener = null;
+            mMDBListener = null;
+            mMDRListener = null;
+            mExecutor.shutdownNow();
+
+            mExecutor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
+            startupListeners();
             Election.getInstance().sendStartup();
         } else {
             throw new ConfigurationsNotInitializedException();
@@ -227,13 +234,6 @@ public class ConfigsManager {
 
     public void enterMainStage() throws ConfigurationsNotInitializedException {
         if (mDatabase.isInitialized()) {
-            mMCListener = null;
-            mMDBListener = null;
-            mMDRListener = null;
-            mExecutor.shutdownNow();
-
-            mExecutor = Executors.newFixedThreadPool(NR_CONCURRENT_THREADS);
-            startupListeners();
             mExecutor.execute(new FileDeletionChecker());
             Date d = new Date();
             beginningTime = d.getTime();
