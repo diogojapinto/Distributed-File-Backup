@@ -53,6 +53,12 @@ public class GUI extends Application {
 
     @Override
     public void start(final Stage primaryStage) {
+        Properties props = System.getProperties();
+        System.setProperty("java.security.policy","file:./security.policy");
+       // if (System.getSecurityManager() == null) {
+            //System.setSecurityManager(new SecurityManager());
+        //}
+
         primaryStage.setTitle("MyFirstCloudSharingService");
         if (!ApplicationInterface.getInstance().getDatabaseStatus()) {
             setupService(primaryStage);
@@ -447,6 +453,13 @@ public class GUI extends Application {
                     errorMsg.setText("Username already exists!");
                 } else {
                     ConfigsManager.getInstance().login(userName, password);
+
+                    try {
+                        ApplicationInterface.getInstance().startupService();
+                    } catch (ConfigurationsNotInitializedException e1) {
+                        e1.printStackTrace();
+                    }
+
                     menu(primaryStage);
                 }
             }
@@ -479,7 +492,7 @@ public class GUI extends Application {
 
         // Elementos da cena
 
-        Text welcome = new Text("Welcome User!");
+        Text welcome = new Text("Welcome " + ConfigsManager.getInstance().getUser().getUserName() + "!");
         welcome.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 
         Label option = new Label("Choose an option:");

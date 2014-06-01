@@ -6,6 +6,7 @@ import sdis.sharedbackup.utils.Log;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -60,7 +61,14 @@ public class Election {
     public void sendStartup() {
         String message = "";
 
-        String ip = ConfigsManager.getInstance().getInterface().getHostAddress();
+        String ip = null;
+        try {
+            ip = ConfigsManager.getInstance().getInterfaceIP();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("sendStartup ip:"+ip);
 
         message += WAKEUP_CMD + " " + ip + MulticastCommunicator.CRLF
                 + MulticastCommunicator.CRLF;
@@ -99,8 +107,11 @@ public class Election {
         } while (counter < MAX_RETRIES);
 
         if (!knowsMaster) {
-
-            masterIp = ConfigsManager.getInstance().getInterface().getHostAddress();
+            try {
+                 masterIp = ConfigsManager.getInstance().getInterfaceIP();
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
             imMaster = true;
             knowsMaster = true;
 
@@ -243,7 +254,11 @@ public class Election {
         if (!knowsMaster) {
             imMaster = true;
             knowsMaster = true;
-            masterIp = ConfigsManager.getInstance().getInterface().getHostAddress();
+            try {
+                masterIp = ConfigsManager.getInstance().getInterfaceIP();
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
             masterUpTime = uptime;
 
             masterUpdate = new Thread(new MasterCmdDiffuser());
@@ -311,16 +326,18 @@ public class Election {
         MasterActions obj = new MasterActions();
         try {
             reg = LocateRegistry.createRegistry(REGISTRY_PORT);
-            MasterServices stub = (MasterServices) UnicastRemoteObject.exportObject(obj, 0);
-            reg.bind(MasterServices.REG_ID, obj);
+            MasterServices stub = (MasterServices) UnicastRemoteObject.exportObject(obj, REGISTRY_PORT);
+            reg.rebind(MasterServices.REG_ID, stub);
+
+            System.out.println("Elected Startup:");
+            for (String s : reg.list())
+                System.out.println(s);
 
             Log.log("Master services ready");
 
         } catch (RemoteException e) {
             System.err.println("RMI registry not available. Exiting...");
             System.exit(1);
-        } catch (AlreadyBoundException e) {
-            e.printStackTrace();
         }
     }
 
@@ -330,13 +347,21 @@ public class Election {
         }
 
         try {
-            reg = LocateRegistry.getRegistry(REGISTRY_PORT);
+            reg = LocateRegistry.getRegistry(masterIp, REGISTRY_PORT);
+            System.out.println("getMasterStub from " + masterIp +":");
+            for (String s : reg.list())
+                System.out.println(s);
+
+            MasterServices services = (MasterServices) reg.lookup(MasterServices.REG_ID);
+
             return (MasterServices) reg.lookup(MasterServices.REG_ID);
         } catch (RemoteException e) {
             System.err.println("Error getting stub from RMI Registry. Exiting...");
+            e.printStackTrace();
             System.exit(1);
         } catch (NotBoundException e) {
             System.err.println("Error getting stub from RMI Registry. Exiting...");
+            e.printStackTrace();
             System.exit(1);
         }
         return null;

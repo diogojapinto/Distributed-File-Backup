@@ -4,11 +4,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -411,6 +411,23 @@ public class ConfigsManager {
 
     public boolean isServer() {
         return isServer;
+    }
+
+    public String getInterfaceIP() throws SocketException {
+        Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+        for (NetworkInterface netint : Collections.list(nets)) {
+            if (netint.getDisplayName().equals(mDatabase.getInterfaceName())) {
+                Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+                for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+                    try {
+                        Inet4Address addr = (Inet4Address) inetAddress;
+                        return addr.getHostAddress();
+                    } catch (ClassCastException e) {
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public User getUser() {
