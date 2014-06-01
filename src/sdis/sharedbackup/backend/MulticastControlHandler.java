@@ -61,6 +61,9 @@ public class MulticastControlHandler implements Runnable {
                 }
                 break;
             case ChunkRestore.GET_COMMAND:
+                if (ConfigsManager.getInstance().isServer()) {
+                    return;
+                }
 
                 fileId = header_components[1].trim();
                 chunkNo = Integer.parseInt(header_components[2].trim());
@@ -129,6 +132,7 @@ public class MulticastControlHandler implements Runnable {
                 break;
 
             case FileDeletion.DELETE_COMMAND:
+
                 fileId = header_components[1];
 
                 if (ConfigsManager.getInstance().removeChunksOfFile(fileId)) {
@@ -139,12 +143,19 @@ public class MulticastControlHandler implements Runnable {
 
                 break;
             case FileDeletion.RESPONSE_COMMAND:
+                if (ConfigsManager.getInstance().isServer()) {
+                    return;
+                }
 
                 fileId = header_components[1].trim();
 
                 ConfigsManager.getInstance().decDeletedFileReplication(fileId);
                 break;
             case SpaceReclaiming.REMOVED_COMMAND:
+
+                if (ConfigsManager.getInstance().isServer()) {
+                    return;
+                }
 
                 fileId = header_components[1].trim();
                 chunkNo = Integer.parseInt(header_components[2].trim());
@@ -167,6 +178,7 @@ public class MulticastControlHandler implements Runnable {
                 } // else I don't have it
                 break;
             case Election.WAKEUP_CMD:
+
                 if (Election.getInstance().imMaster()) {
                     try {
                         Log.log("Sending IM_MASTER in response to WAKED_UP");
@@ -231,7 +243,7 @@ public class MulticastControlHandler implements Runnable {
                 // add record to shared database, to keep them synced
                 ConfigsManager.getInstance().getSDatabase().addFile(newRecord);
                 break;
-            case UsersSharingManager.ADD_FILE_CMD:
+            case UsersSharingManager.ADD_USER_CMD:
 
                 String username = header_components[1].trim();
                 String hashedPassword = header_components[2].trim();

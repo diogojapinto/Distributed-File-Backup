@@ -9,12 +9,15 @@ import sdis.sharedbackup.backend.ConfigsManager.FileAlreadySaved;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidBackupSizeException;
 import sdis.sharedbackup.backend.ConfigsManager.InvalidFolderException;
 import sdis.sharedbackup.backend.ConfigsManager.ConfigurationsNotInitializedException;
+import sdis.sharedbackup.backend.SSLCommunicator;
 import sdis.sharedbackup.backend.SharedFile.FileDoesNotExistsExeption;
 import sdis.sharedbackup.backend.SharedFile.FileTooLargeException;
 
-public class CLIMonitor {
+public class Server {
 	private static Scanner sc = new Scanner(System.in);
 	private static boolean exit = false;
+
+    private static int port;
 
 	public static void main(String[] args) {
 		try {
@@ -22,6 +25,8 @@ public class CLIMonitor {
 		} catch (ArgsException e) {
 			e.error();
 		}
+
+        ConfigsManager.getInstance().setServer(true);
 
 		clearConsole();
 
@@ -35,11 +40,9 @@ public class CLIMonitor {
 			System.exit(1);
 		}
 
-		while (!exit) {
-			promptMenuOption();
-		}
+        SSLCommunicator server = new SSLCommunicator(port);
 
-		sc.close();
+        server.serverReceive();
 
 		ApplicationInterface.getInstance().terminate();
 
@@ -52,7 +55,7 @@ public class CLIMonitor {
 	 */
 	private static void parseArgs(String[] args) throws ArgsException {
 
-		if (args.length != 6) {
+		if (args.length != 7) {
 			throw new ArgsException();
 		}
 
@@ -61,6 +64,8 @@ public class CLIMonitor {
 				args[4], Integer.parseInt(args[5]))) {
 			throw new ArgsException();
 		}
+
+        port = Integer.parseInt(args[7]);
 
 	}
 
@@ -72,7 +77,7 @@ public class CLIMonitor {
 			while (true) {
 				try {
 					ApplicationInterface.getInstance().setAvailableDiskSpace(
-							promptAvailableSpace());
+							Long.MAX_VALUE);
 					break;
 				} catch (InvalidBackupSizeException e) {
 					System.err.println("Please input a size greater than 0KB");
@@ -86,164 +91,13 @@ public class CLIMonitor {
 			while (true) {
 				try {
 					ApplicationInterface.getInstance().setDestinationDirectory(
-							promptDestinationDir());
+                            System.getProperty("user.dir"));
 					break;
 				} catch (InvalidFolderException e) {
 					System.err.println("Folder does not exist!!");
 				}
 			}
 			System.out.println("Setup Successfull");
-		}
-	}
-
-	private static long promptAvailableSpace() throws InputMismatchException {
-		clearConsole();
-		long allocatedSpace = 0;
-		while (true) {
-			try {
-				System.out.println("Choose your allocated space (KB):");
-				allocatedSpace = sc.nextLong();
-				sc.nextLine();
-				break;
-			} catch (InputMismatchException e) {
-				System.out.println("Invalid Input!");
-			}
-		}
-		return allocatedSpace;
-	}
-
-	private static String promptDestinationDir() {
-		clearConsole();
-		System.out.println("Choose the folder to save the files to:");
-		return sc.nextLine();
-	}
-
-	private static void promptMenuOption() {
-		clearConsole();
-		do {
-			System.out.println("Choose an option:");
-			System.out.println("1-Backup file");
-			System.out.println("2-Restore file");
-			System.out.println("3-Delete a replicated file");
-			System.out.println("4-Change allocated space");
-			System.out.println("5-EXIT");
-
-		} while (!processChoice());
-	}
-
-	private static boolean processChoice() {
-		// TODO: catch errors in reads
-		// clearConsole();
-		// read choice
-		int choice = sc.nextInt();
-		sc.nextLine();
-
-		// call corresponding interface method
-		switch (choice) {
-		// backup file
-		case 1:
-			System.out.println("Enter the path to the file:");
-			String path = sc.nextLine();
-			System.out.println("Enter desired Replication degree:");
-			int repdeg;
-			while (true) {
-				try {
-					repdeg = sc.nextInt();
-					sc.nextLine();
-					break;
-				} catch (InputMismatchException e) {
-					System.out.println("Invalid Input!");
-					sc.nextLine();
-				}
-			}
-			try {
-				ApplicationInterface.getInstance().backupFile(path, repdeg, null);
-				return true;
-			} catch (FileTooLargeException e) {
-				System.out.println("The selected file is too large");
-				return false;
-			} catch (FileDoesNotExistsExeption e) {
-				System.out.println("The selected file does not exists");
-				return false;
-			} catch (FileAlreadySaved e) {
-				System.out
-						.println("The selected file is already in the database");
-				return false;
-			}
-		case 4:
-			System.out.println("Enter new allocated space:");
-			int space;
-			while (true) {
-				try {
-					space = sc.nextInt();
-					break;
-				} catch (InputMismatchException e) {
-					System.out.println("Invalid Input!");
-					sc.nextLine();
-				}
-			}
-			sc.nextLine();
-			ApplicationInterface.getInstance().setNewSpace(space);
-			return true;
-		case 2:
-			ArrayList<String> files = ApplicationInterface.getInstance()
-					.getRestorableFiles();
-
-			if (files.size() == 0) {
-				System.out
-						.println("The files you've backed up have are still saved in the file system");
-				return true;
-			}
-
-			printFilesOrderedInfo(files);
-			System.out.println("Choose file to restore:");
-			int file_i = sc.nextInt();
-			sc.nextLine();
-
-			ApplicationInterface.getInstance().restoreFileByPath(
-					files.get(file_i - 1));
-
-			return true;
-		case 3:
-			ArrayList<String> deletableFiles = ApplicationInterface
-					.getInstance().getDeletableFiles();
-			if (deletableFiles.size() == 0) {
-				System.out.println("There is no backed up files to delete");
-				return true;
-			}
-			int i;
-			printFilesOrderedInfo(deletableFiles);
-			while (true) {
-				try {
-					System.out.println("Choose file to delete:");
-					i = sc.nextInt();
-					sc.nextLine();
-					if (i > deletableFiles.size() || i < 0) {
-						System.out.println("Invalid Input!");
-					} else {
-						break;
-					}
-				} catch (InputMismatchException e) {
-					System.out.println("Invalid Input!");
-					sc.nextLine();
-				}
-			}
-
-			try {
-				ApplicationInterface.getInstance().deleteFile(
-						deletableFiles.get(i - 1));
-			} catch (FileDoesNotExistsExeption e) {
-				System.out.println("The selected file does not exists");
-			}
-
-			return true;
-		case 5:
-			exit = true;
-			System.out.println("Program will exit now");
-			return true;
-		default:
-			System.out.println("Option does not exist");
-			return false;
 		}
 	}
 
@@ -256,7 +110,7 @@ public class CLIMonitor {
 
 		public void error() {
 			System.out
-					.println("usage: java CLIMonitor <MCaddr> <MCport> <MDBaddr> <MDBport> <MDRaddr> <MDRport>");
+					.println("usage: java Server <MCaddr> <MCport> <MDBaddr> <MDBport> <MDRaddr> <MDRport> <ServerPort>");
 			System.exit(1);
 		}
 	}

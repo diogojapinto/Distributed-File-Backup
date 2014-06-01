@@ -31,6 +31,10 @@ public class MulticastDataBackupHandler implements Runnable {
 
         switch (messageType) {
             case ChunkBackup.PUT_COMMAND:
+                if (ConfigsManager.getInstance().isServer()) {
+                    return;
+                }
+
                 Log.log("REceived a PUT");
                 if (ConfigsManager.getInstance().getBackupDirActualSize()
                         + FileChunk.MAX_CHUNK_SIZE >= ConfigsManager.getInstance()

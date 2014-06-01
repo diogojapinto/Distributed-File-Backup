@@ -12,7 +12,7 @@ import java.net.InetAddress;
  * Created by knoweat on 31/05/14.
  */
 public class UsersSharingManager {
-    public static final String ADD_FILE_CMD = "ADD_USER";
+    public static final String ADD_USER_CMD = "ADD_USER";
 
     private static UsersSharingManager instance = null;
 
@@ -37,7 +37,7 @@ public class UsersSharingManager {
 
         String message;
 
-        message = ADD_FILE_CMD + " " + user.getUserName() + " " + user.getHashedPassword() + " " + user
+        message = ADD_USER_CMD + " " + user.getUserName() + " " + user.getHashedPassword() + " " + user
                 .getAccessLevel().getId() + " " + MulticastCommunicator.CRLF + MulticastCommunicator.CRLF;
 
         try {

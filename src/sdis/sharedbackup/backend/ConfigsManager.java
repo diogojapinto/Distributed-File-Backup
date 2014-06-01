@@ -29,6 +29,7 @@ public class ConfigsManager {
 
     // private members
 
+    private boolean isServer = false;
     private boolean mCheckState;
     private MulticastControlListener mMCListener;
     private MulticastDataBackupListener mMDBListener;
@@ -402,6 +403,14 @@ public class ConfigsManager {
 
     public boolean login(String username, String password) {
         return (user = sDatabase.login(username, password)) != null;
+    }
+
+    public void setServer(boolean isServer) {
+        this.isServer = isServer;
+    }
+
+    public boolean isServer() {
+        return isServer;
     }
 
     public User getUser() {

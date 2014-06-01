@@ -99,6 +99,7 @@ public class Election {
         } while (counter < MAX_RETRIES);
 
         if (!knowsMaster) {
+
             masterIp = ConfigsManager.getInstance().getInterface().getHostAddress();
             imMaster = true;
             knowsMaster = true;

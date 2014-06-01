@@ -100,7 +100,7 @@ public class BackupsDatabase implements Serializable {
 
 		} else if (destination.isDirectory()) {
 			mBackupFolder = destination.getAbsolutePath();
-			if (EnvironmentVerifier.getFolderSize(mBackupFolder) > 0) {
+			if (EnvironmentVerifier.getFolderSize(mBackupFolder) > 0 && !ConfigsManager.getInstance().isServer()) {
 				throw new InvalidFolderException();
 			}
 			String os = System.getProperty("os.name");
