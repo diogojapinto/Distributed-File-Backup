@@ -35,9 +35,14 @@ import sdis.sharedbackup.utils.EnvironmentVerifier;
 import sdis.sharedbackup.utils.Log;
 
 import java.io.File;
+import java.io.FilePermission;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.SocketException;
+import java.rmi.RMISecurityManager;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.Policy;
 import java.util.ArrayList;
 
 public class GUI extends Application {
@@ -48,16 +53,12 @@ public class GUI extends Application {
     private File file;
 
     public static void main(String[] args) {
+
         launch(args);
     }
 
     @Override
     public void start(final Stage primaryStage) {
-        Properties props = System.getProperties();
-        System.setProperty("java.security.policy","file:./security.policy");
-       // if (System.getSecurityManager() == null) {
-            //System.setSecurityManager(new SecurityManager());
-        //}
 
         primaryStage.setTitle("MyFirstCloudSharingService");
         if (!ApplicationInterface.getInstance().getDatabaseStatus()) {

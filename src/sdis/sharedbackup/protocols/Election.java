@@ -68,7 +68,7 @@ public class Election {
             e.printStackTrace();
         }
 
-        System.out.println("sendStartup ip:"+ip);
+        System.out.println("sendStartup ip: " + ip);
 
         message += WAKEUP_CMD + " " + ip + MulticastCommunicator.CRLF
                 + MulticastCommunicator.CRLF;
@@ -108,7 +108,7 @@ public class Election {
 
         if (!knowsMaster) {
             try {
-                 masterIp = ConfigsManager.getInstance().getInterfaceIP();
+                masterIp = ConfigsManager.getInstance().getInterfaceIP();
             } catch (SocketException e) {
                 e.printStackTrace();
             }
@@ -326,7 +326,7 @@ public class Election {
         MasterActions obj = new MasterActions();
         try {
             reg = LocateRegistry.createRegistry(REGISTRY_PORT);
-            MasterServices stub = (MasterServices) UnicastRemoteObject.exportObject(obj, REGISTRY_PORT);
+            MasterServices stub = (MasterServices) UnicastRemoteObject.exportObject(obj, 0);
             reg.rebind(MasterServices.REG_ID, stub);
 
             System.out.println("Elected Startup:");
@@ -348,7 +348,7 @@ public class Election {
 
         try {
             reg = LocateRegistry.getRegistry(masterIp, REGISTRY_PORT);
-            System.out.println("getMasterStub from " + masterIp +":");
+            System.out.println("getMasterStub from " + masterIp + ":");
             for (String s : reg.list())
                 System.out.println(s);
 
