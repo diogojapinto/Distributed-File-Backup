@@ -53,7 +53,6 @@ public class GUI extends Application {
     private File file;
 
     public static void main(String[] args) {
-        
         launch(args);
     }
 

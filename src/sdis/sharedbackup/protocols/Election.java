@@ -1,5 +1,6 @@
 package sdis.sharedbackup.protocols;
 
+import jdk.nashorn.internal.runtime.regexp.joni.Config;
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.MulticastCommunicator;
 import sdis.sharedbackup.utils.Log;
@@ -325,6 +326,7 @@ public class Election {
 
         MasterActions obj = new MasterActions();
         try {
+            System.setProperty("java.rmi.server.hostname", ConfigsManager.getInstance().getInterfaceIP());
             reg = LocateRegistry.createRegistry(REGISTRY_PORT);
             MasterServices stub = (MasterServices) UnicastRemoteObject.exportObject(obj, 0);
             reg.rebind(MasterServices.REG_ID, stub);
@@ -338,6 +340,8 @@ public class Election {
         } catch (RemoteException e) {
             System.err.println("RMI registry not available. Exiting...");
             System.exit(1);
+        } catch (SocketException e) {
+            e.printStackTrace();
         }
     }
 
@@ -348,6 +352,7 @@ public class Election {
 
         try {
             reg = LocateRegistry.getRegistry(masterIp, REGISTRY_PORT);
+
             System.out.println("getMasterStub from " + masterIp + ":");
             for (String s : reg.list())
                 System.out.println(s);
