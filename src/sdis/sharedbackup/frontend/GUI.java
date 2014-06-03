@@ -48,7 +48,8 @@ import java.util.ArrayList;
 public class GUI extends Application {
 
     private boolean hasStarted = false;
-    private static final String addressPlaceholder1 = "239.0.0.1:6666", addressPlaceholder2 = "239.0.0.1:6667", addressPlaceholder3 = "239.0.0.1:6668";
+    private static final String addressPlaceholder1 = "239.0.0.1:6666", addressPlaceholder2 = "239.0.0.1:6667",
+            addressPlaceholder3 = "239.0.0.1:6668";
 
     private File file;
 
@@ -364,13 +365,16 @@ public class GUI extends Application {
                     errorMsg.setText("Please fill all fields");
                 } else if (!ConfigsManager.getInstance().login(userName, password)) {
                     errorMsg.setText("Invalid login, please try again!");
-                } else
+                } else {
+                    errorMsg.setFill(Color.YELLOWGREEN);
+                    errorMsg.setText("Connecting to network...");
                     try {
                         ApplicationInterface.getInstance().startupService();
                     } catch (ConfigurationsNotInitializedException e1) {
                         e1.printStackTrace();
                     }
-                menu(primaryStage);
+                    menu(primaryStage);
+                }
             }
         });
 
@@ -443,13 +447,15 @@ public class GUI extends Application {
                 String password = pwBox.getText();
                 String accessLevelPass = accessLevelPasswordField.getText();
 
-                AccessLevel accessLevel = ConfigsManager.getInstance().getSDatabase().getAccessLevelByPassword(accessLevelPass);
+                AccessLevel accessLevel = ConfigsManager.getInstance().getSDatabase().getAccessLevelByPassword
+                        (accessLevelPass);
 
                 if (userName.equals("") || password.equals("") || accessLevelPass.equals("")) {
                     errorMsg.setText("Please fill all fields");
                 } else if (accessLevel == null) {
                     errorMsg.setText("Invalid access level password!");
-                } else if (!ConfigsManager.getInstance().getSDatabase().addUser(new User(userName, password, accessLevel))) {
+                } else if (!ConfigsManager.getInstance().getSDatabase().addUser(new User(userName, password,
+                        accessLevel))) {
                     errorMsg.setText("Username already exists!");
                 } else {
                     ConfigsManager.getInstance().login(userName, password);
@@ -493,8 +499,10 @@ public class GUI extends Application {
         // Elementos da cena
 
         Text welcome = new Text("Welcome " + ConfigsManager.getInstance().getUser().getUserName() + "!");
-        welcome.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 
+        welcome.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        Label accessLevel = new Label("Acess Level: " + ConfigsManager.getInstance().getUser().getAccessLevel().getId
+                ());
         Label option = new Label("Choose an option:");
 
         Button backup = new Button("Backup File");
@@ -509,6 +517,11 @@ public class GUI extends Application {
         HBox hbWelcome = new HBox(10);
         hbWelcome.setAlignment(Pos.BASELINE_CENTER);
         hbWelcome.getChildren().add(welcome);
+        hbWelcome.getChildren().add(accessLevel);
+
+        HBox hbAccessLevel = new HBox(10);
+        hbAccessLevel.setAlignment(Pos.TOP_CENTER);
+        hbAccessLevel.getChildren().add(accessLevel);
 
         HBox hbOption = new HBox(10);
         hbOption.setAlignment(Pos.BASELINE_CENTER);
@@ -532,6 +545,7 @@ public class GUI extends Application {
         hbSettings.getChildren().add(settings);
 
         grid.add(hbWelcome, 0, 0);
+        grid.add(hbAccessLevel, 0, 1);
         grid.add(hbOption, 0, 2);
         grid.add(hbBackupRestore, 0, 3);
         grid.add(hbRestore, 0, 4);
@@ -616,7 +630,8 @@ public class GUI extends Application {
         //TODO
 
         final ObservableList<String> levelsAvailable = FXCollections
-                .observableArrayList(ConfigsManager.getInstance().getUser().getAccessLevel().getAvailableAccessLevels());
+                .observableArrayList(ConfigsManager.getInstance().getUser().getAccessLevel().getAvailableAccessLevels
+                        ());
 
         final ComboBox<String> selectableLevel = new ComboBox<String>(
                 levelsAvailable);
@@ -628,7 +643,10 @@ public class GUI extends Application {
         HBox hbChooseFile = new HBox(10);
         hbChooseFile.setAlignment(Pos.BASELINE_LEFT);
         hbChooseFile.getChildren().add(chooseFile);
-        hbChooseFile.getChildren().add(selectableLevel);
+
+        HBox hbAccessLevel = new HBox(10);
+        hbAccessLevel.setAlignment(Pos.BASELINE_LEFT);
+        hbAccessLevel.getChildren().add(selectableLevel);
 
         HBox hbChosenFile = new HBox(10);
         hbChosenFile.setAlignment(Pos.BASELINE_LEFT);
@@ -649,8 +667,9 @@ public class GUI extends Application {
         grid.add(repTextField, 0, 3);
         grid.add(hbChooseFile, 0, 4);
         grid.add(hbChosenFile, 0, 5);
-        grid.add(hbErrorMsg, 0, 6);
-        grid.add(hbButtons, 0, 7);
+        grid.add(hbAccessLevel, 0, 6);
+        grid.add(hbErrorMsg, 0, 7);
+        grid.add(hbButtons, 0, 8);
 
         cancel.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -684,7 +703,7 @@ public class GUI extends Application {
                 String accessLevel = selectableLevel.getSelectionModel().getSelectedItem();
                 final AccessLevel al = ConfigsManager.getInstance().getSDatabase().getAccessLevelById(accessLevel);
 
-                if (file == null || repDegree.equals("") | accessLevel == null | accessLevel.equals("")) {
+                if (file == null || repDegree.equals("") || accessLevel == null || accessLevel.equals("")) {
                     errorMsg.setText("Please fill all fields");
                 } else if (!repDegree.matches("\\d+")) // not an integer
                 {
@@ -703,19 +722,16 @@ public class GUI extends Application {
                                                 file.getAbsolutePath(),
                                                 Integer.parseInt(repDegree), al);
                                 if (!backupSuccess)
-                                    setText(errorMsg, "Not enough peers to meet\n necessary replication");
-                                else
-                                    errorMsg.setFill(Color.YELLOWGREEN);
-                                setText(errorMsg, "File backed up");
+                                    setText(errorMsg, "Not enough peers to meet\n necessary replication", Color.FIREBRICK);
+                                else {
+                                    setText(errorMsg, "File backed up", Color.YELLOWGREEN);
+                                }
                             } catch (FileTooLargeException e1) {
-                                errorMsg.setFill(Color.FIREBRICK);
-                                setText(errorMsg, "The selected file is too large");
+                                setText(errorMsg, "The selected file is too large", Color.FIREBRICK);
                             } catch (FileDoesNotExistsExeption e1) {
-                                errorMsg.setFill(Color.FIREBRICK);
-                                setText(errorMsg, "The selected file does not exists");
+                                setText(errorMsg, "The selected file does not exists", Color.FIREBRICK);
                             } catch (FileAlreadySaved e1) {
-                                errorMsg.setFill(Color.FIREBRICK);
-                                setText(errorMsg, "The selected file is already in the database");
+                                setText(errorMsg, "The selected file is already in the database", Color.FIREBRICK);
                             }
                         }
                     }).start();
@@ -1067,11 +1083,13 @@ public class GUI extends Application {
         System.exit(0);
     }
 
-    private void setText(final Text txt, final String msg) {
+    private void setText(final Text txt, final String msg, final Color color) {
+
         Platform.runLater(new Runnable() {
 
             @Override
             public void run() {
+                txt.setFill(color);
                 txt.setText(msg);
             }
         });

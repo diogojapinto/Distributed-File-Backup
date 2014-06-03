@@ -2,6 +2,7 @@ package sdis.sharedbackup.protocols;
 
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.User;
+import sdis.sharedbackup.utils.Log;
 
 import java.rmi.RemoteException;
 
@@ -31,6 +32,8 @@ public class MasterActions implements MasterServices {
     @Override
     public void addUser(String username, String hashedPassword, AccessLevel accessLevel) throws RemoteException {
         User user = new User(username, hashedPassword, accessLevel);
+        user.setHashedPassword(hashedPassword);
+        Log.log("Received new username " + username + " info. Spreading the word...");
         ConfigsManager.getInstance().getSDatabase().addUser(user);
         UsersSharingManager.getInstance().addUserToSharedDB(user);
     }

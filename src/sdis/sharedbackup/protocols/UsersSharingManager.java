@@ -49,7 +49,7 @@ public class UsersSharingManager {
             e.printStackTrace();
         }
 
-        Log.log("Sent ADD_USER command for file " + user.getUserName());
+        Log.log("Sent ADD_USER command for user " + user.getUserName());
 
         return true;
     }

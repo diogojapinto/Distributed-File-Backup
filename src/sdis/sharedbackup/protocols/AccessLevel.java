@@ -86,7 +86,7 @@ public class AccessLevel implements Serializable {
         ArrayList<String> retList = new ArrayList<>();
         retList.add(this.getId());
         for (AccessLevel al : children) {
-            retList.addAll(getAvailableAccessLevels());
+            retList.addAll(al.getAvailableAccessLevels());
         }
         return retList;
     }

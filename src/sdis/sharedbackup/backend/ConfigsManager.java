@@ -122,7 +122,6 @@ public class ConfigsManager {
             sDatabase = new SharedDatabase();
             return false;
         } catch (IOException e) {
-            System.out.println("pig");
             e.printStackTrace();
         }
         return true;
@@ -237,7 +236,9 @@ public class ConfigsManager {
             mExecutor.execute(new FileDeletionChecker());
             Date d = new Date();
             beginningTime = d.getTime();
-            SharedClock.getInstance();
+            if (!Election.getInstance().imMaster()) {
+                SharedClock.getInstance().startSync();
+            }
             sDatabase.createNameSpace(getChunksDestination());
         } else {
             throw new ConfigurationsNotInitializedException();

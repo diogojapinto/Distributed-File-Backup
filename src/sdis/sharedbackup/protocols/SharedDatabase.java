@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,7 +29,7 @@ public class SharedDatabase implements Serializable {
         files = new HashMap<>();
 
         // add default access levels
-        AccessLevel l1 = new AccessLevel("Administration", "dificultpass");
+        AccessLevel l1 = new AccessLevel("Administration", "difficultpass");
         AccessLevel l2 = new AccessLevel("Projects", "mediumpass");
         AccessLevel l3 = new AccessLevel("GeneralPurpose", "easypass");
         l1.addChild(l2);
@@ -41,7 +42,6 @@ public class SharedDatabase implements Serializable {
         files.put(l1, new ArrayList<FileRecord>());
         files.put(l2, new ArrayList<FileRecord>());
         files.put(l3, new ArrayList<FileRecord>());
-
 
         // indicates default database
         lastModification = 0;
@@ -166,15 +166,39 @@ public class SharedDatabase implements Serializable {
             for (User mineU : users) {
                 if (masterU.equals(mineU)) {
                     found = true;
-                    if (masterU.getHashedPassword().equals(mineU.getHashedPassword())
+                    if (!masterU.getHashedPassword().equals(mineU.getHashedPassword())
                             && masterTimestamp > lastModification) {
                         mineU.setHashedPassword(masterU.getHashedPassword());
+                        Log.log("Modified password of " + masterU.getUserName());
                     }
                     break;
                 }
             }
             if (!found) {
                 users.add(masterU);
+                Log.log("Added user " + masterU.getUserName());
+            }
+        }
+
+        // send new users to master
+        for (User mineU : users) {
+            boolean found = false;
+            for (User masterU : masterUsers) {
+                if (masterU.equals(mineU)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                try {
+                    Election.getInstance().getMasterStub().addUser(mineU.getUserName(), mineU.getHashedPassword(),
+                            mineU.getAccessLevel());
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                } catch (Election.NotRegularPeerException e) {
+                    e.printStackTrace();
+                }
+                Log.log("Sent info of user " + mineU.getUserName());
             }
         }
 
@@ -209,10 +233,14 @@ public class SharedDatabase implements Serializable {
                 files.put(masterAl, masterFiles.get(masterAl));
             }
         }
+        saveDatabase();
     }
 
     public boolean addFile(FileRecord record) {
         ArrayList<FileRecord> list = files.get(record.getAccessLevel());
+        if (list == null) {
+            System.out.println("List null");
+        }
         for (FileRecord fr : list) {
             if (fr.getHash().equals(record.getHash())) {
                 return false;

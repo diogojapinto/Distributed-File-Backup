@@ -60,6 +60,7 @@ public class ApplicationInterface {
     public boolean backupFile(String filePath, int replication, AccessLevel al)
             throws FileTooLargeException, FileDoesNotExistsExeption,
             FileAlreadySaved {
+        System.out.println("puta " + al.getId());
         SharedFile file = ConfigsManager.getInstance()
                 .getNewSharedFileInstance(filePath, replication, al);
 

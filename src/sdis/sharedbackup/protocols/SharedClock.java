@@ -22,7 +22,6 @@ public class SharedClock {
 
     private SharedClock() {
         mDate = new Date();
-        new Thread(new SharedTimeUpdater()).start();
     }
 
     public static SharedClock getInstance() {
@@ -48,18 +47,14 @@ public class SharedClock {
         return new Timestamp(getTime()).toString();
     }
 
+    public void startSync() {
+        new Thread(new SharedTimeUpdater()).start();
+    }
+
     private class SharedTimeUpdater implements Runnable {
 
         @Override
         public void run() {
-
-            try {
-                Thread.sleep(FIVE_MINS);
-            } catch (InterruptedException e) {
-                System.err.println("Thread interrupted. Exiting...");
-                System.exit(1);
-            }
-
             try {
                 long receivedTime = Election.getInstance().getMasterStub().getMasterClock();
                 long startSyncTime = mDate.getTime();
@@ -67,11 +62,18 @@ public class SharedClock {
                 mEndSyncTime = mDate.getTime();
                 mSharedTime = receivedTime + mEndSyncTime - startSyncTime;
 
-                Log.log("Clock synchronized");
+                Log.log("Clock synchronized from " + mDate.toString() + " to " + new Date(mSharedTime).toString());
             } catch (Election.NotRegularPeerException e) {
                 e.printStackTrace();
             } catch (RemoteException e) {
                 e.printStackTrace();
+            }
+
+            try {
+                Thread.sleep(FIVE_MINS);
+            } catch (InterruptedException e) {
+                System.err.println("Thread interrupted. Exiting...");
+                System.exit(1);
             }
         }
     }

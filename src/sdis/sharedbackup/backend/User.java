@@ -37,7 +37,6 @@ public class User implements Serializable {
     }
 
     public boolean login(String userName, String password) {
-
         return this.userName.equals(userName) && Encoder.byteArrayToHexString(password.getBytes()).equals(this
                 .password);
     }

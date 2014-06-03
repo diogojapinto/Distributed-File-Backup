@@ -69,8 +69,6 @@ public class Election {
             e.printStackTrace();
         }
 
-        System.out.println("sendStartup ip: " + ip);
-
         message += WAKEUP_CMD + " " + ip + MulticastCommunicator.CRLF
                 + MulticastCommunicator.CRLF;
 
@@ -83,6 +81,7 @@ public class Election {
         int counter = 0;
 
         do {
+
             try {
                 sender.sendMessage(message.getBytes(MulticastCommunicator.ASCII_CODE));
             } catch (MulticastCommunicator.HasToJoinException e1) {
@@ -217,8 +216,11 @@ public class Election {
         masterIp = null;
         masterUpTime = 0;
         // I have thoroughly analysed my code and determined that the risks are acceptable
-        masterUpdate.stop();
-        masterChecker.stop();
+        if (imMaster) {
+            masterUpdate.stop();
+        } else {
+            masterChecker.stop();
+        }
 
         synchronized (sentUpTime) {
             sentUpTime = uptime;
@@ -272,6 +274,7 @@ public class Election {
             }
         } else {
             masterChecker = new Thread(new CheckMasterCmdExpiration());
+            SharedClock.getInstance().startSync();
             masterChecker.start();
         }
     }
@@ -330,10 +333,7 @@ public class Election {
             reg = LocateRegistry.createRegistry(REGISTRY_PORT);
             MasterServices stub = (MasterServices) UnicastRemoteObject.exportObject(obj, 0);
             reg.rebind(MasterServices.REG_ID, stub);
-
-            System.out.println("Elected Startup:");
-            for (String s : reg.list())
-                System.out.println(s);
+            Log.log("Registering stub with id " + MasterServices.REG_ID);
 
             Log.log("Master services ready");
 
@@ -352,13 +352,6 @@ public class Election {
 
         try {
             reg = LocateRegistry.getRegistry(masterIp, REGISTRY_PORT);
-
-            System.out.println("getMasterStub from " + masterIp + ":");
-            for (String s : reg.list())
-                System.out.println(s);
-
-            MasterServices services = (MasterServices) reg.lookup(MasterServices.REG_ID);
-
             return (MasterServices) reg.lookup(MasterServices.REG_ID);
         } catch (RemoteException e) {
             System.err.println("Error getting stub from RMI Registry. Exiting...");
