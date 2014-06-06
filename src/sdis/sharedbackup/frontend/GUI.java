@@ -35,14 +35,9 @@ import sdis.sharedbackup.utils.EnvironmentVerifier;
 import sdis.sharedbackup.utils.Log;
 
 import java.io.File;
-import java.io.FilePermission;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.SocketException;
-import java.rmi.RMISecurityManager;
-import java.security.AccessControlContext;
-import java.security.AccessController;
-import java.security.Policy;
 import java.util.ArrayList;
 
 public class GUI extends Application {
@@ -458,8 +453,10 @@ public class GUI extends Application {
                         accessLevel))) {
                     errorMsg.setText("Username already exists!");
                 } else {
-                    ConfigsManager.getInstance().login(userName, password);
+                    errorMsg.setFill(Color.YELLOWGREEN);
+                    errorMsg.setText("Connecting to network...");
 
+                    ConfigsManager.getInstance().login(userName, password);
                     try {
                         ApplicationInterface.getInstance().startupService();
                     } catch (ConfigurationsNotInitializedException e1) {
@@ -609,6 +606,7 @@ public class GUI extends Application {
         Text fileBackup = new Text("File Backup");
 
         Label repDegree = new Label("Replication degree:");
+        Label lblAccessLevel = new Label("Access level:");
 
         final TextField repTextField = new TextField();
 
@@ -627,11 +625,8 @@ public class GUI extends Application {
         chosenFile.setWrappingWidth(215);
         errorMsg.setTextAlignment(TextAlignment.CENTER);
 
-        //TODO
-
-        final ObservableList<String> levelsAvailable = FXCollections
-                .observableArrayList(ConfigsManager.getInstance().getUser().getAccessLevel().getAvailableAccessLevels
-                        ());
+        final ObservableList<String> levelsAvailable = FXCollections.observableArrayList(ConfigsManager.getInstance()
+                .getUser().getAccessLevel().getAvailableAccessLevels());
 
         final ComboBox<String> selectableLevel = new ComboBox<String>(
                 levelsAvailable);
@@ -646,6 +641,7 @@ public class GUI extends Application {
 
         HBox hbAccessLevel = new HBox(10);
         hbAccessLevel.setAlignment(Pos.BASELINE_LEFT);
+        hbAccessLevel.getChildren().add(lblAccessLevel);
         hbAccessLevel.getChildren().add(selectableLevel);
 
         HBox hbChosenFile = new HBox(10);
@@ -722,7 +718,8 @@ public class GUI extends Application {
                                                 file.getAbsolutePath(),
                                                 Integer.parseInt(repDegree), al);
                                 if (!backupSuccess)
-                                    setText(errorMsg, "Not enough peers to meet\n necessary replication", Color.FIREBRICK);
+                                    setText(errorMsg, "Not enough peers to meet\n necessary replication",
+                                            Color.FIREBRICK);
                                 else {
                                     setText(errorMsg, "File backed up", Color.YELLOWGREEN);
                                 }

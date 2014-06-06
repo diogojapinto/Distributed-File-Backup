@@ -1,5 +1,6 @@
 package sdis.sharedbackup.protocols;
 
+import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.utils.Log;
 
 import java.rmi.RemoteException;
@@ -55,25 +56,38 @@ public class SharedClock {
 
         @Override
         public void run() {
-            try {
-                long receivedTime = Election.getInstance().getMasterStub().getMasterClock();
-                long startSyncTime = mDate.getTime();
+            while (ConfigsManager.getInstance().isAppRunning()) {
+                try {
+                    MasterServices masterRef = Election.getInstance().getMasterStub();
+                    if (masterRef == null) {
+                        System.err.println("Error getting the master reference.");
+                        try {
+                            Thread.sleep(FIVE_MINS);
+                        } catch (InterruptedException e) {
+                            System.err.println("Thread interrupted. Exiting...");
+                            System.exit(1);
+                        }
+                        continue;
+                    }
+                    long receivedTime = Election.getInstance().getMasterStub().getMasterClock();
+                    long startSyncTime = mDate.getTime();
 
-                mEndSyncTime = mDate.getTime();
-                mSharedTime = receivedTime + mEndSyncTime - startSyncTime;
+                    mEndSyncTime = mDate.getTime();
+                    mSharedTime = receivedTime + mEndSyncTime - startSyncTime;
 
-                Log.log("Clock synchronized from " + mDate.toString() + " to " + new Date(mSharedTime).toString());
-            } catch (Election.NotRegularPeerException e) {
-                e.printStackTrace();
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
+                    Log.log("Clock synchronized from " + mDate.toString() + " to " + new Date(mSharedTime).toString());
+                } catch (Election.NotRegularPeerException e) {
+                    e.printStackTrace();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
 
-            try {
-                Thread.sleep(FIVE_MINS);
-            } catch (InterruptedException e) {
-                System.err.println("Thread interrupted. Exiting...");
-                System.exit(1);
+                try {
+                    Thread.sleep(FIVE_MINS);
+                } catch (InterruptedException e) {
+                    System.err.println("Thread interrupted. Exiting...");
+                    System.exit(1);
+                }
             }
         }
     }

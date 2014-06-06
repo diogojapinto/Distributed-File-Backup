@@ -237,10 +237,9 @@ public class SharedDatabase implements Serializable {
     }
 
     public boolean addFile(FileRecord record) {
+
         ArrayList<FileRecord> list = files.get(record.getAccessLevel());
-        if (list == null) {
-            System.out.println("List null");
-        }
+
         for (FileRecord fr : list) {
             if (fr.getHash().equals(record.getHash())) {
                 return false;

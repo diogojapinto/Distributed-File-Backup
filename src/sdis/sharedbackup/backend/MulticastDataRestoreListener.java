@@ -110,8 +110,8 @@ public class MulticastDataRestoreListener implements Runnable {
 
                 switch (header_components[0]) {
                     case ChunkRestore.CHUNK_COMMAND:
-                        final String fileId = header_components[2];
-                        final int chunkNo = Integer.parseInt(header_components[3]);
+                        final String fileId = header_components[1];
+                        final int chunkNo = Integer.parseInt(header_components[2]);
 
                         ConfigsManager.getInstance().getExecutor()
                                 .execute(new Runnable() {

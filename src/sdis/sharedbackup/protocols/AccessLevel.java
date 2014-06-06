@@ -2,6 +2,7 @@ package sdis.sharedbackup.protocols;
 
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.utils.Encoder;
+import sdis.sharedbackup.utils.EnvironmentVerifier;
 
 import java.io.File;
 import java.io.Serializable;
@@ -101,10 +102,15 @@ public class AccessLevel implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof AccessLevel && ((AccessLevel) obj).getId().equals(getId())) {
+        if (obj instanceof AccessLevel && ((AccessLevel) obj).getId().equals(this.getId())) {
             return true;
         } else {
             return false;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }

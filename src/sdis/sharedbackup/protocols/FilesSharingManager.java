@@ -37,7 +37,7 @@ public class FilesSharingManager {
         String message;
 
         message = ADD_FILE_CMD + " " + record.getHash() + " " + record.getFileName() + " " + record.getAccessLevel()
-                .getId() + " " + MulticastCommunicator.CRLF + MulticastCommunicator.CRLF;
+                .getId() + " " + record.getChunksCount() + " " + MulticastCommunicator.CRLF + MulticastCommunicator.CRLF;
 
         try {
             sender.sendMessage(message

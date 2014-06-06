@@ -15,7 +15,8 @@ import sdis.sharedbackup.utils.Log;
 
 public class ChunkRestore {
 
-	private static ChunkRestore sInstance = null;
+    public static final int MAX_RESTORE_TRIES = 5;
+    private static ChunkRestore sInstance = null;
 
 	public static final String GET_COMMAND = "GETCHUNK";
 	public static final String CHUNK_COMMAND = "CHUNK";
@@ -56,6 +57,8 @@ public class ChunkRestore {
 		MulticastDataRestoreListener.getInstance().subscribeToChunkData(fileId,
 				chunkNo);
 
+        int nrTries = 0;
+
 		do {
 			try {
 				sender.sendMessage(message
@@ -81,8 +84,8 @@ public class ChunkRestore {
 					}
 				}
 			}
-
-		} while (retChunk == null);
+            nrTries++;
+		} while (retChunk == null && nrTries < MAX_RESTORE_TRIES);
 
 		return retChunk;
 	}

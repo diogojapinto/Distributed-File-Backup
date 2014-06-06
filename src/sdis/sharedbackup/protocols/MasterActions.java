@@ -5,6 +5,7 @@ import sdis.sharedbackup.backend.User;
 import sdis.sharedbackup.utils.Log;
 
 import java.rmi.RemoteException;
+import java.util.Date;
 
 /**
  * Created by knoweat on 29/05/14.
@@ -13,7 +14,7 @@ public class MasterActions implements MasterServices {
 
     @Override
     public long getMasterClock() {
-        return ConfigsManager.getInstance().getUpTime();
+        return new Date().getTime();
     }
 
     @Override

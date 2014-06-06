@@ -1,6 +1,5 @@
 package sdis.sharedbackup.protocols;
 
-import jdk.nashorn.internal.runtime.regexp.joni.Config;
 import sdis.sharedbackup.backend.ConfigsManager;
 import sdis.sharedbackup.backend.MulticastCommunicator;
 import sdis.sharedbackup.utils.Log;
@@ -8,7 +7,6 @@ import sdis.sharedbackup.utils.Log;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -17,11 +15,12 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.Random;
 
-// TODO: call enterMainStage() of configsmanager after initialization
 public class Election {
 
     public static final int MASTER_CMD_INTERVAL = 1000 * 60;
     public static final int TEN_SECONDS = 10000;
+    public static final int MAX_WAIT_TIME = 400;
+    public static final int WAIT_TIME_BOUND = 500;
     private static Election instance = null;
 
     public static final String WAKEUP_CMD = "WAKED_UP";
@@ -44,8 +43,11 @@ public class Election {
     private boolean electionRunning = false;
 
     Registry reg;
+    private boolean masterCheckerFlag = false;
+    private boolean masterUpdateFlag = false;
 
     private Election() {
+        sentUpTime = (long) 0;
     }
 
     public static Election getInstance() {
@@ -107,6 +109,12 @@ public class Election {
         } while (counter < MAX_RETRIES);
 
         if (!knowsMaster) {
+
+            if (ConfigsManager.getInstance().isServer()) {
+                System.err.println("Could not connect to master-peer. Exiting...");
+                System.exit(1);
+            }
+
             try {
                 masterIp = ConfigsManager.getInstance().getInterfaceIP();
             } catch (SocketException e) {
@@ -116,6 +124,7 @@ public class Election {
             knowsMaster = true;
 
             masterUpdate = new Thread(new MasterCmdDiffuser());
+            masterUpdateFlag = true;
             masterUpdate.start();
             try {
                 electedStartup();
@@ -124,15 +133,14 @@ public class Election {
             }
         } else {
             masterChecker = new Thread(new CheckMasterCmdExpiration());
+            masterCheckerFlag = true;
             masterChecker.start();
 
             // update database with master's one
             SharedDatabase masterDB = null;
             try {
                 masterDB = getMasterStub().getMasterDB();
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            } catch (NotRegularPeerException e) {
+            } catch (RemoteException | NotRegularPeerException e) {
                 e.printStackTrace();
             }
             ConfigsManager.getInstance().getSDatabase().merge(masterDB);
@@ -198,9 +206,16 @@ public class Election {
 
     public void candidate() {
 
+        if (ConfigsManager.getInstance().isServer()) {
+            return;
+        }
+
+        Log.log("Initiating CANDIDATE protocol");
+
         if (imMaster) {
             try {
                 reg.unbind(MasterServices.REG_ID);
+                UnicastRemoteObject.unexportObject(reg, true);
             } catch (RemoteException e) {
                 e.printStackTrace();
             } catch (NotBoundException e) {
@@ -217,9 +232,9 @@ public class Election {
         masterUpTime = 0;
         // I have thoroughly analysed my code and determined that the risks are acceptable
         if (imMaster) {
-            masterUpdate.stop();
+            masterUpdateFlag = false;
         } else {
-            masterChecker.stop();
+            masterCheckerFlag = false;
         }
 
         synchronized (sentUpTime) {
@@ -235,22 +250,18 @@ public class Election {
         String message = null;
 
         message = CANDIDATE_CMD + " "
-                + uptime
+                + sentUpTime
                 + MulticastCommunicator.CRLF + MulticastCommunicator.CRLF;
 
         Random r = new Random();
-        int waitTime = r.nextInt() % 400;
-
+        int waitTime = r.nextInt(MAX_WAIT_TIME);
         try {
             Thread.sleep(waitTime);
+            Log.log("Sending CANDIDATE");
             sender.sendMessage(message
                     .getBytes(MulticastCommunicator.ASCII_CODE));
-            Thread.sleep(500 - waitTime);
-        } catch (MulticastCommunicator.HasToJoinException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+            Thread.sleep(WAIT_TIME_BOUND - waitTime);
+        } catch (MulticastCommunicator.HasToJoinException | UnsupportedEncodingException | InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -272,7 +283,9 @@ public class Election {
             } catch (NotMasterException e) {
                 e.printStackTrace();
             }
+            Log.log("I'm the new MASTER");
         } else {
+            Log.log("New MASTER is " + masterIp);
             masterChecker = new Thread(new CheckMasterCmdExpiration());
             SharedClock.getInstance().startSync();
             masterChecker.start();
@@ -283,7 +296,7 @@ public class Election {
 
         @Override
         public void run() {
-            while (ConfigsManager.getInstance().isAppRunning()) {
+            while (masterUpdateFlag) {
                 try {
                     sendMasterCmd();
                     Thread.sleep(MASTER_CMD_INTERVAL);
@@ -308,19 +321,21 @@ public class Election {
 
         @Override
         public void run() {
-            while (ConfigsManager.getInstance().isAppRunning()) {
+            while (masterCheckerFlag) {
                 try {
-                    Thread.sleep(MASTER_CMD_INTERVAL);
+                    Thread.sleep(TEN_SECONDS);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
                 long now = new Date().getTime();
-                if (now - lastMasterCmdTimestamp > MASTER_CMD_INTERVAL + TEN_SECONDS) {
+                if ((now - lastMasterCmdTimestamp) > (MASTER_CMD_INTERVAL + TEN_SECONDS)) {
                     candidate();
                 }
             }
         }
     }
+
 
     private void electedStartup() throws NotMasterException {
         if (!imMaster) {
@@ -336,7 +351,6 @@ public class Election {
             Log.log("Registering stub with id " + MasterServices.REG_ID);
 
             Log.log("Master services ready");
-
         } catch (RemoteException e) {
             System.err.println("RMI registry not available. Exiting...");
             System.exit(1);
@@ -346,20 +360,18 @@ public class Election {
     }
 
     public MasterServices getMasterStub() throws NotRegularPeerException {
-        if (imMaster) {
-            throw new NotRegularPeerException();
-        }
-
         try {
             reg = LocateRegistry.getRegistry(masterIp, REGISTRY_PORT);
             return (MasterServices) reg.lookup(MasterServices.REG_ID);
         } catch (RemoteException e) {
-            System.err.println("Error getting stub from RMI Registry. Exiting...");
-            e.printStackTrace();
-            System.exit(1);
+            if (ConfigsManager.getInstance().isServer()) {
+                System.err.println("Server could not connect to Master. Exiting...");
+                System.exit(1);
+            }
+            System.err.println("Error getting stub from RMI Registry. Candidate...");
+            candidate();
         } catch (NotBoundException e) {
             System.err.println("Error getting stub from RMI Registry. Exiting...");
-            e.printStackTrace();
             System.exit(1);
         }
         return null;

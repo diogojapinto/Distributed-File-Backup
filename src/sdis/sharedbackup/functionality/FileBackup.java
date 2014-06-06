@@ -44,8 +44,10 @@ public class FileBackup {
                     .getAccessLevel(), file.getChunkList().size()));
         } catch (RemoteException e) {
             System.err.println("Could not sync new file");
+            e.printStackTrace();
         } catch (Election.NotRegularPeerException e) {
             System.err.println("Could not sync new file");
+            e.printStackTrace();
         }
 
         return true;

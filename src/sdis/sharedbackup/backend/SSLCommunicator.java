@@ -1,12 +1,14 @@
 package sdis.sharedbackup.backend;
 
-import com.sun.deploy.util.SessionState;
 import sdis.sharedbackup.frontend.ApplicationInterface;
 import sdis.sharedbackup.functionality.FileRestore;
 import sdis.sharedbackup.protocols.FileRecord;
+import sdis.sharedbackup.utils.Log;
 
 import javax.net.ssl.*;
 import java.io.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 
@@ -18,6 +20,7 @@ public class SSLCommunicator {
     public static final String SUCCESS = "Success";
     public static final String LIST = "List";
     public static final String FILE = "File";
+    public static final String LOGIN = "Login";
     private KeyStore ks;
     SSLSocket clientSocket;
     SSLServerSocket serverSocket;
@@ -25,9 +28,20 @@ public class SSLCommunicator {
 
     public SSLCommunicator(String hostName, int portNumber) {
         initCertificate();
-        //init UDP related variables
+        InetAddress host = null;
         try {
-            clientSocket = (SSLSocket) SSLSocketFactory.getDefault().createSocket(hostName, portNumber);
+            host = InetAddress.getByName(hostName);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        try {
+            clientSocket = (SSLSocket) SSLSocketFactory.getDefault().createSocket(host, portNumber);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            clientSocket.startHandshake();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -35,21 +49,22 @@ public class SSLCommunicator {
 
     public SSLCommunicator(int portNumber) {
         initCertificate();
-        //init UDP related variables
+
         try {
             isServer = true;
             serverSocket = (SSLServerSocket) SSLServerSocketFactory.getDefault().createServerSocket(portNumber);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        serverSocket.setNeedClientAuth(true);
     }
 
     private void initCertificate() {
-
         //init keystore
         try {
             ks = KeyStore.getInstance("JKS");
-            ks.load(SessionState.Client.class.getClassLoader().getResourceAsStream("resources/peer.keys"),
+            ks.load(SSLCommunicator.class.getClassLoader().getResourceAsStream("resources/peer.keys"),
                     "123456".toCharArray());
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(ks);
@@ -61,11 +76,44 @@ public class SSLCommunicator {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     // Client sends a message, function returns the server response
     public String clientSend(String message) {
+        if (isServer) {
+            return null;
+        }
+
+        // send packet
+        PrintWriter out = null;
+        try {
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        out.println(message);
+
+        // read answer
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String serverReply = null;
+        try {
+            serverReply = in.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return serverReply;
+    }
+
+    // Client sends a message, function returns the server response
+    public InputStream clientSendCustomResponse(String message) {
         if (isServer) {
             return null;
         }
@@ -84,6 +132,44 @@ public class SSLCommunicator {
         }
 
         out.println(message);
+
+        try {
+            return clientSocket.getInputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // Client sends a message, function returns the server response
+    public String clientSend(InputStream fin) {
+        if (isServer) {
+            return null;
+        }
+        try {
+            clientSocket.startHandshake();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // send packet
+        PrintWriter out = null;
+        try {
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int character;
+        try {
+            while((character = fin.read()) != -1) {
+                out.write(character);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        out.println();
 
         // read answer
         BufferedReader in = null;
@@ -169,8 +255,8 @@ public class SSLCommunicator {
         String password = components[2].trim();
         String reply;
 
-        if (!option.equals("Login")) {
-            reply = "Failure";
+        if (!option.equals(LOGIN)) {
+            reply = FAILURE;
             out.println(reply);
             in.close();
             out.close();
@@ -181,7 +267,9 @@ public class SSLCommunicator {
 
         if (user == null) {
             reply = SUCCESS;
+            Log.log("Valid login: " + username);
         } else {
+            Log.log("Invalid login: " + username);
             reply = FAILURE;
             out.println(reply);
             Thread.sleep(1000);
@@ -211,7 +299,9 @@ public class SSLCommunicator {
                 requestRestore(in, out, user);
                 break;
             case BACKUP:
+                // Backup <filename> <replication>
                 if (components.length != 3) {
+                    Log.log("Invalid command");
                     reply = FAILURE;
                     out.println(reply);
                     Thread.sleep(1000);
@@ -224,6 +314,7 @@ public class SSLCommunicator {
                 requestBackup(in, out, user, filename, replication);
                 break;
             default:
+                Log.log("Invalid command");
                 reply = FAILURE;
                 out.println(reply);
                 Thread.sleep(1000);
@@ -249,8 +340,10 @@ public class SSLCommunicator {
         try {
             if (ApplicationInterface.getInstance().backupFile(fileName, replication, user.getAccessLevel())) {
                 reply = SUCCESS;
+                Log.log("Backup successful");
             } else {
                 reply = FAILURE;
+                Log.log("Backup failed");
             }
             out.println(reply);
             Thread.sleep(1000);
@@ -291,6 +384,7 @@ public class SSLCommunicator {
             stringBuilder.append(" ");
         }
 
+        Log.log("Sending list of files");
         out.println(stringBuilder);
 
         // receive hash of selected file
@@ -304,6 +398,7 @@ public class SSLCommunicator {
 
         String[] components = clientMessg.trim().split(" ");
         if (components.length != 2 || components[0].equals(FILE)) {
+            Log.log("Invalid command");
             String reply = FAILURE;
             out.println(reply);
             Thread.sleep(1000);
@@ -312,29 +407,31 @@ public class SSLCommunicator {
             return;
         }
 
-        String fileId = components[1];
-        String reply = FAILURE;
+        String fileId = components[1].trim();
 
         for (FileRecord fr : files) {
             if (fr.getHash().equals(fileId)) {
+                Log.log("Sending file " + fr.getFileName());
                 FileRestore.getInstance().restoreOthersFile(fr);
                 FileInputStream fins = new FileInputStream(fr.getFileName());
-                int character = -1;
+                int character;
                 while((character = fins.read()) != -1) {
                     out.write(character);
                 }
-                reply = SUCCESS;
+                out.println();
+                Thread.sleep(1000);
+                in.close();
+                out.close();
+                return;
             }
         }
-
-        out.println(reply);
-        Thread.sleep(1000);
-        in.close();
-        out.close();
         return;
     }
 
     public void terminate() {
+        if (isServer) {
+            return;
+        }
         try {
             clientSocket.close();
             serverSocket.close();

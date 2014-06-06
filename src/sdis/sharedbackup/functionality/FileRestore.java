@@ -38,8 +38,11 @@ public class FileRestore {
         ArrayList<FileChunkWithData> receivedChunks = new ArrayList<FileChunkWithData>();
 
         for (int i = 0; i < record.getChunksCount(); i++) {
-            receivedChunks.add(ChunkRestore.getInstance().requestChunk(
-                    record.getHash(), i));
+            FileChunkWithData chunk = ChunkRestore.getInstance().requestChunk(record.getHash(), i);
+            if (chunk == null) {
+                return false;
+            }
+            receivedChunks.add(chunk);
         }
 
         rebuildOthersFile(record, receivedChunks);
@@ -60,13 +63,29 @@ public class FileRestore {
     }
 
     private boolean rebuildOthersFile(FileRecord record,
-                                ArrayList<FileChunkWithData> chunks) {
+                                      ArrayList<FileChunkWithData> chunks) {
 
-        for (FileChunkWithData chunk : chunks) {
-            String path = record.getAccessLevel().getId() + File.separator + record.getFileName();
-            if (!appendToFile(chunk.getData(), path)) {
-                return false;
+        String folderPath = record.getAccessLevel().getId();
+        String filePath = record.getAccessLevel().getId() + File.separator + record.getFileName();
+
+        File folder = new File(folderPath);
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+
+        File file = new File(filePath);
+        if (file.exists()) {
+            return false;
+        }
+        try {
+            file.createNewFile();
+            for (FileChunkWithData chunk : chunks) {
+                if (!appendToFile(chunk.getData(), filePath)) {
+                    return false;
+                }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         return true;

@@ -68,7 +68,9 @@ public class MulticastControlHandler implements Runnable {
                 fileId = header_components[1].trim();
                 chunkNo = Integer.parseInt(header_components[2].trim());
 
-                if (null != ConfigsManager.getInstance().getFileById(fileId)) {
+                SharedFile file = ConfigsManager.getInstance().getFileById(fileId);
+                // if its my own message
+                if (file != null && !file.exists()) {
                     return;
                 }
 
@@ -133,6 +135,10 @@ public class MulticastControlHandler implements Runnable {
 
             case FileDeletion.DELETE_COMMAND:
 
+                if (ConfigsManager.getInstance().isServer()) {
+                    return;
+                }
+
                 fileId = header_components[1];
 
                 if (ConfigsManager.getInstance().removeChunksOfFile(fileId)) {
@@ -179,6 +185,9 @@ public class MulticastControlHandler implements Runnable {
                 break;
             case Election.WAKEUP_CMD:
 
+                if (ConfigsManager.getInstance().isServer()) {
+                    return;
+                }
                 if (Election.getInstance().imMaster()) {
                     try {
                         Log.log("Sending IM_MASTER in response to WAKED_UP");
@@ -189,6 +198,7 @@ public class MulticastControlHandler implements Runnable {
                 }
                 break;
             case Election.MASTER_CMD:
+
                 String master = header_components[1];
 
                 Log.log("Received MASTER_CMD from " + master);
@@ -214,6 +224,11 @@ public class MulticastControlHandler implements Runnable {
                 }
                 break;
             case Election.CANDIDATE_CMD:
+
+                if (ConfigsManager.getInstance().isServer()) {
+                    return;
+                }
+
                 long itsUptime = Long.parseLong(header_components[1]);
                 String itsIp = mSender.getAddr().getHostAddress();
                 try {
